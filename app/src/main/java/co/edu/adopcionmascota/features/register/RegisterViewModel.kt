@@ -55,10 +55,13 @@ class RegisterViewModel: ViewModel(){
         }
     }
 
-    private fun validateNamr(name: String): String?{
+
+
+    private fun validateName(name: String): String?{
         return when{
             name.isBlank()-> "El nombre es obligatorio"
-            name.length< 3-> ""
+            name.length< 3-> "El nombre debe tener al menos 3 caracteres"
+            else->null
         }
     }
 }
