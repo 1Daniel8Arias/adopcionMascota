@@ -56,8 +56,9 @@ fun HomeScreen() {
         // Imagen superior
         Image(
             modifier = Modifier
-                .size(180.dp)
-                .align(Alignment.CenterHorizontally),
+                .size(210.dp)
+                .align(Alignment.CenterHorizontally)
+                .padding(top = 30.dp),
             painter = painterResource(R.drawable.icono),
             contentDescription = "Welcome Image"
         )
