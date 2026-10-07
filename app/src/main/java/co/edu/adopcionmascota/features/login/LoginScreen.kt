@@ -42,7 +42,7 @@ import co.edu.adopcionmascota.core.component.IconoTextField
 
 @Preview(showBackground = true)
 @Composable
-fun HomeScreen() {
+fun LoginScreen() {
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
