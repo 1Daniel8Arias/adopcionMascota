@@ -23,6 +23,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,16 +37,20 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import co.edu.adopcionmascota.R
 import co.edu.adopcionmascota.core.component.IconoText
 import co.edu.adopcionmascota.core.component.IconoTextField
+import co.edu.adopcionmascota.core.util.RequestResult
 
 @Preview(showBackground = true)
 @Composable
-fun HomeScreen() {
+fun LoginScreen(
+    viewModel: LoginViewModel = viewModel()
+) {
 
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+
+    val state by viewModel.uiState.collectAsState()
 
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -88,20 +93,25 @@ fun HomeScreen() {
         // Campo de correo
         IconoTextField(
             titulo = "Correo electrónico",
-            value = email,
-            onValueChange = { email = it },
+            value =state.email,
+            onValueChange = viewModel::onEmailChange,
             placeholderText = "tu.correo@ejemplo.com",
-            icono = Icons.Outlined.Email
+            icono = Icons.Outlined.Email,
+            isError = state.emailError != null,
+            mensajeError = state.emailError
+
         )
 
         // Campo de contraseña
         IconoTextField(
             titulo = "Contraseña",
-            value = password,
-            onValueChange = { password = it },
+            value = state.password,
+            onValueChange = viewModel::onPasswordChange,
             placeholderText = "••••••••",
             icono = Icons.Outlined.Lock,
-            visualTransformation = PasswordVisualTransformation()
+            visualTransformation = PasswordVisualTransformation(),
+            isError = state.passwordError != null,
+            mensajeError = state.passwordError
         )
 
         // Enlace "¿Olvidaste tu contraseña?"
@@ -116,7 +126,11 @@ fun HomeScreen() {
             )
         }
 
-        ButtonLogin()
+        ButtonLogin(
+            onClick = viewModel::login,
+            isFormValid = state.isFormValid,
+            loginResult = state.loginResult
+        )
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -145,33 +159,50 @@ fun HomeScreen() {
 }
 
 @Composable
-fun ButtonLogin(){
-// Botón principal de Inicio de Sesión
+fun ButtonLogin(
+    onClick: () -> Unit,
+    isFormValid: Boolean,
+    loginResult: RequestResult?
+) {
+    val isLoading = loginResult is RequestResult.Loading
+
     Button(
-        onClick = { /* Acción al iniciar sesión */ },
+        onClick = onClick,
+        // Se desactiva si el formulario no es válido O si está cargando
+        enabled = isFormValid && !isLoading,
         modifier = Modifier
             .fillMaxWidth()
-            .height(50.dp), // Altura adecuada para botones principales
+            .height(50.dp),
         shape = RoundedCornerShape(16.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFF4A5CDE), // Fondo azul
-            contentColor = Color.White          // Texto e icono en blanco
+            containerColor = Color(0xFF4A5CDE),
+            contentColor = Color.White,
+            disabledContainerColor = Color(0xFF9EA8F0), // Color azul tenue cuando está deshabilitado
+            disabledContentColor = Color.White
         )
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
+        if (isLoading) {
             Text(
-                text = "Iniciar Sesión",
+                text = "Iniciando sesión...",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
-            Spacer(modifier = Modifier.width(8.dp))
-            Icon(
-                imageVector = Icons.Outlined.ArrowRightAlt,
-                contentDescription = null
-            )
+        } else {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "Iniciar Sesión",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Icon(
+                    imageVector = Icons.Outlined.ArrowRightAlt,
+                    contentDescription = null
+                )
+            }
         }
     }
 }

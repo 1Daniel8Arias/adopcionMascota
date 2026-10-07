@@ -1,6 +1,5 @@
 package co.edu.adopcionmascota.features.password
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,10 +15,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
@@ -32,11 +29,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -45,14 +41,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 import co.edu.adopcionmascota.core.component.IconoText
 import co.edu.adopcionmascota.core.component.IconoTextField
+import co.edu.adopcionmascota.core.util.RequestResult
 
 @Preview(showBackground = true)
 @Composable
-fun PasswordScreen() {
-    var email by remember { mutableStateOf("camila.morales@ejemplo.com") }
+fun PasswordScreen(
+    viewModel: PasswordViewModel = viewModel()
+) {
+    val state by viewModel.uiState.collectAsState()
 
     Column(
         modifier = Modifier
@@ -63,11 +63,6 @@ fun PasswordScreen() {
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
 
-
-
-        // ------------------------------------------------------------------
-        // 3. ILUSTRACIÓN CONCÉNTRICA
-        // ------------------------------------------------------------------
         Box(
             modifier = Modifier
                 .size(130.dp)
@@ -111,9 +106,6 @@ fun PasswordScreen() {
             }
         }
 
-        // ------------------------------------------------------------------
-        // 4. TÍTULO Y TEXTO EXPLICATIVO
-        // ------------------------------------------------------------------
         Text(
             text = "¿Olvidaste tu contraseña?",
             fontSize = 22.sp,
@@ -133,17 +125,27 @@ fun PasswordScreen() {
         )
 
         // ------------------------------------------------------------------
-        // 5. CAMPO DE ENTRADA (Usando IconoTextField)
+        // CAMPO DE ENTRADA CON MENSAJE DE ERROR (Punto 3)
         // ------------------------------------------------------------------
         Column(modifier = Modifier.fillMaxWidth()) {
             IconoTextField(
                 titulo = "Correo electrónico registrado",
-                value = email,
-                onValueChange = { email = it },
+                value = state.email,
+                onValueChange = viewModel::onEmailChange,
                 placeholderText = "camila.morales@ejemplo.com",
                 icono = Icons.Outlined.AlternateEmail,
                 modifier = Modifier.fillMaxWidth()
             )
+
+            // Punto 3: Muestra el mensaje de error de validación si existe[cite: 4]
+            if (state.emailError != null) {
+                Text(
+                    text = state.emailError!!,
+                    color = Color.Red,
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(top = 4.dp, start = 4.dp)
+                )
+            }
 
             Row(
                 modifier = Modifier.padding(top = 6.dp, start = 4.dp),
@@ -164,11 +166,9 @@ fun PasswordScreen() {
             }
         }
 
-        // ------------------------------------------------------------------
-        // 6. BOTÓN PRINCIPAL
-        // ------------------------------------------------------------------
         Button(
-            onClick = { },
+            onClick = viewModel::sendRecoveryEmail,
+            enabled = state.isFormValid && state.recoveryResult !is RequestResult.Loading,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp),
@@ -196,9 +196,31 @@ fun PasswordScreen() {
             }
         }
 
-        // ------------------------------------------------------------------
-        // 7. TARJETAS INFORMATIVAS (Usando IconoText)
-        // ------------------------------------------------------------------
+
+        when (val result = state.recoveryResult) {
+            is RequestResult.Success -> {
+                Text(
+                    text = result.message,
+                    color = Color(0xFF10B981),
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            is RequestResult.Failure -> {
+                Text(
+                    text = result.errorMessage,
+                    color = Color.Red,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            else -> {}
+        }
+
         IconoText(
             texto = "¿No recibes el mensaje?\nRevisa tu carpeta de spam o correo no deseado. El enlace es válido durante 30 minutos por razones de seguridad ciudadana y protección animal.",
             icono = Icons.AutoMirrored.Outlined.HelpOutline
@@ -209,9 +231,6 @@ fun PasswordScreen() {
             icono = Icons.Outlined.SupportAgent
         )
 
-        // ------------------------------------------------------------------
-        // 8. BOTÓN SECUNDARIO Y NAVEGACIÓN
-        // ------------------------------------------------------------------
         Button(
             onClick = { },
             modifier = Modifier
@@ -253,13 +272,17 @@ fun PasswordScreen() {
                 fontSize = 13.sp,
                 color = Color(0xFF64748B)
             )
-            Text(
-                text = "Regístrate aquí",
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF3B52E1),
-                modifier = Modifier.clickable { }
-            )
+            TextButton(
+                onClick = {}
+            ) {
+                Text(
+                    text = "Regístrate aquí",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF3B52E1),
+                    modifier = Modifier.clickable { }
+                )
+            }
         }
     }
 }
