@@ -5,7 +5,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import co.edu.adopcionmascota.core.theme.AdopcionMascotaTheme
-import co.edu.adopcionmascota.features.password.PasswordScreen
+
+import co.edu.adopcionmascota.features.publication.PublicationScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -13,7 +14,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             AdopcionMascotaTheme {
-                PasswordScreen()
+                PublicationScreen()
             }
         }
     }
