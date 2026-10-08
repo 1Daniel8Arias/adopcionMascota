@@ -10,6 +10,7 @@ import co.edu.adopcionmascota.features.home.HomeScreen
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import co.edu.adopcionmascota.features.login.LoginScreen
+import co.edu.adopcionmascota.features.register.RegisterScreen
 
 @Composable
 fun AppNavigation(){
@@ -26,11 +27,23 @@ fun AppNavigation(){
                  HomeScreen(
                      onNavigateToLogin = {
                          navController.navigate(MainRoutes.Login)
+                     },
+                     onNavigateToRegister = {
+                         navController.navigate(MainRoutes.Register)
                      }
                  )
              }
             composable<MainRoutes.Login> {
                 LoginScreen(
+
+                )
+            }
+
+            composable<MainRoutes.Register>{
+                RegisterScreen(
+                    onNavigateToBack = {
+                        navController.popBackStack()
+                    }
                 )
             }
 

@@ -37,7 +37,10 @@ import co.edu.adopcionmascota.features.login.ButtonLogin
 
 
 @Composable
-fun HomeScreen(onNavigateToLogin:()-> Unit){
+fun HomeScreen(
+    onNavigateToLogin:()-> Unit,
+    onNavigateToRegister: ()-> Unit
+){
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -76,7 +79,7 @@ fun HomeScreen(onNavigateToLogin:()-> Unit){
           ButtonLog(onNavigateToLogin)
 
             Button(
-                onClick = { },
+                onClick = onNavigateToRegister,
                 modifier=Modifier
                     .height(50.dp),
                 shape = RoundedCornerShape(16.dp),

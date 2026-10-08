@@ -9,6 +9,8 @@ sealed class MainRoutes {
 @Serializable
 data object Login : MainRoutes()
 
+@Serializable
+data object Register: MainRoutes()
 
 }
 
