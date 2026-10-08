@@ -25,9 +25,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -46,7 +43,7 @@ import co.edu.adopcionmascota.core.util.RequestResult
 @Preview(showBackground = true)
 @Composable
 fun LoginScreen(
-    viewModel: LoginViewModel = viewModel()
+    viewModel: LoginScreenViewMode.LoginViewModel = viewModel()
 ) {
 
 
@@ -97,8 +94,8 @@ fun LoginScreen(
             onValueChange = viewModel::onEmailChange,
             placeholderText = "tu.correo@ejemplo.com",
             icono = Icons.Outlined.Email,
-            isError = state.emailError != null,
-            mensajeError = state.emailError
+
+
 
         )
 
@@ -110,8 +107,6 @@ fun LoginScreen(
             placeholderText = "••••••••",
             icono = Icons.Outlined.Lock,
             visualTransformation = PasswordVisualTransformation(),
-            isError = state.passwordError != null,
-            mensajeError = state.passwordError
         )
 
         // Enlace "¿Olvidaste tu contraseña?"

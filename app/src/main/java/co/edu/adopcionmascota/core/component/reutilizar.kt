@@ -30,7 +30,9 @@ fun IconoTextField(
     placeholderText: String,
     icono: ImageVector,
     modifier: Modifier = Modifier,
-    visualTransformation: VisualTransformation = VisualTransformation.None // Valor por defecto: texto normal
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    isError: Boolean = false,
+    mensajeError: String? = null
 ) {
     Column(modifier = modifier) {
         // Título dinámico
