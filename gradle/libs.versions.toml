@@ -21,6 +21,7 @@ foundationLayout = "1.12.1"
 uiText = "1.12.1"
 foundation = "1.12.1"
 firebaseAnnotations = "18.0.0"
+uiGraphics = "1.12.1"
 
 
 [libraries]
@@ -52,6 +53,7 @@ androidx-compose-foundation-layout = { group = "androidx.compose.foundation", na
 androidx-compose-ui-text = { group = "androidx.compose.ui", name = "ui-text", version.ref = "uiText" }
 androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
 firebase-annotations = { group = "com.google.firebase", name = "firebase-annotations", version.ref = "firebaseAnnotations" }
+androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics", version.ref = "uiGraphics" }
 
 
 

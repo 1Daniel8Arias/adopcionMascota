@@ -53,6 +53,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.ui)
+    implementation(libs.androidx.ui.graphics)
     implementation(libs.firebase.annotations)
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))

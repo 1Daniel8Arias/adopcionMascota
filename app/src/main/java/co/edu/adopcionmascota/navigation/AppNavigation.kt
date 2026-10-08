@@ -9,6 +9,9 @@ import androidx.navigation.NavHost
 import co.edu.adopcionmascota.features.home.HomeScreen
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
+import co.edu.adopcionmascota.features.adoption.detail.PublicationDetailScreen
+import co.edu.adopcionmascota.features.adoption.list.PublicationScreen
 import co.edu.adopcionmascota.features.login.LoginScreen
 import co.edu.adopcionmascota.features.register.RegisterScreen
 
@@ -26,7 +29,7 @@ fun AppNavigation(){
              composable<MainRoutes.Home> {
                  HomeScreen(
                      onNavigateToLogin = {
-                         navController.navigate(MainRoutes.Login)
+                         navController.navigate(MainRoutes.PublicationList)
                      },
                      onNavigateToRegister = {
                          navController.navigate(MainRoutes.Register)
@@ -35,6 +38,13 @@ fun AppNavigation(){
              }
             composable<MainRoutes.Login> {
                 LoginScreen(
+                    onNavigationPublicLists = {
+                        navController.navigate(MainRoutes.PublicationList){
+                            popUpTo(MainRoutes.Home){
+                                inclusive=true
+                            }
+                        }
+                    }
 
                 )
             }
@@ -45,6 +55,31 @@ fun AppNavigation(){
                         navController.popBackStack()
                     }
                 )
+            }
+            composable<MainRoutes.PublicationList>{
+                PublicationScreen(
+                    OnNavigateToPublication = { publicationId ->
+                        navController.navigate(
+                            MainRoutes.PublicationDetail(publicationId)
+                        )
+                    },
+
+                    onPublicationClick = { publication ->
+                        navController.navigate(
+                            MainRoutes.PublicationDetail(publication.id)
+                        )
+                    }
+
+                )
+
+            }
+
+            composable<MainRoutes.PublicationDetail>{
+                val args= it.toRoute<MainRoutes.PublicationDetail>()
+                PublicationDetailScreen(
+                    pubblicationId = args.publicationId
+                )
+
             }
 
 

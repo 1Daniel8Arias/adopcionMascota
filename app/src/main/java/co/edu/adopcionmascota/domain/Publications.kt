@@ -7,7 +7,7 @@ data class  Publications(
     val id: String,
     val name: String,
     val description: String,
-    val image: String,
+    val image: Int,
     val status: PublicationStatus,
     val type: PetType,
     val location: String,

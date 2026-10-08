@@ -30,12 +30,12 @@ fun IconoTextField(
     placeholderText: String,
     icono: ImageVector,
     modifier: Modifier = Modifier,
-    visualTransformation: VisualTransformation = VisualTransformation.None,
     isError: Boolean = false,
-    mensajeError: String? = null
+    mensajeError: String? = null,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
 ) {
     Column(modifier = modifier) {
-        // Título dinámico
+
         Text(
             text = titulo,
             fontSize = 14.sp,
@@ -44,13 +44,16 @@ fun IconoTextField(
             modifier = Modifier.padding(bottom = 6.dp)
         )
 
-        // Campo de entrada dinámico
         TextField(
             value = value,
             onValueChange = onValueChange,
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
-            visualTransformation = visualTransformation, // Aplica la transformación si se recibe una
+
+            visualTransformation = visualTransformation,
+
+            isError = isError,
+
             placeholder = {
                 Text(
                     text = placeholderText,
@@ -58,24 +61,48 @@ fun IconoTextField(
                     fontSize = 14.sp
                 )
             },
+
             leadingIcon = {
                 Icon(
                     imageVector = icono,
                     contentDescription = null,
-                    tint = Color(0xFF4A5568)
+                    tint = if (isError)
+                        Color(0xFFB3261E)
+                    else
+                        Color(0xFF4A5568)
                 )
             },
+
             shape = RoundedCornerShape(16.dp),
+
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = Color(0xFFF0F4FE),
                 unfocusedContainerColor = Color(0xFFF0F4FE),
+
                 focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent
+                unfocusedIndicatorColor = Color.Transparent,
+
+                errorContainerColor = Color(0xFFFFF0F0),
+                errorIndicatorColor = Color.Transparent,
+
+                errorLeadingIconColor = Color(0xFFB3261E)
             )
         )
+
+        // Mostrar mensaje de error
+        if (isError && mensajeError != null) {
+            Text(
+                text = mensajeError,
+                color = Color(0xFFB3261E),
+                fontSize = 12.sp,
+                modifier = Modifier.padding(
+                    start = 8.dp,
+                    top = 4.dp
+                )
+            )
+        }
     }
 }
-
 @Composable
 fun IconoText(
     texto: String,

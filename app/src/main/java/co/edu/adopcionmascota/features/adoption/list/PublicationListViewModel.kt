@@ -1,6 +1,7 @@
 package co.edu.adopcionmascota.features.adoption.list
 
 import androidx.lifecycle.ViewModel
+import co.edu.adopcionmascota.R
 import co.edu.adopcionmascota.domain.PetType
 import co.edu.adopcionmascota.domain.PublicationStatus
 import co.edu.adopcionmascota.domain.Publications
@@ -30,14 +31,14 @@ class PublicationListViewModel: ViewModel() {
                 id = "1",
             name = "Max",
             description = "Perro amigable y juguetón en busca de un hogar.",
-            image = "https://example.com/images/max.jpg",
+            image = R.drawable.imagen_max,
             status = PublicationStatus.VERIFIED,
             type = PetType.ADOPCION,
             location = "Filandia",
             time = "Hace 2 horas",
             distancia = "1.2 km",
             likes = "45",
-            age = "3 años",
+            age = "3 meses",
             gender = "Macho"
         ),
 
@@ -45,7 +46,7 @@ class PublicationListViewModel: ViewModel() {
             id = "2",
             name = "Luna",
             description = "Gatita tranquila y cariñosa, vacunada y esterilizada.",
-            image = "https://example.com/images/luna.jpg",
+            image = R.drawable.imagen_luna,
             status = PublicationStatus.RESOLVED,
             type = PetType.PERDIDO,
             location = "Circasia",
@@ -60,7 +61,7 @@ class PublicationListViewModel: ViewModel() {
             id = "3",
             name = "Rocky",
             description = "Perro rescatado que necesita una familia responsable.",
-            image = "https://example.com/images/rocky.jpg",
+            image = R.drawable.imagen_rocky,
             status = PublicationStatus.PENDING,
             type = PetType.ENCONTRADO,
             location = "Armenia",
