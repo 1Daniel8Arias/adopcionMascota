@@ -29,7 +29,7 @@ fun AppNavigation(){
              composable<MainRoutes.Home> {
                  HomeScreen(
                      onNavigateToLogin = {
-                         navController.navigate(MainRoutes.PublicationList)
+                         navController.navigate(MainRoutes.Login)
                      },
                      onNavigateToRegister = {
                          navController.navigate(MainRoutes.Register)

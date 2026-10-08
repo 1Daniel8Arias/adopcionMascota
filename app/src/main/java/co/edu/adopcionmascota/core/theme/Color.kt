@@ -23,3 +23,13 @@ val AppRed = Color(0xFFD92D20)
 val AppGreen = Color(0xFF067647)
 
 val AppDarkButton = Color(0xFF182131)
+
+val Background = Color(0xFFF8FAFC)
+val PrimaryBlue = Color(0xFF3B52E1)
+val LightBlueBg = Color(0xFFEFF4FF)
+val LightBlueBorder = Color(0xFFD6E4FF)
+val DarkText = Color(0xFF0F172A)
+val SecondaryText = Color(0xFF64748B)
+val SelectedCategoryBg = Color(0xFF0F172A)
+val MapBg = Color(0xFFD4E6D5)
+val BlackButton = Color(0xFF000000)

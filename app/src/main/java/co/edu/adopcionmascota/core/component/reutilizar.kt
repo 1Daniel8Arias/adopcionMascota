@@ -35,12 +35,11 @@ fun IconoTextField(
     visualTransformation: VisualTransformation = VisualTransformation.None,
 ) {
     Column(modifier = modifier) {
-
         Text(
             text = titulo,
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
-            color = Color(0xFF4A5568),
+            color = if (isError) Color(0xFFDC2626) else Color(0xFF4A5568),
             modifier = Modifier.padding(bottom = 6.dp)
         )
 
@@ -49,11 +48,8 @@ fun IconoTextField(
             onValueChange = onValueChange,
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
-
+            isError = isError, // Pasa el estado de error al TextField nativo
             visualTransformation = visualTransformation,
-
-            isError = isError,
-
             placeholder = {
                 Text(
                     text = placeholderText,
@@ -66,26 +62,28 @@ fun IconoTextField(
                 Icon(
                     imageVector = icono,
                     contentDescription = null,
-                    tint = if (isError)
-                        Color(0xFFB3261E)
-                    else
-                        Color(0xFF4A5568)
+                    tint = if (isError) Color(0xFFDC2626) else Color(0xFF4A5568)
                 )
             },
-
+            // Dibuja el mensaje de error automáticamente abajo
+            supportingText = if (isError && !mensajeError.isNullOrEmpty()) {
+                {
+                    Text(
+                        text = mensajeError,
+                        color = Color(0xFFDC2626),
+                        fontSize = 12.sp
+                    )
+                }
+            } else null,
             shape = RoundedCornerShape(16.dp),
 
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = Color(0xFFF0F4FE),
                 unfocusedContainerColor = Color(0xFFF0F4FE),
-
+                errorContainerColor = Color(0xFFFFF2F2), // Fondo rojizo suave cuando falla
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
-
-                errorContainerColor = Color(0xFFFFF0F0),
-                errorIndicatorColor = Color.Transparent,
-
-                errorLeadingIconColor = Color(0xFFB3261E)
+                errorIndicatorColor = Color(0xFFDC2626) // Indicador/borde inferior rojo
             )
         )
 
@@ -103,6 +101,7 @@ fun IconoTextField(
         }
     }
 }
+
 @Composable
 fun IconoText(
     texto: String,

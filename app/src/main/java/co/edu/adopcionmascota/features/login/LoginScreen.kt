@@ -2,7 +2,6 @@ package co.edu.adopcionmascota.features.login
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,7 +20,6 @@ import androidx.compose.material.icons.outlined.VolunteerActivism
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -43,18 +41,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import co.edu.adopcionmascota.R
+import co.edu.adopcionmascota.core.component.IconoText
 import co.edu.adopcionmascota.core.component.IconoTextField
 import co.edu.adopcionmascota.core.util.RequestResult
-import co.edu.adopcionmascota.core.component.IconoText
 
 
 
 
 @Composable
 fun LoginScreen(
-    onNavigationPublicLists: () -> Unit,
-    viewModel: LoginViewModel = viewModel()
+    viewModel: LoginViewModel = viewModel(),
+    onNavigationPublicLists: () -> Unit
 ) {
+
     val snackbarHostState = remember { SnackbarHostState() }
     val state by viewModel.uiState.collectAsState()
 
@@ -84,21 +83,20 @@ fun LoginScreen(
         modifier = Modifier.fillMaxSize()
     ) {
 
-        Column(
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+    Column(
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        // Imagen superior
+        Image(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-        ) {
-
-            Image(
-                modifier = Modifier
-                    .size(210.dp)
-                    .align(Alignment.CenterHorizontally)
-                    .padding(top = 30.dp),
-                painter = painterResource(R.drawable.icono),
-                contentDescription = "Welcome Image"
-            )
+                .size(180.dp)
+                .align(Alignment.CenterHorizontally),
+            painter = painterResource(R.drawable.icono),
+            contentDescription = "Welcome Image"
+        )
 
             Text(
                 text = "Bienvenido de vuelta",
@@ -121,26 +119,29 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            IconoTextField(
-                titulo = "Correo electrónico",
-                value = state.email,
-                onValueChange = viewModel::onEmailChange,
-                placeholderText = "tu.correo@ejemplo.com",
-                icono = Icons.Outlined.Email,
-                isError = state.emailError != null,
-                mensajeError = state.emailError
-            )
+        // Campo de correo
+        IconoTextField(
+            titulo = "Correo electrónico",
+            value =state.email,
+            onValueChange = viewModel::onEmailChange,
+            placeholderText = "tu.correo@ejemplo.com",
+            icono = Icons.Outlined.Email,
+            isError = state.emailError != null,
+            mensajeError = state.emailError
 
-            IconoTextField(
-                titulo = "Contraseña",
-                value = state.password,
-                onValueChange = viewModel::onPasswordChange,
-                placeholderText = "••••••••",
-                icono = Icons.Outlined.Lock,
-                visualTransformation = PasswordVisualTransformation(),
-                isError = state.passwordError != null,
-                mensajeError = state.passwordError
-            )
+        )
+
+        // Campo de contraseña
+        IconoTextField(
+            titulo = "Contraseña",
+            value = state.password,
+            onValueChange = viewModel::onPasswordChange,
+            placeholderText = "••••••••",
+            icono = Icons.Outlined.Lock,
+            visualTransformation = PasswordVisualTransformation(),
+            isError = state.passwordError != null,
+            mensajeError = state.passwordError
+        )
 
             TextButton(
                 onClick = { /* Navegación */ },
@@ -153,11 +154,12 @@ fun LoginScreen(
                 )
             }
 
-            ButtonLogin(
-                onClick = viewModel::login,
-                isFormValid = state.isFormValid,
-                loginResult = state.loginResult
-            )
+        ButtonLogin(
+            onClick = viewModel::login,
+            isFormValid = state.isFormValid,
+            loginResult = state.loginResult
+        )
+
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -190,6 +192,7 @@ fun LoginScreen(
         )
     }
 }
+
 @Composable
 fun ButtonLogin(
     onClick: () -> Unit,
