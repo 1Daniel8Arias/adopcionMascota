@@ -2,6 +2,7 @@ package co.edu.adopcionmascota.features.login
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,6 +21,7 @@ import androidx.compose.material.icons.outlined.VolunteerActivism
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -51,7 +53,8 @@ import co.edu.adopcionmascota.core.util.RequestResult
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel = viewModel(),
-    onNavigationPublicLists: () -> Unit
+    onNavigationPublicLists: () -> Unit,
+    onNavigationPasswordScreen: ()-> Unit
 ) {
 
     val snackbarHostState = remember { SnackbarHostState() }
@@ -70,7 +73,7 @@ fun LoginScreen(
             }
 
             is RequestResult.Failure -> {
-                snackbarHostState.showSnackbar(result.erroMessage)
+                snackbarHostState.showSnackbar(result.errorMessage)
 
                 viewModel.resetLoginResult()
             }
@@ -144,7 +147,7 @@ fun LoginScreen(
         )
 
             TextButton(
-                onClick = { /* Navegación */ },
+                onClick = onNavigationPasswordScreen,
                 modifier = Modifier.align(Alignment.End)
             ) {
                 Text(

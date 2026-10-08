@@ -47,7 +47,7 @@ import co.edu.adopcionmascota.core.component.IconoText
 import co.edu.adopcionmascota.core.component.IconoTextField
 import co.edu.adopcionmascota.core.util.RequestResult
 
-@Preview(showBackground = true)
+
 @Composable
 fun PasswordScreen(
     viewModel: PasswordViewModel = viewModel()

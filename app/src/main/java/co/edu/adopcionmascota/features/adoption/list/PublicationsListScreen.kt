@@ -32,12 +32,13 @@ import co.edu.adopcionmascota.core.component.AppTopBar
 import androidx.compose.runtime.collectAsState
 
 @Composable
-fun PublicationScreen(
-    OnNavigateToPublication: (String)-> Unit,
+fun PublicationListScreen(
     viewModel: PublicationListViewModel = viewModel(),
     onPublicationClick: (Publications) -> Unit = {},
     onPublishClick: () -> Unit = {},
-    onNavigationClick: (AppDestination) -> Unit = {}
+    onNavigationClick: (AppDestination) -> Unit = {},
+    onNavigationToPublications:()-> Unit
+
 ) {
 
     // =====================================================
@@ -126,7 +127,7 @@ fun PublicationScreen(
 
             AppFloatingButton(
                 text = "Publicar",
-                onClick = onPublishClick
+                onClick = onNavigationToPublications
             )
         },
 

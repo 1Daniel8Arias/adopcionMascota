@@ -5,14 +5,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import androidx.compose.material3.Surface
-import androidx.navigation.NavHost
 import co.edu.adopcionmascota.features.home.HomeScreen
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import co.edu.adopcionmascota.features.adoption.detail.PublicationDetailScreen
-import co.edu.adopcionmascota.features.adoption.list.PublicationScreen
+import co.edu.adopcionmascota.features.adoption.list.PublicationListScreen
 import co.edu.adopcionmascota.features.login.LoginScreen
+import co.edu.adopcionmascota.features.password.PasswordScreen
+import co.edu.adopcionmascota.features.publication.PublicationScreen
 import co.edu.adopcionmascota.features.register.RegisterScreen
 
 @Composable
@@ -29,7 +30,7 @@ fun AppNavigation(){
              composable<MainRoutes.Home> {
                  HomeScreen(
                      onNavigateToLogin = {
-                         navController.navigate(MainRoutes.Login)
+                         navController.navigate(MainRoutes.PublicationList)
                      },
                      onNavigateToRegister = {
                          navController.navigate(MainRoutes.Register)
@@ -40,6 +41,13 @@ fun AppNavigation(){
                 LoginScreen(
                     onNavigationPublicLists = {
                         navController.navigate(MainRoutes.PublicationList){
+                            popUpTo(MainRoutes.Home){
+                                inclusive=true
+                            }
+                        }
+                    },
+                    onNavigationPasswordScreen = {
+                        navController.navigate(MainRoutes.PasswordScreen){
                             popUpTo(MainRoutes.Home){
                                 inclusive=true
                             }
@@ -57,19 +65,15 @@ fun AppNavigation(){
                 )
             }
             composable<MainRoutes.PublicationList>{
-                PublicationScreen(
-                    OnNavigateToPublication = { publicationId ->
-                        navController.navigate(
-                            MainRoutes.PublicationDetail(publicationId)
-                        )
-                    },
-
+                PublicationListScreen(
                     onPublicationClick = { publication ->
                         navController.navigate(
                             MainRoutes.PublicationDetail(publication.id)
                         )
+                    },
+                    onNavigationToPublications={
+                        navController.navigate(MainRoutes.PublicationScreen)
                     }
-
                 )
 
             }
@@ -80,6 +84,14 @@ fun AppNavigation(){
                     pubblicationId = args.publicationId
                 )
 
+            }
+
+            composable<MainRoutes.PasswordScreen>{
+                PasswordScreen()
+            }
+
+            composable<MainRoutes.PublicationScreen> {
+                PublicationScreen()
             }
 
 

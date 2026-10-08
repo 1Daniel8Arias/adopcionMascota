@@ -16,5 +16,11 @@ data object Register: MainRoutes()
     data object PublicationList: MainRoutes()
 @Serializable
 data class PublicationDetail(val publicationId:String) : MainRoutes()
+@Serializable
+data object PasswordScreen: MainRoutes()
+
+    @Serializable
+    data object PublicationScreen: MainRoutes()
+
 }
 

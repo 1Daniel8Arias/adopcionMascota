@@ -82,7 +82,7 @@ fun RegisterScreen(
             }
 
             is RequestResult.Failure -> {
-                snackbarHostState.showSnackbar(result.erroMessage)
+                snackbarHostState.showSnackbar(result.errorMessage)
                 viewModel.resetRegisterResult()
             }
 
