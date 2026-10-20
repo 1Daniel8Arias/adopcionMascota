@@ -30,25 +30,26 @@ fun IconoTextField(
     placeholderText: String,
     icono: ImageVector,
     modifier: Modifier = Modifier,
-    visualTransformation: VisualTransformation = VisualTransformation.None // Valor por defecto: texto normal
+    isError: Boolean = false,
+    mensajeError: String? = null,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
 ) {
     Column(modifier = modifier) {
-        // Título dinámico
         Text(
             text = titulo,
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
-            color = Color(0xFF4A5568),
+            color = if (isError) Color(0xFFDC2626) else Color(0xFF4A5568),
             modifier = Modifier.padding(bottom = 6.dp)
         )
 
-        // Campo de entrada dinámico
         TextField(
             value = value,
             onValueChange = onValueChange,
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
-            visualTransformation = visualTransformation, // Aplica la transformación si se recibe una
+            isError = isError, // Pasa el estado de error al TextField nativo
+            visualTransformation = visualTransformation,
             placeholder = {
                 Text(
                     text = placeholderText,
@@ -56,21 +57,48 @@ fun IconoTextField(
                     fontSize = 14.sp
                 )
             },
+
             leadingIcon = {
                 Icon(
                     imageVector = icono,
                     contentDescription = null,
-                    tint = Color(0xFF4A5568)
+                    tint = if (isError) Color(0xFFDC2626) else Color(0xFF4A5568)
                 )
             },
+            // Dibuja el mensaje de error automáticamente abajo
+            supportingText = if (isError && !mensajeError.isNullOrEmpty()) {
+                {
+                    Text(
+                        text = mensajeError,
+                        color = Color(0xFFDC2626),
+                        fontSize = 12.sp
+                    )
+                }
+            } else null,
             shape = RoundedCornerShape(16.dp),
+
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = Color(0xFFF0F4FE),
                 unfocusedContainerColor = Color(0xFFF0F4FE),
+                errorContainerColor = Color(0xFFFFF2F2), // Fondo rojizo suave cuando falla
                 focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent
+                unfocusedIndicatorColor = Color.Transparent,
+                errorIndicatorColor = Color(0xFFDC2626) // Indicador/borde inferior rojo
             )
         )
+
+        // Mostrar mensaje de error
+        if (isError && mensajeError != null) {
+            Text(
+                text = mensajeError,
+                color = Color(0xFFB3261E),
+                fontSize = 12.sp,
+                modifier = Modifier.padding(
+                    start = 8.dp,
+                    top = 4.dp
+                )
+            )
+        }
     }
 }
 
