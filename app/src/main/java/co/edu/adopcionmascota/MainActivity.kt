@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import co.edu.adopcionmascota.core.theme.AdopcionMascotaTheme
+import co.edu.adopcionmascota.features.profile.ProfileScreen
 import co.edu.adopcionmascota.navigation.AppNavigation
 
 import co.edu.adopcionmascota.features.publication.PublicationScreen

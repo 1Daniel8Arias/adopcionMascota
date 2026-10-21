@@ -54,7 +54,8 @@ import co.edu.adopcionmascota.core.util.RequestResult
 fun LoginScreen(
     viewModel: LoginViewModel = viewModel(),
     onNavigationPublicLists: () -> Unit,
-    onNavigationPasswordScreen: ()-> Unit
+    onNavigationPasswordScreen: ()-> Unit,
+    onNavigationRegister: () -> Unit
 ) {
 
     val snackbarHostState = remember { SnackbarHostState() }
@@ -175,7 +176,7 @@ fun LoginScreen(
                 )
 
                 TextButton(
-                    onClick = {}
+                    onClick = onNavigationRegister
                 ) {
                     Text(
                         text = "Registrarme",

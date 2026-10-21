@@ -30,7 +30,7 @@ fun AppNavigation(){
              composable<MainRoutes.Home> {
                  HomeScreen(
                      onNavigateToLogin = {
-                         navController.navigate(MainRoutes.PublicationList)
+                         navController.navigate(MainRoutes.Login)
                      },
                      onNavigateToRegister = {
                          navController.navigate(MainRoutes.Register)
@@ -40,20 +40,17 @@ fun AppNavigation(){
             composable<MainRoutes.Login> {
                 LoginScreen(
                     onNavigationPublicLists = {
-                        navController.navigate(MainRoutes.PublicationList){
-                            popUpTo(MainRoutes.Home){
-                                inclusive=true
-                            }
+                        // Solo aquí (login exitoso) se limpia la pila
+                        navController.navigate(MainRoutes.PublicationList) {
+                            popUpTo(MainRoutes.Home) { inclusive = true }
                         }
                     },
                     onNavigationPasswordScreen = {
-                        navController.navigate(MainRoutes.PasswordScreen){
-                            popUpTo(MainRoutes.Home){
-                                inclusive=true
-                            }
-                        }
+                        navController.navigate(MainRoutes.PasswordScreen)   // sin popUpTo
+                    },
+                    onNavigationRegister = {
+                        navController.navigate(MainRoutes.Register)
                     }
-
                 )
             }
 
