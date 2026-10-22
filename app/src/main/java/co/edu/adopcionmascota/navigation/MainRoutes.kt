@@ -37,5 +37,38 @@ data object PasswordScreen: MainRoutes()
     @Serializable
     data object AccountDeleted: MainRoutes()
 
+    @Serializable
+    data class CreateComment(val publicationId: String): MainRoutes()
+
+    @Serializable
+    data object Notifications: MainRoutes()
+
+    @Serializable
+    data class NotificationDetail(val notificationId: String): MainRoutes()
+
+    @Serializable
+    data object PublicationMap: MainRoutes()
+
+    @Serializable
+    data object AdvancedFilters: MainRoutes()
+
+    @Serializable
+    data object MyPublications: MainRoutes()
+
+    @Serializable
+    data class EditPublication(val publicationId: String): MainRoutes()
+
+    @Serializable
+    data class DeletePublication(val publicationId: String): MainRoutes()
+
+    @Serializable
+    data class RegisterSuccess(val name: String): MainRoutes()
+
+    @Serializable
+    data object Badges: MainRoutes()
+
+    @Serializable
+    data object Reputation: MainRoutes()
+
 }
 

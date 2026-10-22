@@ -61,6 +61,8 @@ import co.edu.adopcionmascota.features.register.component.TermsCheckbox
 @Composable
 fun RegisterScreen(
     onNavigateToBack: () -> Unit,
+    onRegisterSuccess: (String) -> Unit = {},     // Pantalla de confirmación con el nombre del usuario
+    onNavigateToLogin: () -> Unit = {},           // "¿Ya tienes una cuenta? Iniciar Sesión"
     viewModel: RegisterViewModel = viewModel()
 ) {
 
@@ -77,8 +79,10 @@ fun RegisterScreen(
         when (val result = state.registerResult) {
 
             is RequestResult.Success -> {
-                snackbarHostState.showSnackbar(result.message)
+                // Como en el Figma, el registro exitoso lleva a la confirmación
+                val name = state.name.trim()
                 viewModel.resetRegisterResult()
+                onRegisterSuccess(name)
             }
 
             is RequestResult.Failure -> {
@@ -118,7 +122,8 @@ fun RegisterScreen(
             // ---------------------------------------------------------
 
             RegisterTopBar(
-                onNavigateToBack = viewModel::onBackClick
+                onNavigateToBack = viewModel::onBackClick,
+                onHelpClick = viewModel::onHelpClick
             )
 
             Column(
@@ -387,7 +392,7 @@ fun RegisterScreen(
                         )
 
                         TextButton(
-                            onClick = { }
+                            onClick = onNavigateToLogin
                         ) {
                             Text(
                                 text = "Iniciar Sesión",
@@ -416,6 +421,17 @@ fun RegisterScreen(
                 },
                 onDismiss = viewModel::onDismissExitDialog,
                 confirmText = "Salir"
+            )
+        }
+
+        if (state.showHelpDialog) {
+            ConfirmAlertDialog(
+                title = "Ayuda con el registro",
+                message = "Completa todos los campos obligatorios, usa una contraseña segura y acepta los términos. Tu cuenta empieza en el Nivel 1: Amigo Animal.",
+                onConfirm = viewModel::onDismissHelpDialog,
+                onDismiss = viewModel::onDismissHelpDialog,
+                confirmText = "Entendido",
+                dismissText = "Cerrar"
             )
         }
 

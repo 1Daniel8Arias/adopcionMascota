@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.filled.Pets
@@ -50,6 +51,8 @@ import co.edu.adopcionmascota.core.util.RequestResult
 
 @Composable
 fun PasswordScreen(
+    onNavigateToLogin: () -> Unit = {},       // Flecha y "Volver a Iniciar Sesión"
+    onNavigateToRegister: () -> Unit = {},    // "Regístrate aquí"
     viewModel: PasswordViewModel = viewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -62,6 +65,15 @@ fun PasswordScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+
+        // Barra superior con volver al inicio de sesión
+        IconButton(onClick = onNavigateToLogin) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                contentDescription = "Volver a Iniciar Sesión",
+                tint = Color(0xFF0F172A)
+            )
+        }
 
         Box(
             modifier = Modifier
@@ -232,7 +244,7 @@ fun PasswordScreen(
         )
 
         Button(
-            onClick = { },
+            onClick = onNavigateToLogin,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp),
@@ -273,14 +285,13 @@ fun PasswordScreen(
                 color = Color(0xFF64748B)
             )
             TextButton(
-                onClick = {}
+                onClick = onNavigateToRegister
             ) {
                 Text(
                     text = "Regístrate aquí",
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF3B52E1),
-                    modifier = Modifier.clickable { }
+                    color = Color(0xFF3B52E1)
                 )
             }
         }

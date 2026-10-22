@@ -1,4 +1,4 @@
-package co.edu.adopcionmascota.features.profile.data
+package co.edu.adopcionmascota.features.profile
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

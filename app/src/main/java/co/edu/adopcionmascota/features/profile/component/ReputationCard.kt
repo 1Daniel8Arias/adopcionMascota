@@ -44,8 +44,12 @@ import co.edu.adopcionmascota.features.profile.LevelUi
 import co.edu.adopcionmascota.features.profile.ProfileUiState
 
 @Composable
-fun ReputationCard(state: ProfileUiState) {
+fun ReputationCard(
+    state: ProfileUiState,
+    onClick: () -> Unit = {}      // Abre "Sistema de Reputación y Niveles"
+) {
     Surface(
+        onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
         color = LightBlueBg

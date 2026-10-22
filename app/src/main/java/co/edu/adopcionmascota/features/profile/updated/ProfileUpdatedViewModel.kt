@@ -1,7 +1,7 @@
 package co.edu.adopcionmascota.features.profile.updated
 
 import androidx.lifecycle.ViewModel
-import co.edu.adopcionmascota.features.profile.data.UserProfileStore
+import co.edu.adopcionmascota.features.profile.UserProfileStore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

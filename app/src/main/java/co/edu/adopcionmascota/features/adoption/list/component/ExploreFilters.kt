@@ -17,7 +17,6 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.AddLocationAlt
 import androidx.compose.material.icons.filled.Details
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.VolunteerActivism
 import androidx.compose.material3.Icon
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -54,7 +53,7 @@ fun ExploreFilters(
             },
             leadingIcon = {
                 Icon(
-                    imageVector = Icons.Default.List,
+                    imageVector = Icons.AutoMirrored.Filled.List,
                     contentDescription = "Todas"
                 )
             }

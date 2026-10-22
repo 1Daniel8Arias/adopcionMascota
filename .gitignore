@@ -31,3 +31,7 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+# Registros de cierres inesperados de la JVM
+hs_err_pid*.log
+replay_pid*.log

@@ -6,7 +6,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Map
 import androidx.compose.material.icons.outlined.NearMe
-import androidx.compose.material.icons.outlined.ViewList
+import androidx.compose.material.icons.automirrored.outlined.ViewList
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -24,7 +24,9 @@ enum class ExploreViewMode {
 @Composable
 fun ExploreViewSelector(
     selectedMode: ExploreViewMode,
-    onModeSelected: (ExploreViewMode) -> Unit
+    onModeSelected: (ExploreViewMode) -> Unit,
+    distanceLabel: String = "Distancia",
+    onDistanceClick: () -> Unit = {}
 ) {
 
     Row(
@@ -44,7 +46,7 @@ fun ExploreViewSelector(
 
             ViewOption(
                 selected = selectedMode == ExploreViewMode.LIST,
-                icon = Icons.Outlined.ViewList,
+                icon = Icons.AutoMirrored.Outlined.ViewList,
                 text = "Lista",
                 onClick = {
                     onModeSelected(ExploreViewMode.LIST)
@@ -61,7 +63,9 @@ fun ExploreViewSelector(
             )
         }
 
+        // Etiqueta de distancia: abre los filtros avanzados para cambiar el radio
         Surface(
+            onClick = onDistanceClick,
             shape = RoundedCornerShape(20.dp)
         ) {
 
@@ -82,7 +86,7 @@ fun ExploreViewSelector(
                 Spacer(modifier = Modifier.width(4.dp))
 
                 Text(
-                    text = "< 5 km",
+                    text = distanceLabel,
                     fontSize = 12.sp
                 )
             }

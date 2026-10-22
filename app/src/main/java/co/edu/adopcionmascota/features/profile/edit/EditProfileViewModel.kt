@@ -4,8 +4,8 @@ import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import co.edu.adopcionmascota.core.util.RequestResult
-import co.edu.adopcionmascota.features.profile.data.UserProfile
-import co.edu.adopcionmascota.features.profile.data.UserProfileStore
+import co.edu.adopcionmascota.features.profile.UserProfile
+import co.edu.adopcionmascota.features.profile.UserProfileStore
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

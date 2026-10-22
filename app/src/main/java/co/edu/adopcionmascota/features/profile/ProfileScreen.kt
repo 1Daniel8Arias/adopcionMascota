@@ -41,6 +41,7 @@ fun ProfileScreen(
     onViewAllBadges: () -> Unit = {},
     onShareProfile: () -> Unit = {},
     onOpenSettings: () -> Unit = {},
+    onViewReputation: () -> Unit = {},    // Tarjeta de reputación → "Sistema de Reputación"
     onDeleteAccount: () -> Unit = {},     // Abre la confirmación "Eliminar cuenta"
     viewModel: ProfileViewModel = viewModel()
 ) {
@@ -96,7 +97,7 @@ fun ProfileScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                ReputationCard(state = state)
+                ReputationCard(state = state, onClick = onViewReputation)
 
                 Spacer(modifier = Modifier.height(24.dp))
 

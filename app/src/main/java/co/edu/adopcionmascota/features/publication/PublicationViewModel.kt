@@ -1,6 +1,7 @@
 package co.edu.adopcionmascota.features.publication
 
 
+import co.edu.adopcionmascota.R
 import co.edu.adopcionmascota.core.util.RequestResult
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -27,7 +28,8 @@ data class PublicationUiState(
     val cityRegion: String = "Bogotá D.C., Cundinamarca, Colombia",
     val latitude: Double = 4.6956,
     val longitude: Double = -74.0331,
-    val publicationResult: RequestResult? = null
+    val publicationResult: RequestResult? = null,
+    val infoMessage: String? = null
 ) {
     val isFormValid: Boolean
         get() = title.isNotBlank() &&
@@ -90,6 +92,27 @@ class PublicationViewModel : ViewModel() {
             _uiState.update { it.copy(publicationResult = RequestResult.Loading) }
             try {
                 delay(2000) // Simulación de petición de red
+                // La nueva publicación aparece en "Mis Publicaciones" como "En Revisión Ética"
+                val state = _uiState.value
+                MyPublicationsStore.add(
+                    MyPublication(
+                        id = "m${System.currentTimeMillis()}",
+                        feedId = null,
+                        name = state.title.trim(),
+                        category = state.category,
+                        species = state.species,
+                        breed = state.breed.trim(),
+                        size = state.size,
+                        description = state.history.trim(),
+                        location = state.address,
+                        image = R.drawable.icono,
+                        status = MyPublicationStatus.IN_REVIEW,
+                        isVaccinated = state.isVaccinated,
+                        isDewormed = state.isDewormed,
+                        isSterilized = state.isSterilized,
+                        hasMicrochip = state.hasMicrochip
+                    )
+                )
                 _uiState.update { it.copy(publicationResult = RequestResult.Success("")) }
             } catch (e: Exception) {
                 _uiState.update {
@@ -97,6 +120,15 @@ class PublicationViewModel : ViewModel() {
                 }
             }
         }
+    }
+
+    // "Guardar borrador": el formulario se conserva mientras la pantalla siga abierta
+    fun onSaveDraft() {
+        _uiState.update { it.copy(infoMessage = "Borrador guardado") }
+    }
+
+    fun resetInfoMessage() {
+        _uiState.update { it.copy(infoMessage = null) }
     }
 
     fun resetPublicationResult() {

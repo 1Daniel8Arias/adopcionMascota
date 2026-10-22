@@ -14,7 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowRightAlt
+import androidx.compose.material.icons.automirrored.outlined.ArrowRightAlt
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.VolunteerActivism
@@ -238,7 +238,7 @@ fun ButtonLogin(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Icon(
-                    imageVector = Icons.Outlined.ArrowRightAlt,
+                    imageVector = Icons.AutoMirrored.Outlined.ArrowRightAlt,
                     contentDescription = null
                 )
             }
