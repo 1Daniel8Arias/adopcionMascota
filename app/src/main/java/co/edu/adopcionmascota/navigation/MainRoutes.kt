@@ -22,5 +22,20 @@ data object PasswordScreen: MainRoutes()
     @Serializable
     data object PublicationScreen: MainRoutes()
 
+    @Serializable
+    data object Profile: MainRoutes()
+
+    @Serializable
+    data object EditProfile: MainRoutes()
+
+    @Serializable
+    data object ProfileUpdated: MainRoutes()
+
+    @Serializable
+    data object DeleteAccount: MainRoutes()
+
+    @Serializable
+    data object AccountDeleted: MainRoutes()
+
 }
 

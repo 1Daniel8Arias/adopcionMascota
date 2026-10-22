@@ -13,7 +13,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -22,9 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import co.edu.adopcionmascota.core.component.AppBottomBar
 import co.edu.adopcionmascota.core.component.AppDestination
-import co.edu.adopcionmascota.core.component.ConfirmAlertDialog
 import co.edu.adopcionmascota.core.theme.Background
-import co.edu.adopcionmascota.core.util.RequestResult
 import co.edu.adopcionmascota.features.profile.component.AccountSection
 import co.edu.adopcionmascota.features.profile.component.BadgesSection
 import co.edu.adopcionmascota.features.profile.component.ProfileHeaderCard
@@ -44,30 +41,11 @@ fun ProfileScreen(
     onViewAllBadges: () -> Unit = {},
     onShareProfile: () -> Unit = {},
     onOpenSettings: () -> Unit = {},
-    onAccountDeleted: () -> Unit = {},
+    onDeleteAccount: () -> Unit = {},     // Abre la confirmación "Eliminar cuenta"
     viewModel: ProfileViewModel = viewModel()
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val state by viewModel.uiState.collectAsState()
-
-    // Mensajes de la eliminación de cuenta.
-    // El Snackbar se muestra primero y luego se navega (misma rama, como en el login).
-    LaunchedEffect(state.deleteResult) {
-        when (val result = state.deleteResult) {
-            is RequestResult.Success -> {
-                snackbarHostState.showSnackbar(result.message)
-                viewModel.resetDeleteResult()
-                onAccountDeleted()
-            }
-
-            is RequestResult.Failure -> {
-                snackbarHostState.showSnackbar(result.errorMessage)
-                viewModel.resetDeleteResult()
-            }
-
-            is RequestResult.Loading, null -> Unit
-        }
-    }
 
     Scaffold(
         modifier = Modifier.statusBarsPadding(),
@@ -135,22 +113,11 @@ fun ProfileScreen(
                     onMyPublicationsClick = onMyPublications,
                     onEditPersonalDataClick = onEditPersonalData,
                     onAlertPreferencesClick = onAlertPreferences,
-                    onDeleteAccountClick = viewModel::onDeleteAccountClick
+                    onDeleteAccountClick = onDeleteAccount
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
             }
-        }
-
-        // Diálogo de confirmación para eliminar la cuenta
-        if (state.showDeleteDialog) {
-            ConfirmAlertDialog(
-                title = "¿Eliminar tu cuenta?",
-                message = "Se borrarán tu perfil, tus publicaciones y tus logros. Esta acción no se puede deshacer.",
-                onConfirm = viewModel::onConfirmDeleteAccount,
-                onDismiss = viewModel::onDismissDeleteDialog,
-                confirmText = "Eliminar"
-            )
         }
     }
 }

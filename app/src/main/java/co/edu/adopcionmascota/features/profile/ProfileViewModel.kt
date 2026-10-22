@@ -2,8 +2,7 @@ package co.edu.adopcionmascota.features.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import co.edu.adopcionmascota.core.util.RequestResult
-import kotlinx.coroutines.delay
+import co.edu.adopcionmascota.features.profile.data.UserProfileStore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -65,11 +64,7 @@ data class ProfileUiState(
     val recentRewards: List<String> = emptyList(),
 
     // Insignias
-    val badges: List<BadgeUi> = emptyList(),
-
-    // Eliminar cuenta
-    val showDeleteDialog: Boolean = false,
-    val deleteResult: RequestResult? = null
+    val badges: List<BadgeUi> = emptyList()
 ) {
     val levelName: String
         get() = LEVEL_NAMES.getOrElse(currentLevel - 1) { LEVEL_NAMES.first() }
@@ -115,6 +110,25 @@ class ProfileViewModel : ViewModel() {
 
     init {
         loadProfile()
+        observeUserData()
+    }
+
+    // Los datos personales salen del almacén compartido, así el perfil
+    // muestra los cambios hechos en "Editar Perfil"
+    private fun observeUserData() {
+        viewModelScope.launch {
+            UserProfileStore.profile.collect { profile ->
+                _uiState.update {
+                    it.copy(
+                        name = profile.name,
+                        email = profile.email,
+                        location = "${profile.localityName}, Bogotá D.C.",
+                        photoUrl = profile.photoUrl,
+                        isActiveVolunteer = profile.isTemporaryHome || profile.lostPetAlerts
+                    )
+                }
+            }
+        }
     }
 
     // Más adelante esta función consultará el repositorio / Firebase
@@ -168,37 +182,5 @@ class ProfileViewModel : ViewModel() {
                 )
             )
         )
-    }
-
-    // ---------- Eliminar cuenta ----------
-
-    // El usuario presionó "Eliminar mi cuenta"
-    fun onDeleteAccountClick() {
-        _uiState.update { it.copy(showDeleteDialog = true) }
-    }
-
-    // El usuario canceló o cerró el diálogo
-    fun onDismissDeleteDialog() {
-        _uiState.update { it.copy(showDeleteDialog = false) }
-    }
-
-    // El usuario confirmó en el diálogo
-    fun onConfirmDeleteAccount() {
-        _uiState.update { it.copy(showDeleteDialog = false) }
-        deleteAccount()
-    }
-
-    private fun deleteAccount() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(deleteResult = RequestResult.Loading) }
-            delay(1500) // Simula la petición al servidor
-            _uiState.update {
-                it.copy(deleteResult = RequestResult.Success("Cuenta eliminada correctamente"))
-            }
-        }
-    }
-
-    fun resetDeleteResult() {
-        _uiState.update { it.copy(deleteResult = null) }
     }
 }
