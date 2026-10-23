@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import co.edu.adopcionmascota.core.theme.AppSecondaryText
 import coil3.compose.AsyncImage
-import co.edu.adopcionmascota.domain.Publications
+import co.edu.adopcionmascota.domain.Publication
 import co.edu.adopcionmascota.core.component.AppTag
 import co.edu.adopcionmascota.core.theme.*
 import co.edu.adopcionmascota.domain.PetType
@@ -27,7 +27,7 @@ import co.edu.adopcionmascota.domain.PetType
 
 @Composable
 fun PublicationCard(
-    publication: Publications,
+    publication: Publication,
     onActionClick: () -> Unit = {},
     onShareClick: () -> Unit = {}
 
@@ -197,7 +197,7 @@ fun PublicationCard(
     }
 }
 private fun buildDescription(
-    publication: Publications
+    publication: Publication
 ): String {
 
     val parts = mutableListOf<String>()
@@ -219,7 +219,7 @@ private fun buildDescription(
 
 @Composable
 private fun PublicationActionButton(
-    publication: Publications,
+    publication: Publication,
     onClick: () -> Unit
 ) {
 

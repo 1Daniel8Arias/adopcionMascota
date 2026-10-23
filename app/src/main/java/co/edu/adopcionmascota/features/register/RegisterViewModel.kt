@@ -31,6 +31,7 @@ data class RegisterUiState(
     val phone: String = "",
     val acceptTerms: Boolean = false,
     val receiveNotifications: Boolean = false,
+    val showHelpDialog: Boolean = false,
 
 
     ) {
@@ -178,6 +179,14 @@ class RegisterViewModel: ViewModel(){
 
     fun onDismissExitDialog(){
         _uiState.update { it.copy(showExitDialog = false) }
+    }
+
+    fun onHelpClick(){
+        _uiState.update { it.copy(showHelpDialog = true) }
+    }
+
+    fun onDismissHelpDialog(){
+        _uiState.update { it.copy(showHelpDialog = false) }
     }
 
     fun resetRegisterResult(){

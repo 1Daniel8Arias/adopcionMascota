@@ -14,7 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowRightAlt
+import androidx.compose.material.icons.automirrored.outlined.ArrowRightAlt
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.VolunteerActivism
@@ -54,7 +54,8 @@ import co.edu.adopcionmascota.core.util.RequestResult
 fun LoginScreen(
     viewModel: LoginViewModel = viewModel(),
     onNavigationPublicLists: () -> Unit,
-    onNavigationPasswordScreen: ()-> Unit
+    onNavigationPasswordScreen: ()-> Unit,
+    onNavigationRegister: () -> Unit
 ) {
 
     val snackbarHostState = remember { SnackbarHostState() }
@@ -175,7 +176,7 @@ fun LoginScreen(
                 )
 
                 TextButton(
-                    onClick = {}
+                    onClick = onNavigationRegister
                 ) {
                     Text(
                         text = "Registrarme",
@@ -237,7 +238,7 @@ fun ButtonLogin(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Icon(
-                    imageVector = Icons.Outlined.ArrowRightAlt,
+                    imageVector = Icons.AutoMirrored.Outlined.ArrowRightAlt,
                     contentDescription = null
                 )
             }

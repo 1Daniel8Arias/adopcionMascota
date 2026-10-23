@@ -1,9 +1,7 @@
 package co.edu.adopcionmascota.domain
 
-import android.health.connect.datatypes.ExerciseRoute
-import java.time.LocalDate
 
-data class  Publications(
+data class Publication(
     val id: String,
     val name: String,
     val description: String,

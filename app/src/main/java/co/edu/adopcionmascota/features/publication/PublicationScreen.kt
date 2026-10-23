@@ -36,7 +36,7 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Pets
 import androidx.compose.material.icons.outlined.Place
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.Send
+import androidx.compose.material.icons.automirrored.outlined.Send
 import androidx.compose.material.icons.outlined.VerifiedUser
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -71,30 +71,38 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import co.edu.adopcionmascota.core.theme.*
 import co.edu.adopcionmascota.core.util.RequestResult
+import co.edu.adopcionmascota.core.component.AppBottomBar
+import co.edu.adopcionmascota.core.component.AppDestination
 
 @Preview(showBackground = true, heightDp = 1620)
 @Composable
 fun PublicationScreen(
     viewModel: PublicationViewModel = viewModel(),
     onNavigateBack: () -> Unit = {},
-    onSaveDraft: () -> Unit = {},
-    onPublishSuccess: () -> Unit = {}
+    onPublishSuccess: () -> Unit = {},
+    onNavigationClick: (AppDestination) -> Unit = {}     // Barra inferior compartida
 ) {
     val state by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(state.publicationResult) {
-        if (state.publicationResult is RequestResult.Success) {
-            snackbarHostState.showSnackbar("Publicación confirmada")
-            onPublishSuccess()
-            viewModel.resetPublicationResult()
+    // El éxito se muestra con la hoja "¡Publicación Creada con Éxito!" (ver final del Scaffold)
+    LaunchedEffect(state.infoMessage) {
+        state.infoMessage?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.resetInfoMessage()
         }
     }
 
+    Box(modifier = Modifier.fillMaxSize()) {
     Scaffold(
         // 3. Vincular el hostState al Scaffold
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        bottomBar = { PublicationBottomNavigationBar() },
+        bottomBar = {
+            AppBottomBar(
+                currentDestination = AppDestination.PUBLISH,
+                onDestinationSelected = onNavigationClick
+            )
+        },
         containerColor = Background
     ) { paddingValues ->
         Column(
@@ -107,7 +115,7 @@ fun PublicationScreen(
         ) {
             PublicationHeaderSection(
                 onNavigateBack = onNavigateBack,
-                onSaveDraft = onSaveDraft
+                onSaveDraft = viewModel::onSaveDraft
             )
 
             EthicalCommitmentCard()
@@ -163,6 +171,20 @@ fun PublicationScreen(
                 onPublish = { viewModel.publishPet() }
             )
         }
+    }
+
+    if (state.publicationResult is RequestResult.Success) {
+        PublicationSuccessSheet(
+            title = "¡Publicación Creada con Éxito!",
+            message = "Tu reporte ha entrado a revisión ética comunitaria.",
+            detail = "Los moderadores voluntarios revisarán las vacunas y ubicación en aproximadamente 15 a 30 minutos para garantizar el bienestar animal antes de mostrarlo en el feed principal.",
+            primaryText = "Ver en 'Mis Publicaciones'",
+            onPrimaryClick = {
+                viewModel.resetPublicationResult()
+                onPublishSuccess()
+            }
+        )
+    }
     }
 }
 
@@ -759,7 +781,7 @@ fun PublishFooterSection(
             } else {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        imageVector = Icons.Outlined.Send,
+                        imageVector = Icons.AutoMirrored.Outlined.Send,
                         contentDescription = null,
                         modifier = Modifier.size(16.dp)
                     )
@@ -784,36 +806,6 @@ fun PublishFooterSection(
             color = SecondaryText,
             textAlign = TextAlign.Center,
             lineHeight = 14.sp
-        )
-    }
-}
-
-@Composable
-fun PublicationBottomNavigationBar() {
-    NavigationBar(containerColor = LightBlueBg) {
-        NavigationBarItem(
-            selected = false,
-            onClick = {},
-            icon = { Icon(Icons.Outlined.Explore, contentDescription = null) },
-            label = { Text("Explorar", fontSize = 10.sp) }
-        )
-        NavigationBarItem(
-            selected = true,
-            onClick = {},
-            icon = { Icon(Icons.Outlined.AddCircle, contentDescription = null) },
-            label = { Text("Publicar", fontSize = 10.sp) }
-        )
-        NavigationBarItem(
-            selected = false,
-            onClick = {},
-            icon = { Icon(Icons.Outlined.Notifications, contentDescription = null) },
-            label = { Text("Alertas", fontSize = 10.sp) }
-        )
-        NavigationBarItem(
-            selected = false,
-            onClick = {},
-            icon = { Icon(Icons.Outlined.Person, contentDescription = null) },
-            label = { Text("Perfil", fontSize = 10.sp) }
         )
     }
 }

@@ -86,19 +86,6 @@ fun IconoTextField(
                 errorIndicatorColor = Color(0xFFDC2626) // Indicador/borde inferior rojo
             )
         )
-
-        // Mostrar mensaje de error
-        if (isError && mensajeError != null) {
-            Text(
-                text = mensajeError,
-                color = Color(0xFFB3261E),
-                fontSize = 12.sp,
-                modifier = Modifier.padding(
-                    start = 8.dp,
-                    top = 4.dp
-                )
-            )
-        }
     }
 }
 

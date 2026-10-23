@@ -10,15 +10,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import android.content.Intent
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import co.edu.adopcionmascota.domain.PetType
-import co.edu.adopcionmascota.domain.Publications
-import co.edu.adopcionmascota.features.adoption.list.component.ExploreFilter
+import co.edu.adopcionmascota.domain.Publication
 import co.edu.adopcionmascota.features.adoption.list.component.ExploreFilters
 import co.edu.adopcionmascota.features.adoption.list.component.ExploreViewMode
 import co.edu.adopcionmascota.features.adoption.list.component.ExploreViewSelector
@@ -30,14 +27,23 @@ import co.edu.adopcionmascota.core.component.AppFloatingButton
 import co.edu.adopcionmascota.core.component.AppSearchBar
 import co.edu.adopcionmascota.core.component.AppTopBar
 import androidx.compose.runtime.collectAsState
+import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.Alignment
+import co.edu.adopcionmascota.core.component.AppTag
 
 @Composable
 fun PublicationListScreen(
     viewModel: PublicationListViewModel = viewModel(),
-    onPublicationClick: (Publications) -> Unit = {},
+    onPublicationClick: (Publication) -> Unit = {},
     onPublishClick: () -> Unit = {},
     onNavigationClick: (AppDestination) -> Unit = {},
-    onNavigationToPublications:()-> Unit
+    onNavigationToPublications:()-> Unit,
+    onMapClick: () -> Unit = {},          // Botón "Mapa" → Vista Mapa
+    onFiltersClick: () -> Unit = {},      // "Filtros avanzados" → Filtros y Búsqueda
+    onNotificationClick: () -> Unit = {}, // Campana de la barra superior
+    onProfileClick: () -> Unit = {}       // Avatar de la barra superior
 
 ) {
 
@@ -45,69 +51,8 @@ fun PublicationListScreen(
     // ESTADO DEL VIEWMODEL
     // =====================================================
 
-    val publications by viewModel.publications.collectAsState()
-
-    // =====================================================
-    // ESTADOS DE LA INTERFAZ
-    // =====================================================
-
-    var searchText by remember {
-        mutableStateOf("")
-    }
-
-    var selectedFilter by remember {
-        mutableStateOf(ExploreFilter.TODAS)
-    }
-
-    var selectedView by remember {
-        mutableStateOf(ExploreViewMode.LIST)
-    }
-
-    // =====================================================
-    // FILTRAR PUBLICACIONES
-    // =====================================================
-
-    val filteredPublications = publications.filter { publication ->
-
-        // -----------------------------
-        // BUSQUEDA
-        // -----------------------------
-
-        val matchesSearch =
-            searchText.isBlank() ||
-                    publication.name.contains(
-                        searchText,
-                        ignoreCase = true
-                    ) ||
-                    publication.description.contains(
-                        searchText,
-                        ignoreCase = true
-                    ) ||
-                    publication.location.contains(
-                        searchText,
-                        ignoreCase = true
-                    )
-
-        // -----------------------------
-        // FILTRO
-        // -----------------------------
-
-        val matchesFilter = when (selectedFilter) {
-
-            ExploreFilter.TODAS -> true
-
-            ExploreFilter.ADOPCION ->
-                publication.type == PetType.ADOPCION
-
-            ExploreFilter.PERDIDO ->
-                publication.type == PetType.PERDIDO
-
-            ExploreFilter.ENCONTRADO ->
-                publication.type == PetType.ENCONTRADO
-        }
-
-        matchesSearch && matchesFilter
-    }
+    val state by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
 
     // =====================================================
     // ESTRUCTURA PRINCIPAL
@@ -119,7 +64,9 @@ fun PublicationListScreen(
 
             AppTopBar(
                 title = "Patitas Con...",
-                location = "Armenia, Quindío"
+                location = "Armenia, Quindío",
+                onNotificationClick = onNotificationClick,
+                onProfileClick = onProfileClick
             )
         },
 
@@ -165,20 +112,27 @@ fun PublicationListScreen(
             item {
 
                 AppSearchBar(
-                    value = searchText,
+                    value = state.searchText,
 
-                    onValueChange = {
-                        searchText = it
-                    },
+                    onValueChange = viewModel::onSearchChange,
 
                     placeholder =
                         "Buscar por nombre, raza, zona...",
 
-                    onFilterClick = {
-                        // Aquí posteriormente podemos
-                        // abrir filtros avanzados.
-                    }
+                    onFilterClick = onFiltersClick
                 )
+            }
+
+            // Aviso de filtros avanzados aplicados
+            if (state.advancedFilter.isActive) {
+                item {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        AppTag(text = "Filtros avanzados activos (${state.advancedFilter.activeCount})")
+                        TextButton(onClick = viewModel::onClearAdvancedFilters) {
+                            Text("Limpiar")
+                        }
+                    }
+                }
             }
 
             // =================================================
@@ -189,11 +143,16 @@ fun PublicationListScreen(
 
                 ExploreViewSelector(
 
-                    selectedMode = selectedView,
+                    // El feed siempre está en modo lista; "Mapa" abre la Vista Mapa
+                    selectedMode = ExploreViewMode.LIST,
 
                     onModeSelected = {
-                        selectedView = it
-                    }
+                        if (it == ExploreViewMode.MAP) onMapClick()
+                    },
+
+                    // La etiqueta de distancia abre los filtros avanzados
+                    distanceLabel = if (state.advancedFilter.maxDistanceKm < 20) "< ${state.advancedFilter.maxDistanceKm} km" else "Distancia",
+                    onDistanceClick = onFiltersClick
                 )
             }
 
@@ -205,11 +164,9 @@ fun PublicationListScreen(
 
                 ExploreFilters(
 
-                    selectedFilter = selectedFilter,
+                    selectedFilter = state.selectedFilter,
 
-                    onFilterSelected = {
-                        selectedFilter = it
-                    }
+                    onFilterSelected = viewModel::onFilterSelected
                 )
             }
 
@@ -218,7 +175,7 @@ fun PublicationListScreen(
             // =================================================
 
                 items(
-                    items = filteredPublications,
+                    items = state.visiblePublications,
                     key = {
                         it.id
                     }
@@ -233,7 +190,14 @@ fun PublicationListScreen(
                         },
 
                         onShareClick = {
-                            // Compartir publicación
+                            val intent = Intent(Intent.ACTION_SEND).apply {
+                                type = "text/plain"
+                                putExtra(
+                                    Intent.EXTRA_TEXT,
+                                    "${publication.name} en ${publication.location}: ${publication.description} · Patitas Conectadas"
+                                )
+                            }
+                            context.startActivity(Intent.createChooser(intent, "Compartir publicación"))
                         }
                     )
                 }

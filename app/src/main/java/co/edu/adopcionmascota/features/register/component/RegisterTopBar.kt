@@ -16,7 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.HelpOutline
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -33,7 +33,8 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun RegisterTopBar(
-    onNavigateToBack: () -> Unit
+    onNavigateToBack: () -> Unit,
+    onHelpClick: () -> Unit = {}
 ) {
     Row(
         modifier = Modifier
@@ -91,10 +92,10 @@ fun RegisterTopBar(
         }
 
         IconButton(
-            onClick = {}
+            onClick = onHelpClick
         ) {
             Icon(
-                imageVector = Icons.Default.HelpOutline,
+                imageVector = Icons.AutoMirrored.Filled.HelpOutline,
                 contentDescription = "Ayuda"
             )
         }
