@@ -69,12 +69,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+
 import co.edu.adopcionmascota.core.component.AppBottomBar
 import co.edu.adopcionmascota.core.component.AppDestination
 import co.edu.adopcionmascota.domain.model.UserRole
-import co.edu.adopcionmascota.features.moderator.ModeratorProfileViewModel
-import kotlin.compareTo
+
 
 private val ModeratorBlue = androidx.compose.ui.graphics.Color(0xFF4654F5)
 private val ModeratorDark = androidx.compose.ui.graphics.Color(0xFF09243A)
@@ -111,20 +111,54 @@ fun ModeratorScreen(
     onOpenShelters: () -> Unit = {},
     onLogout: () -> Unit = {},
     onNotifications: () -> Unit = {},
-    profileViewModel : ModeratorProfileViewModel = hiltViewModel()
 ) {
+
+    val profileViewModel: ModeratorProfileViewModel = hiltViewModel()
     val state by profileViewModel.uiState.collectAsState()
 
-    val scope = rememberCoroutineScope()
-    var showDeleteDialog by remember { mutableStateOf(false) }
-
-    val user =state.user ?: return
+    val user = state.user ?: return
     val isAdmin = user.role == UserRole.ADMIN
 
-    val levelIndex = levels.indexOfLast { state.poinst >= it.minPoints }
+    val levelIndex = levels.indexOfLast {
+        state.poinst >= it.minPoints
+    }
     val level = levels[levelIndex]
 
+    ModeratorScreenContent(
+        name = user.name,
+        email = user.email,
+        roleLabel = if (isAdmin) "Moderador" else level.name,
+        roleIcon = if (isAdmin) Icons.Filled.Gavel else level.icon,
+        isAdmin = isAdmin,
+        onNavigationClick = onNavigationClick,
+        onEditCredentials = onEditCredentials,
+        onEthicalSettings = onEthicalSettings,
+        onViewHistory = onViewHistory,
+        onOpenManual = onOpenManual,
+        onOpenTemplates = onOpenTemplates,
+        onOpenShelters = onOpenShelters,
+        onLogout = onLogout,
+        onNotifications = onNotifications
+    )
+}
 
+@Composable
+private fun ModeratorScreenContent(
+    name: String,
+    email: String,
+    roleLabel: String,
+    roleIcon: ImageVector,
+    isAdmin: Boolean,
+    onNavigationClick: (AppDestination) -> Unit = {},
+    onEditCredentials: () -> Unit = {},
+    onEthicalSettings: () -> Unit = {},
+    onViewHistory: () -> Unit = {},
+    onOpenManual: () -> Unit = {},
+    onOpenTemplates: () -> Unit = {},
+    onOpenShelters: () -> Unit = {},
+    onLogout: () -> Unit = {},
+    onNotifications: () -> Unit = {}
+) {
     Scaffold(
         containerColor = ModeratorBackground,
         bottomBar = {
@@ -157,10 +191,10 @@ fun ModeratorScreen(
                 ModeratorProfileCard(
                     onEditCredentials = onEditCredentials,
                     onEthicalSettings = onEthicalSettings,
-                    name = user.name,
-                    email = user.email,
-                    roleLabel = if(isAdmin) "Moderador" else level.name,
-                    roleIcon = if (isAdmin) Icons.Filled.Gavel else level.icon
+                    name = name,
+                    email = email,
+                    roleLabel = if(isAdmin) "Moderador" else roleLabel,
+                    roleIcon = if (isAdmin) Icons.Filled.Gavel else roleIcon
 
                 )
 
@@ -327,6 +361,8 @@ fun ModeratorScreen(
         }
     }
 }
+
+
 
 @Composable
 private fun ModeratorTopBar(
@@ -1226,10 +1262,18 @@ private fun ToolItem(
     }
 }
 
+
+
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 private fun ModeratorScreenPreview() {
     MaterialTheme {
-        ModeratorScreen()
+        ModeratorScreenContent(
+            name = "María González",
+            email = "moderadora@ejemplo.com",
+            roleLabel = "Moderador",
+            roleIcon = Icons.Filled.Gavel,
+            isAdmin = true
+        )
     }
 }

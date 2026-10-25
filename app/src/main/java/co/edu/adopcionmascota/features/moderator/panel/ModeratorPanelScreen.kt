@@ -71,12 +71,14 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import coil3.size.Size
 
-private val ScreenBackground = Color(0xFFF5F7FB)
-private val BrandColor = Color(0xFF6366F1)
-private val DarkBlue = Color(0xFF082340)
-private val MutedText = Color(0xFF6B7280)
-private val CardBackground = Color(0xFFF0F4FA)
+private val ScreenBackground = Color(0xFFF3F7FF)
+private val BrandColor = Color(0xFF536DFE)
+private val DarkBlue = Color(0xFF17365D)
+private val MutedText = Color(0xFF64748B)
 
+// Azul claro para las tarjetas
+private val CardBackground = Color(0xFFEAF2FF)
+private val CardBorder = Color(0xFFD5E4FF)
 private val StatusOptions = listOf(
     "Pendientes (8)",
     "Revisadas (142)",
@@ -472,7 +474,7 @@ fun MetricCard(
     ElevatedCard(
         modifier = modifier.height(125.dp),
         colors = CardDefaults.elevatedCardColors(
-            containerColor = Color.White
+            containerColor = CardBackground
         )
     ) {
         Column(
@@ -531,10 +533,19 @@ fun AdoptionCard(
     onApprove: (ModerationPublicationUi) -> Unit = {}
 ) {
     ElevatedCard(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(
+                width = 1.dp,
+                color = CardBorder,
+                shape = RoundedCornerShape(20.dp)
+            ),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.elevatedCardColors(
-            containerColor = Color.White
+            containerColor = CardBackground
+        ),
+        elevation = CardDefaults.elevatedCardElevation(
+            defaultElevation = 3.dp
         )
     ) {
         Column(
