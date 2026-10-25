@@ -22,7 +22,10 @@ uiText = "1.12.1"
 foundation = "1.12.1"
 firebaseAnnotations = "18.0.0"
 uiGraphics = "1.12.1"
-
+hiltAndroid = "2.60.1"
+hiltNavigationCompose = "1.4.0"
+ksp = "2.3.6" # Desde KSP 2.3.0 la versión ya no va atada a la versión de Kotlin
+dataStore = "1.2.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -54,7 +57,10 @@ androidx-compose-ui-text = { group = "androidx.compose.ui", name = "ui-text", ve
 androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
 firebase-annotations = { group = "com.google.firebase", name = "firebase-annotations", version.ref = "firebaseAnnotations" }
 androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics", version.ref = "uiGraphics" }
-
+androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
+hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
+hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hiltAndroid" }
+data-store = { module = "androidx.datastore:datastore-preferences", version.ref="dataStore" }
 
 
 
@@ -62,4 +68,5 @@ androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics", ve
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-
+hilt-android = { id="com.google.dagger.hilt.android", version.ref="hiltAndroid"}
+devtools-ksp = { id="com.google.devtools.ksp", version.ref="ksp" }

@@ -297,7 +297,7 @@ fun RegisterScreen(
                 PasswordField(
                     value = state.password,
                     onValueChange = viewModel::onPasswordChange,
-                    placeholder = "Mínimo 8 caracteres",
+                    placeholder = "Mínimo 6 caracteres",
                     error = state.passwordError
                 )
 

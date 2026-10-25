@@ -35,11 +35,33 @@ import co.edu.adopcionmascota.features.register.RegisterSuccessScreen
 import co.edu.adopcionmascota.features.profile.BadgesScreen
 import co.edu.adopcionmascota.features.profile.ReputationScreen
 import android.content.Intent
+import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import co.edu.adopcionmascota.domain.model.UserRole
+
 
 @Composable
-fun AppNavigation(){
-    val navController= rememberNavController()
+fun AppNavigation(
+    sessionViewModel: SessionViewModel = hiltViewModel()
+) {
+    val sessionState by sessionViewModel.sessionState.collectAsStateWithLifecycle()
+    val navController = rememberNavController()
+
+    when (val state = sessionState) {
+        is SessionState.Loading -> {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        }
+
+        else -> {}
+    }
 
     // Barra inferior compartida: cada pestaña abre su pantalla sin apilar copias
     val navigateToTab: (AppDestination) -> Unit = { destination ->
@@ -64,26 +86,27 @@ fun AppNavigation(){
     }
 
     Surface(
-        modifier=Modifier.fillMaxSize()
-    ){
+        modifier = Modifier.fillMaxSize()
+    ) {
         NavHost(
-            navController=navController,
-            startDestination=MainRoutes.Home
-        ){
-             composable<MainRoutes.Home> {
-                 HomeScreen(
-                     onNavigateToLogin = {
-                         navController.navigate(MainRoutes.Login)
-                     },
-                     onNavigateToRegister = {
-                         navController.navigate(MainRoutes.Register)
-                     }
-                 )
-             }
+            navController = navController,
+            startDestination = MainRoutes.Home
+        ) {
+            composable<MainRoutes.Home> {
+                HomeScreen(
+                    onNavigateToLogin = {
+                        navController.navigate(MainRoutes.Login)
+                    },
+                    onNavigateToRegister = {
+                        navController.navigate(MainRoutes.Register)
+                    }
+                )
+            }
             composable<MainRoutes.Login> {
                 LoginScreen(
                     onNavigationPublicLists = {
                         // Solo aquí (login exitoso) se limpia la pila
+
                         navController.navigate(MainRoutes.PublicationList) {
                             popUpTo(MainRoutes.Home) { inclusive = true }
                         }
@@ -97,7 +120,7 @@ fun AppNavigation(){
                 )
             }
 
-            composable<MainRoutes.Register>{
+            composable<MainRoutes.Register> {
                 RegisterScreen(
                     onNavigateToBack = {
                         navController.popBackStack()
@@ -135,14 +158,14 @@ fun AppNavigation(){
                     }
                 )
             }
-            composable<MainRoutes.PublicationList>{
+            composable<MainRoutes.PublicationList> {
                 PublicationListScreen(
                     onPublicationClick = { publication ->
                         navController.navigate(
                             MainRoutes.PublicationDetail(publication.id)
                         )
                     },
-                    onNavigationToPublications={
+                    onNavigationToPublications = {
                         navController.navigate(MainRoutes.PublicationScreen)
                     },
                     onMapClick = {
@@ -162,8 +185,8 @@ fun AppNavigation(){
 
             }
 
-            composable<MainRoutes.PublicationDetail>{
-                val args= it.toRoute<MainRoutes.PublicationDetail>()
+            composable<MainRoutes.PublicationDetail> {
+                val args = it.toRoute<MainRoutes.PublicationDetail>()
                 PublicationDetailScreen(
                     publicationId = args.publicationId,
                     onNavigateBack = {
@@ -251,7 +274,7 @@ fun AppNavigation(){
                 )
             }
 
-            composable<MainRoutes.PasswordScreen>{
+            composable<MainRoutes.PasswordScreen> {
                 PasswordScreen(
                     onNavigateToLogin = {
                         navController.popBackStack(MainRoutes.Login, inclusive = false)
@@ -380,7 +403,10 @@ fun AppNavigation(){
                     onShareProfile = {
                         val intent = Intent(Intent.ACTION_SEND).apply {
                             type = "text/plain"
-                            putExtra(Intent.EXTRA_TEXT, "¡Conoce mi perfil de voluntaria en Patitas Conectadas! Nivel 2 · Protector")
+                            putExtra(
+                                Intent.EXTRA_TEXT,
+                                "¡Conoce mi perfil de voluntaria en Patitas Conectadas! Nivel 2 · Protector"
+                            )
                         }
                         context.startActivity(Intent.createChooser(intent, "Compartir perfil"))
                     },
@@ -468,7 +494,6 @@ fun AppNavigation(){
                     }
                 )
             }
-
 
 
         }

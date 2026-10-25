@@ -10,6 +10,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import androidx.lifecycle.viewModelScope
+import co.edu.adopcionmascota.domain.usecase.auth.LoginUserUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
+import jakarta.inject.Inject
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -30,7 +33,10 @@ data class LoginUiState(
                 passwordError == null
 }
 
-class LoginViewModel : ViewModel() {
+@HiltViewModel
+class LoginViewModel @Inject constructor(
+    private val loginUserUseCase: LoginUserUseCase
+)   : ViewModel() {
 
     // Un único flujo con el estado completo de la pantalla
     private val _uiState = MutableStateFlow(LoginUiState())
@@ -77,6 +83,9 @@ class LoginViewModel : ViewModel() {
 
     fun login() {
 
+
+        val currentState= _uiState.value
+        if(!currentState.isFormValid)return
         // Si el formulario no es válido, no se hace nada
         if (!_uiState.value.isFormValid) return
 
@@ -88,15 +97,17 @@ class LoginViewModel : ViewModel() {
 
             delay(1500) // Simula el tiempo que tardaría una consulta real
 
-            val state = _uiState.value
-            val result = if (state.email == "Daniel@email.com" && state.password == "123456") {
-                RequestResult.Success("Login exitoso")
-            } else {
-                RequestResult.Failure("Credenciales inválidas")
-            }
+            val user = loginUserUseCase(currentState.email,currentState.password)
 
             // Se publica el resultado final de la solicitud
-            _uiState.update { it.copy(loginResult = result) }
+            _uiState.update { it.copy(
+                loginResult = if(user !=null){
+                RequestResult.Success("login exitoso")
+            }else {
+                    RequestResult.Failure("Credenciales invalidas")
+                }
+            )
+            }
         }
     }
 

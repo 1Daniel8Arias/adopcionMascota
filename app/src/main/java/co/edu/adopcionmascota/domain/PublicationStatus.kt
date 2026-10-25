@@ -7,4 +7,6 @@ enum class PublicationStatus {
     VERIFIED,
 
     RESOLVED,
+
+    DELETED,
 }

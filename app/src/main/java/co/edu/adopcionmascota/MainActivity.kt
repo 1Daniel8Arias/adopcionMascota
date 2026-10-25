@@ -16,7 +16,9 @@ import co.edu.adopcionmascota.features.profile.ProfileScreen
 import co.edu.adopcionmascota.navigation.AppNavigation
 
 import co.edu.adopcionmascota.features.publication.PublicationScreen
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
