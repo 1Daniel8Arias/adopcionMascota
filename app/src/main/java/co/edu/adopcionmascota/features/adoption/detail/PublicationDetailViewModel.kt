@@ -3,8 +3,8 @@ package co.edu.adopcionmascota.features.adoption.detail
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import co.edu.adopcionmascota.core.util.RequestResult
-import co.edu.adopcionmascota.domain.PetType
-import co.edu.adopcionmascota.domain.Publication
+import co.edu.adopcionmascota.domain.model.PetType
+import co.edu.adopcionmascota.domain.model.Publication
 import co.edu.adopcionmascota.features.adoption.list.samplePublications
 import co.edu.adopcionmascota.features.comment.Comment
 import co.edu.adopcionmascota.features.comment.CommentStore

@@ -51,7 +51,7 @@ import co.edu.adopcionmascota.core.theme.Background
 import co.edu.adopcionmascota.core.theme.DarkText
 import co.edu.adopcionmascota.core.theme.LightBlueBg
 import co.edu.adopcionmascota.core.theme.SecondaryText
-import co.edu.adopcionmascota.domain.PetType
+import co.edu.adopcionmascota.domain.model.PetType
 import coil3.compose.AsyncImage
 
 // Pantalla "filtro" (Filtros y Búsqueda)

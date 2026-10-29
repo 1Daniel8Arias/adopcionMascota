@@ -2,11 +2,10 @@ package co.edu.adopcionmascota.features.moderator
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import co.edu.adopcionmascota.domain.Publication
-import co.edu.adopcionmascota.domain.PublicationStatus
+import co.edu.adopcionmascota.domain.model.Publication
+import co.edu.adopcionmascota.domain.model.PublicationStatus
 import co.edu.adopcionmascota.domain.model.User
 import co.edu.adopcionmascota.domain.usecase.auth.LogoutUseCase
-import co.edu.adopcionmascota.domain.usecase.auth.ObserveSessionUseCase
 import co.edu.adopcionmascota.domain.usecase.publication.ObserveReportsUseCase
 import co.edu.adopcionmascota.domain.usecase.user.GetUserByIdUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel

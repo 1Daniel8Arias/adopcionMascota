@@ -64,7 +64,7 @@ import co.edu.adopcionmascota.core.theme.AppPrimary
 import co.edu.adopcionmascota.core.theme.AppRed
 import co.edu.adopcionmascota.core.theme.DarkText
 import co.edu.adopcionmascota.core.theme.SecondaryText
-import co.edu.adopcionmascota.domain.PetType
+import co.edu.adopcionmascota.domain.model.PetType
 import coil3.compose.AsyncImage
 
 // Pantalla "Feed Principal - Vista Mapa": imagen estática de un mapa con marcadores de las mascotas

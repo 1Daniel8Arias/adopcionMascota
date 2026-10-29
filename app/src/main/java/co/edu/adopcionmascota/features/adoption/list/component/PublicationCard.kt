@@ -19,10 +19,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import co.edu.adopcionmascota.core.theme.AppSecondaryText
 import coil3.compose.AsyncImage
-import co.edu.adopcionmascota.domain.Publication
+import co.edu.adopcionmascota.domain.model.Publication
 import co.edu.adopcionmascota.core.component.AppTag
 import co.edu.adopcionmascota.core.theme.*
-import co.edu.adopcionmascota.domain.PetType
+import co.edu.adopcionmascota.domain.model.PetType
 
 
 @Composable

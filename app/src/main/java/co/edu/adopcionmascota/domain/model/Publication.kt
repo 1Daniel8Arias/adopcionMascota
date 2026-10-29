@@ -1,14 +1,14 @@
-package co.edu.adopcionmascota.domain
+package co.edu.adopcionmascota.domain.model
 
 
 data class Publication(
     val id: String,
     val name: String,
     val description: String,
-    val image: Int,
+    val location: String,
     val status: PublicationStatus,
     val type: PetType,
-    val location: String,
+    val image: Int,
     val time: String,
     val distancia: String,
     val likes: String = "",

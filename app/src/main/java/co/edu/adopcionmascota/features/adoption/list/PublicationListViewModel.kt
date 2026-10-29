@@ -2,9 +2,9 @@ package co.edu.adopcionmascota.features.adoption.list
 
 import androidx.lifecycle.ViewModel
 import co.edu.adopcionmascota.R
-import co.edu.adopcionmascota.domain.PetType
-import co.edu.adopcionmascota.domain.PublicationStatus
-import co.edu.adopcionmascota.domain.Publication
+import co.edu.adopcionmascota.domain.model.PetType
+import co.edu.adopcionmascota.domain.model.PublicationStatus
+import co.edu.adopcionmascota.domain.model.Publication
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

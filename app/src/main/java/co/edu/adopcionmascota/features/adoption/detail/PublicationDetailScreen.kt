@@ -56,7 +56,7 @@ import co.edu.adopcionmascota.core.component.AppTag
 import co.edu.adopcionmascota.core.component.AppTopBar
 import co.edu.adopcionmascota.core.component.ConfirmAlertDialog
 import co.edu.adopcionmascota.core.util.RequestResult
-import co.edu.adopcionmascota.domain.Publication
+import co.edu.adopcionmascota.domain.model.Publication
 import co.edu.adopcionmascota.features.comment.Comment
 import co.edu.adopcionmascota.features.comment.CommentCard
 import coil3.compose.AsyncImage

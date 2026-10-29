@@ -1,4 +1,4 @@
-package co.edu.adopcionmascota.domain
+package co.edu.adopcionmascota.domain.model
 
 enum class PetType {
 

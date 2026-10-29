@@ -15,7 +15,7 @@ import android.content.Intent
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import co.edu.adopcionmascota.domain.Publication
+import co.edu.adopcionmascota.domain.model.Publication
 import co.edu.adopcionmascota.features.adoption.list.component.ExploreFilters
 import co.edu.adopcionmascota.features.adoption.list.component.ExploreViewMode
 import co.edu.adopcionmascota.features.adoption.list.component.ExploreViewSelector

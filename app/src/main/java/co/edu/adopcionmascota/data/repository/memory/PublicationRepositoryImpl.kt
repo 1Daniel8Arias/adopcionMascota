@@ -1,9 +1,9 @@
 package co.edu.adopcionmascota.data.repository.memory
 
 import co.edu.adopcionmascota.R
-import co.edu.adopcionmascota.domain.PetType
-import co.edu.adopcionmascota.domain.Publication
-import co.edu.adopcionmascota.domain.PublicationStatus
+import co.edu.adopcionmascota.domain.model.PetType
+import co.edu.adopcionmascota.domain.model.Publication
+import co.edu.adopcionmascota.domain.model.PublicationStatus
 import co.edu.adopcionmascota.domain.repository.PublicationRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
