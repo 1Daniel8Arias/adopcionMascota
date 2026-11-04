@@ -1,5 +1,7 @@
 package co.edu.adopcionmascota.features.profile.component
 
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -78,13 +80,13 @@ fun ReputationCard(
 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "REPUTACIÓN COMUNITARIA",
+                        text = stringResource(R.string.community_reputation),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Medium,
                         color = AppPrimary
                     )
                     Text(
-                        text = "Nivel ${state.currentLevel}: ${state.levelName}",
+                        text = stringResource(R.string.level_line, state.currentLevel, state.levelName),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = DarkText
@@ -99,7 +101,7 @@ fun ReputationCard(
                         color = AppPrimary
                     )
                     Text(
-                        text = " / ${state.nextLevelPoints} pts",
+                        text = stringResource(R.string.next_points, state.nextLevelPoints),
                         fontSize = 13.sp,
                         color = SecondaryText
                     )
@@ -112,12 +114,12 @@ fun ReputationCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "Meta: Nivel ${state.currentLevel + 1} (${state.nextLevelName})",
+                    text = stringResource(R.string.goal_line, state.currentLevel + 1, state.nextLevelName),
                     fontSize = 13.sp,
                     color = DarkText
                 )
                 Text(
-                    text = "${state.progressPercent}% completado",
+                    text = stringResource(R.string.percent_done, state.progressPercent),
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
                     color = DarkText
@@ -139,12 +141,12 @@ fun ReputationCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "Faltan ${state.missingPoints} pts",
+                    text = stringResource(R.string.missing_points, state.missingPoints),
                     fontSize = 13.sp,
                     color = DarkText
                 )
                 Text(
-                    text = "+20 pts por rescate verificado",
+                    text = stringResource(R.string.rescue_points),
                     fontSize = 13.sp,
                     color = AppPrimary
                 )
@@ -166,7 +168,7 @@ fun ReputationCard(
             ) {
                 Column(modifier = Modifier.padding(12.dp)) {
                     Text(
-                        text = "Escala de Reconocimiento",
+                        text = stringResource(R.string.recognition_scale),
                         fontSize = 13.sp,
                         color = DarkText
                     )
@@ -228,10 +230,10 @@ private fun LevelItem(level: LevelUi, modifier: Modifier = Modifier) {
     }
 
     val statusText = when (level.status) {
-        LevelStatus.UNLOCKED -> "Desbloqueado"
-        LevelStatus.ACTIVE -> "Activo"
-        LevelStatus.NEXT -> "Próximo"
-        LevelStatus.LOCKED -> "Bloqueado"
+        LevelStatus.UNLOCKED -> stringResource(R.string.level_unlocked)
+        LevelStatus.ACTIVE -> stringResource(R.string.level_active)
+        LevelStatus.NEXT -> stringResource(R.string.level_next)
+        LevelStatus.LOCKED -> stringResource(R.string.level_locked)
     }
 
     Column(
@@ -259,7 +261,7 @@ private fun LevelItem(level: LevelUi, modifier: Modifier = Modifier) {
         Spacer(modifier = Modifier.height(6.dp))
 
         Text(
-            text = "${level.number}. ${level.shortName}",
+            text = stringResource(R.string.level_item, level.number, level.shortName),
             fontSize = 12.sp,
             fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal,
             color = if (level.status == LevelStatus.LOCKED || level.status == LevelStatus.NEXT)

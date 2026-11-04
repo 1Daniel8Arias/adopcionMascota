@@ -1,5 +1,11 @@
 package co.edu.adopcionmascota.features.register.component
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.layout.ContentScale
+import coil3.compose.AsyncImage
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,7 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -22,7 +28,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun ProfilePhotoSection() {
+fun ProfilePhotoSection(
+    photoUri: String = "",
+    onAddPhotoClick: () -> Unit = {}
+) {
 
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -30,7 +39,9 @@ fun ProfilePhotoSection() {
     ) {
 
         Box(
-            modifier = Modifier.size(120.dp),
+            modifier = Modifier
+                .size(120.dp)
+                .clickable(onClick = onAddPhotoClick),
             contentAlignment = Alignment.BottomEnd
         ) {
 
@@ -42,7 +53,14 @@ fun ProfilePhotoSection() {
                 contentAlignment = Alignment.Center
             ) {
 
-                Column(
+                if (photoUri.isNotBlank()) {
+                    AsyncImage(
+                        model = photoUri,
+                        contentDescription = stringResource(R.string.photo),
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else Column(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
 
@@ -54,7 +72,7 @@ fun ProfilePhotoSection() {
                     )
 
                     Text(
-                        text = "Foto",
+                        text = stringResource(R.string.photo),
                         color = Color(0xFF555555)
                     )
                 }
@@ -69,8 +87,8 @@ fun ProfilePhotoSection() {
             ) {
 
                 Icon(
-                    imageVector = Icons.Default.CameraAlt,
-                    contentDescription = "Agregar foto",
+                    imageVector = Icons.Default.Image,
+                    contentDescription = stringResource(R.string.add_photo),
                     tint = Color.White,
                     modifier = Modifier.size(21.dp)
                 )
@@ -80,7 +98,7 @@ fun ProfilePhotoSection() {
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "Sube una foto tuya o de tu peludito",
+            text = stringResource(R.string.photo_help),
             style = MaterialTheme.typography.bodyMedium
         )
     }

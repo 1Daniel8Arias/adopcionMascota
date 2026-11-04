@@ -1,5 +1,12 @@
 package co.edu.adopcionmascota.features.publication
 
+import co.edu.adopcionmascota.R
+import androidx.lifecycle.SavedStateHandle
+import javax.inject.Inject
+import dagger.hilt.android.lifecycle.HiltViewModel
+import co.edu.adopcionmascota.core.util.ResourceProvider
+import co.edu.adopcionmascota.domain.model.MyPublication
+import co.edu.adopcionmascota.domain.model.MyPublicationStatus
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import co.edu.adopcionmascota.core.util.RequestResult
@@ -33,9 +40,14 @@ data class EditPublicationUiState(
         get() = saveResult is RequestResult.Loading
 }
 
-class EditPublicationViewModel(
-    private val publicationId: String
+@HiltViewModel
+class EditPublicationViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
+    private val resources: ResourceProvider
 ) : ViewModel() {
+
+    private val publicationId: String = checkNotNull(savedStateHandle["publicationId"])
+
 
     private val _uiState = MutableStateFlow(EditPublicationUiState())
     val uiState: StateFlow<EditPublicationUiState> = _uiState.asStateFlow()
@@ -72,15 +84,14 @@ class EditPublicationViewModel(
         if (history.length <= 500) _uiState.update { it.copy(history = history) }
     }
 
-    // Igual que en "Nueva Publicación", las fotos son simuladas (la cámara no se integra todavía)
-    fun onAddPhoto() {
-        val photos = _uiState.value.photos
-        if (photos.size < 5) _uiState.update { it.copy(photos = photos + "mock_photo_${photos.size + 1}") }
+    // Imagen elegida en la galería
+    fun onPhotoSelected(uri: String) = _uiState.update {
+        if (it.photos.size < 5) it.copy(photos = it.photos + uri) else it
     }
 
     fun onRemovePhoto(photo: String) = _uiState.update { it.copy(photos = it.photos - photo) }
 
-    fun onSaveDraft() = _uiState.update { it.copy(infoMessage = "Borrador guardado") }
+    fun onSaveDraft() = _uiState.update { it.copy(infoMessage = resources.getString(R.string.draft_saved_edit)) }
 
     fun resetInfoMessage() = _uiState.update { it.copy(infoMessage = null) }
 
@@ -114,7 +125,7 @@ class EditPublicationViewModel(
                     moderatorNote = if (newStatus == MyPublicationStatus.IN_REVIEW) null else original.moderatorNote
                 )
             )
-            _uiState.update { it.copy(saveResult = RequestResult.Success("¡Publicación Editada con Éxito!")) }
+            _uiState.update { it.copy(saveResult = RequestResult.Success(resources.getString(R.string.publication_edited_vm))) }
         }
     }
 }

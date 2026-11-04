@@ -1,5 +1,8 @@
 package co.edu.adopcionmascota.features.profile
 
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
+import co.edu.adopcionmascota.domain.model.BadgeStatus
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -57,8 +60,8 @@ private val Gold = Color(0xFFB54708)
 // Pantalla "Vitrina de Insignias y Gamificación"
 @Composable
 fun BadgesScreen(
-    onNavigateBack: () -> Unit,             // "Volver a mi Perfil"
-    onViewLevels: () -> Unit,               // "Ver Escala de Niveles y Puntos"
+    onNavigateBack: () -> Unit,             // stringResource(R.string.back_to_profile)
+    onViewLevels: () -> Unit,               // stringResource(R.string.view_levels)
     viewModel: BadgesViewModel = viewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -80,9 +83,9 @@ fun BadgesScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Volver", tint = DarkText)
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back), tint = DarkText)
                     }
-                    Text(text = "Vitrina de Insignias", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = DarkText)
+                    Text(text = stringResource(R.string.badges_showcase), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = DarkText)
                 }
             }
 
@@ -99,12 +102,12 @@ fun BadgesScreen(
                         AppTag(text = state.levelText)
                         Row {
                             Text(
-                                text = "${state.grantedCount} de ${state.totalCount} desbloqueadas",
+                                text = stringResource(R.string.badges_unlocked_count, state.grantedCount, state.totalCount),
                                 modifier = Modifier.weight(1f),
                                 fontSize = 13.sp,
                                 color = DarkText
                             )
-                            Text(text = "${state.completedPercent}% completado", fontSize = 13.sp, color = AppPrimary)
+                            Text(text = stringResource(R.string.completed_percent, state.completedPercent), fontSize = 13.sp, color = AppPrimary)
                         }
                         LinearProgressIndicator(
                             progress = { state.completedPercent / 100f },
@@ -115,7 +118,7 @@ fun BadgesScreen(
                             color = AppPrimary,
                             trackColor = LightBlueBg
                         )
-                        Text(text = "+${state.earnedPoints} pts ganados con insignias", fontSize = 12.sp, color = SecondaryText)
+                        Text(text = stringResource(R.string.badge_points_earned, state.earnedPoints), fontSize = 12.sp, color = SecondaryText)
                     }
                 }
             }
@@ -128,7 +131,7 @@ fun BadgesScreen(
                 ) {
                     BadgeFilter.entries.forEach { filter ->
                         Chip(
-                            text = "${filter.label} (${state.countFor(filter)})",
+                            text = stringResource(R.string.filter_count, stringResource(filter.label), state.countFor(filter)),
                             selected = state.filter == filter,
                             onClick = { viewModel.onFilterChange(filter) }
                         )
@@ -142,16 +145,16 @@ fun BadgesScreen(
                     modifier = Modifier.horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Chip("Todo el Catálogo", state.category == null) { viewModel.onCategoryChange(null) }
+                    Chip(stringResource(R.string.whole_catalog), state.category == null) { viewModel.onCategoryChange(null) }
                     BadgeCategory.entries.forEach { category ->
-                        Chip(category.label, state.category == category) { viewModel.onCategoryChange(category) }
+                        Chip(stringResource(category.label), state.category == category) { viewModel.onCategoryChange(category) }
                     }
                 }
             }
 
             if (state.visibleBadges.isEmpty()) {
                 item {
-                    Text(text = "No hay insignias con este filtro.", color = SecondaryText, modifier = Modifier.padding(16.dp))
+                    Text(text = stringResource(R.string.no_badges_filter), color = SecondaryText, modifier = Modifier.padding(16.dp))
                 }
             }
 
@@ -169,18 +172,18 @@ fun BadgesScreen(
                         verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         Row {
-                            AppTag(text = "TEMPORADA ACTIVA", backgroundColor = Gold.copy(alpha = 0.15f), textColor = Gold)
+                            AppTag(text = stringResource(R.string.active_season), backgroundColor = Gold.copy(alpha = 0.15f), textColor = Gold)
                             Spacer(modifier = Modifier.weight(1f))
-                            Text(text = "Quedan 12 días", fontSize = 12.sp, color = SecondaryText)
+                            Text(text = stringResource(R.string.twelve_days_left), fontSize = 12.sp, color = SecondaryText)
                         }
-                        Text(text = "Guardián de la Niebla", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = DarkText)
+                        Text(text = stringResource(R.string.mist_guardian), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = DarkText)
                         Text(
-                            text = "Campaña de apoyo a rescates de fauna y caninos extraviados. +120 pts épicos.",
+                            text = stringResource(R.string.mist_guardian_detail),
                             fontSize = 12.sp,
                             color = SecondaryText
                         )
                         OutlinedButton(onClick = viewModel::onSeasonClick, shape = CircleShape) {
-                            Text(text = if (state.joinedSeason) "Ya participas ✓" else "Ver Reto Especial")
+                            Text(text = if (state.joinedSeason) stringResource(R.string.already_joined) else stringResource(R.string.view_special_challenge))
                         }
                     }
                 }
@@ -195,7 +198,7 @@ fun BadgesScreen(
                     shape = CircleShape,
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
                 ) {
-                    Text(text = "Ver Escala de Niveles y Puntos")
+                    Text(text = stringResource(R.string.view_levels))
                 }
             }
             item {
@@ -206,7 +209,7 @@ fun BadgesScreen(
                         .height(48.dp),
                     shape = CircleShape
                 ) {
-                    Text(text = "Volver a mi Perfil")
+                    Text(text = stringResource(R.string.back_to_profile))
                 }
                 Spacer(modifier = Modifier.height(16.dp))
             }
@@ -215,26 +218,26 @@ fun BadgesScreen(
         state.selectedBadge?.let { detail ->
             val message = buildString {
                 append(detail.badge.description)
-                detail.date?.let { append("\n\nObtenida el $it · +${detail.points} pts") }
-                detail.requirement?.let { append("\n\n$it · Recompensa: +${detail.points} pts") }
+                detail.date?.let { append(stringResource(R.string.badge_obtained, it, detail.points)) }
+                detail.requirement?.let { append(stringResource(R.string.badge_requirement, it, detail.points)) }
             }
             ConfirmAlertDialog(
                 title = detail.badge.title,
                 message = message,
                 onConfirm = viewModel::onDismissBadge,
                 onDismiss = viewModel::onDismissBadge,
-                confirmText = "Entendido",
-                dismissText = "Cerrar"
+                confirmText = stringResource(R.string.understood),
+                dismissText = stringResource(R.string.close)
             )
         }
 
         if (state.showSeasonDialog) {
             ConfirmAlertDialog(
-                title = "Reto: Guardián de la Niebla",
-                message = "Apoya 3 rescates de fauna o caninos extraviados durante la temporada para obtener la insignia épica y +120 pts.",
+                title = stringResource(R.string.challenge_title),
+                message = stringResource(R.string.challenge_message),
                 onConfirm = viewModel::onJoinSeason,
                 onDismiss = viewModel::onDismissSeason,
-                confirmText = if (state.joinedSeason) "Seguir participando" else "Unirme al reto"
+                confirmText = if (state.joinedSeason) stringResource(R.string.keep_participating) else stringResource(R.string.join_challenge)
             )
         }
     }
@@ -260,9 +263,9 @@ private fun Chip(text: String, selected: Boolean, onClick: () -> Unit) {
 private fun BadgeRow(detail: BadgeDetail, onClick: () -> Unit) {
     val badge = detail.badge
     val (statusText, color) = when (badge.status) {
-        BadgeStatus.GRANTED -> "Desbloqueada" to Color(0xFF067647)
-        BadgeStatus.IN_PROGRESS -> "En Curso ${badge.percent}%" to AppPrimary
-        BadgeStatus.LOCKED -> "Bloqueada" to SecondaryText
+        BadgeStatus.GRANTED -> stringResource(R.string.badge_unlocked) to Color(0xFF067647)
+        BadgeStatus.IN_PROGRESS -> stringResource(R.string.badge_in_progress, badge.percent) to AppPrimary
+        BadgeStatus.LOCKED -> stringResource(R.string.badge_locked) to SecondaryText
     }
 
     Surface(
@@ -309,10 +312,10 @@ private fun BadgeRow(detail: BadgeDetail, onClick: () -> Unit) {
                         color = AppPrimary,
                         trackColor = LightBlueBg
                     )
-                    Text(text = "${badge.progress} de ${badge.target} completados", fontSize = 11.sp, color = SecondaryText)
+                    Text(text = stringResource(R.string.badge_progress, badge.progress, badge.target), fontSize = 11.sp, color = SecondaryText)
                 }
                 Text(
-                    text = detail.date?.let { "$it · +${detail.points} pts impacto" } ?: "Recompensa: +${detail.points} pts",
+                    text = detail.date?.let { stringResource(R.string.badge_impact, it, detail.points) } ?: stringResource(R.string.badge_reward, detail.points),
                     fontSize = 11.sp,
                     color = Gold
                 )

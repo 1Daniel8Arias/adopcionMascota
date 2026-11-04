@@ -1,6 +1,6 @@
 package co.edu.adopcionmascota.domain.repository
 
-import co.edu.adopcionmascota.domain.Publication
+import co.edu.adopcionmascota.domain.model.Publication
 import kotlinx.coroutines.flow.StateFlow
 
 interface PublicationRepository {

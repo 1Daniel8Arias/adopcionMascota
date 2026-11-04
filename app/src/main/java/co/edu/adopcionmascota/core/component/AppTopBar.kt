@@ -1,5 +1,7 @@
 package co.edu.adopcionmascota.core.component
 
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -20,8 +22,8 @@ import co.edu.adopcionmascota.core.theme.AppPrimary
 
 @Composable
 fun AppTopBar(
-    title: String = "Patitas Con...",
-    location: String = "Bogotá, Colombia",
+    title: String = stringResource(R.string.app_short_name),
+    location: String = stringResource(R.string.default_location),
     onNotificationClick: () -> Unit = {},
     onProfileClick: () -> Unit = {}
 ) {
@@ -42,7 +44,7 @@ fun AppTopBar(
         ) {
             Icon(
                 imageVector = Icons.Outlined.Pets,
-                contentDescription = "Logo",
+                contentDescription = stringResource(R.string.logo),
                 tint = AppPrimary
             )
         }
@@ -83,7 +85,7 @@ fun AppTopBar(
         ) {
             Icon(
                 imageVector = Icons.Outlined.Notifications,
-                contentDescription = "Notificaciones"
+                contentDescription = stringResource(R.string.notifications)
             )
         }
 
@@ -99,7 +101,7 @@ fun AppTopBar(
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Pets,
-                    contentDescription = "Perfil"
+                    contentDescription = stringResource(R.string.nav_profile)
                 )
             }
         }

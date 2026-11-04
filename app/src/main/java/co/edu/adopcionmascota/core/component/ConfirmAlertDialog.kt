@@ -1,5 +1,7 @@
 package co.edu.adopcionmascota.core.component
 
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -11,8 +13,8 @@ fun ConfirmAlertDialog(
     message: String,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
-    confirmText: String = "Confirmar",
-    dismissText: String = "Cancelar"
+    confirmText: String = stringResource(R.string.confirm),
+    dismissText: String = stringResource(R.string.cancel)
 ) {
     AlertDialog(
         title = { Text(text = title) },

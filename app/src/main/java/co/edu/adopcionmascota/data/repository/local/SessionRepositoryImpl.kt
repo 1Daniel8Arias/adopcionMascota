@@ -47,11 +47,11 @@ class SessionRepositoryImpl @Inject constructor(
 
 
     override suspend fun saveSession(
-        UserId: String,
+        userId: String,
         role: UserRole
     ) {
         context.dataStore.edit { prefs ->
-            prefs[Keys.USER_ID] = UserId
+            prefs[Keys.USER_ID] = userId
             prefs[Keys.ROLE] = role.name
         }
     }

@@ -1,5 +1,9 @@
 package co.edu.adopcionmascota.features.moderator.panel
 
+import co.edu.adopcionmascota.R
+import javax.inject.Inject
+import dagger.hilt.android.lifecycle.HiltViewModel
+import co.edu.adopcionmascota.core.util.ResourceProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import co.edu.adopcionmascota.domain.model.RejectionReason
@@ -36,7 +40,10 @@ sealed interface RejectPublicationEvent {
 
     data object ClearError : RejectPublicationEvent
 }
-class RejectPublicationViewModel : ViewModel() {
+@HiltViewModel
+class RejectPublicationViewModel @Inject constructor(
+    private val resources: ResourceProvider
+) : ViewModel() {
 
     private val _uiState =
         MutableStateFlow(RejectPublicationUiState())
@@ -76,7 +83,7 @@ class RejectPublicationViewModel : ViewModel() {
 
             _uiState.update {
                 it.copy(
-                    errorMessage = "Debes seleccionar un motivo."
+                    errorMessage = resources.getString(R.string.select_reason)
                 )
             }
 

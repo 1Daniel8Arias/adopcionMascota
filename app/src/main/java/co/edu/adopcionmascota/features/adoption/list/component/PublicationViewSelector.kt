@@ -1,5 +1,7 @@
 package co.edu.adopcionmascota.features.adoption.list.component
 
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,7 +27,7 @@ enum class ExploreViewMode {
 fun ExploreViewSelector(
     selectedMode: ExploreViewMode,
     onModeSelected: (ExploreViewMode) -> Unit,
-    distanceLabel: String = "Distancia",
+    distanceLabel: String = stringResource(R.string.distance),
     onDistanceClick: () -> Unit = {}
 ) {
 
@@ -47,7 +49,7 @@ fun ExploreViewSelector(
             ViewOption(
                 selected = selectedMode == ExploreViewMode.LIST,
                 icon = Icons.AutoMirrored.Outlined.ViewList,
-                text = "Lista",
+                text = stringResource(R.string.list),
                 onClick = {
                     onModeSelected(ExploreViewMode.LIST)
                 }
@@ -56,7 +58,7 @@ fun ExploreViewSelector(
             ViewOption(
                 selected = selectedMode == ExploreViewMode.MAP,
                 icon = Icons.Outlined.Map,
-                text = "Mapa",
+                text = stringResource(R.string.map),
                 onClick = {
                     onModeSelected(ExploreViewMode.MAP)
                 }

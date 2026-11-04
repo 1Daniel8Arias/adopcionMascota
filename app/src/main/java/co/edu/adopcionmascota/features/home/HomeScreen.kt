@@ -1,5 +1,6 @@
 package co.edu.adopcionmascota.features.home
 
+import androidx.compose.ui.res.stringResource
 import android.widget.Button
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -46,23 +47,23 @@ fun HomeScreen(
                .data(R.drawable.icono)
                .crossfade(true)
                .build(),
-           contentDescription = "Logo de aplicacion"
+           contentDescription = stringResource(R.string.home_logo)
        )
         Text(
-            text = "Pantalla Principal",
+            text = stringResource(R.string.home_title),
             fontSize = 28.sp,
             fontWeight = FontWeight.ExtraBold,
             modifier = Modifier.align ( Alignment.CenterHorizontally )
 
         )
         Text(
-            text = "Conectando hogares, rescatando vidas",
+            text = stringResource(R.string.tagline),
             fontSize = 15.sp,
             color= Color(0xFF4A5568),
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
         IconoText(
-            texto = "Adopta, reporta y ayuda a mascotas comunitarias.",
+            texto = stringResource(R.string.tagline_detail),
             icono= Icons.Outlined.VolunteerActivism
         )
         Row(
@@ -80,7 +81,7 @@ fun HomeScreen(
                     containerColor = Color(0xFF4A5CDE),
                     contentColor = Color.White)){
                 Text(
-            text = "Crear cuenta",
+            text = stringResource(R.string.create_account),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.width(8.dp))
@@ -106,7 +107,7 @@ fun ButtonLog(onNavigateToLogin: () -> Unit){
             horizontalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "Iniciar sesion",
+                text = stringResource(R.string.sign_in_home),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )

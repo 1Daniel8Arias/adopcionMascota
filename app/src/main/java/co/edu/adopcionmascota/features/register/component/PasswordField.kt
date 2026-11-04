@@ -1,5 +1,7 @@
 package co.edu.adopcionmascota.features.register.component
 
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -121,9 +123,9 @@ import androidx.compose.ui.unit.dp
                             Icons.Default.Visibility,
                     contentDescription =
                         if (visible)
-                            "Ocultar contraseña"
+                            stringResource(R.string.hide_password)
                         else
-                            "Mostrar contraseña"
+                            stringResource(R.string.show_password)
                 )
             }
         }

@@ -1,5 +1,9 @@
 package co.edu.adopcionmascota.features.profile.edit
 
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import co.edu.adopcionmascota.core.component.rememberGalleryPicker
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -34,7 +38,7 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.PersonOff
 import androidx.compose.material.icons.outlined.Pets
 import androidx.compose.material.icons.outlined.Phone
-import androidx.compose.material.icons.outlined.PhotoCamera
+import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.Place
 import androidx.compose.material.icons.outlined.VolunteerActivism
 import androidx.compose.material3.Button
@@ -85,9 +89,9 @@ import coil3.compose.AsyncImage
 fun EditProfileScreen(
     onNavigateBack: () -> Unit,           // Volver al perfil
     onProfileSaved: () -> Unit,           // Ir a "Perfil editado" después de guardar
-    onNavigateToPassword: () -> Unit,     // Ir a "Cambiar contraseña y seguridad"
+    onNavigateToPassword: () -> Unit,     // Ir a stringResource(R.string.change_password_security)
     onAccountDeactivated: () -> Unit,     // Salir de la sesión después de desactivar la cuenta
-    viewModel: EditProfileViewModel = viewModel()
+    viewModel: EditProfileViewModel = hiltViewModel()
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -166,7 +170,7 @@ fun EditProfileScreen(
             PhotoSection(
                 photoUrl = state.photoUrl,
                 levelName = state.levelName,
-                onChangePhotoClick = viewModel::onChangePhotoClick
+                onChangePhotoClick = rememberGalleryPicker { viewModel.onPhotoSelected(it.toString()) }
             )
 
             ContactSection(
@@ -205,25 +209,25 @@ fun EditProfileScreen(
         // Diálogo para confirmar que se descartan los cambios
         if (state.showExitDialog) {
             ConfirmAlertDialog(
-                title = "¿Descartar los cambios?",
-                message = "Si sales ahora, se perderán los cambios que no hayas guardado.",
+                title = stringResource(R.string.discard_changes_title),
+                message = stringResource(R.string.discard_changes_message),
                 onConfirm = {
                     viewModel.onConfirmDiscard() // Restaura los datos y oculta el diálogo
                     onNavigateBack()             // Regresa al perfil
                 },
                 onDismiss = viewModel::onDismissExitDialog,
-                confirmText = "Descartar"
+                confirmText = stringResource(R.string.discard)
             )
         }
 
         // Diálogo para confirmar la desactivación de la cuenta
         if (state.showDeactivateDialog) {
             ConfirmAlertDialog(
-                title = "¿Desactivar tu cuenta?",
-                message = "Tu perfil y tus publicaciones dejarán de ser visibles hasta que vuelvas a iniciar sesión.",
+                title = stringResource(R.string.deactivate_title),
+                message = stringResource(R.string.deactivate_message),
                 onConfirm = viewModel::onConfirmDeactivate,
                 onDismiss = viewModel::onDismissDeactivateDialog,
-                confirmText = "Desactivar"
+                confirmText = stringResource(R.string.deactivate)
             )
         }
     }
@@ -243,7 +247,7 @@ fun EditProfileTopBar(
         IconButton(onClick = onBackClick) {
             Icon(
                 imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                contentDescription = "Volver",
+                contentDescription = stringResource(R.string.back),
                 tint = DarkText
             )
         }
@@ -253,14 +257,14 @@ fun EditProfileTopBar(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "PATITAS\nCONECTADAS",
+                text = stringResource(R.string.brand_two_lines),
                 fontSize = 10.sp,
                 lineHeight = 11.sp,
                 fontWeight = FontWeight.Bold,
                 color = AppPrimary
             )
             Text(
-                text = "Mi Perfil",
+                text = stringResource(R.string.my_profile),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = DarkText
@@ -270,7 +274,7 @@ fun EditProfileTopBar(
         IconButton(onClick = onHelpClick) {
             Icon(
                 imageVector = Icons.AutoMirrored.Outlined.HelpOutline,
-                contentDescription = "Ayuda",
+                contentDescription = stringResource(R.string.help),
                 tint = DarkText
             )
         }
@@ -284,7 +288,7 @@ fun EditProfileTopBar(
         ) {
             Icon(
                 imageVector = Icons.Outlined.Person,
-                contentDescription = "Perfil",
+                contentDescription = stringResource(R.string.nav_profile),
                 tint = Color.White,
                 modifier = Modifier.size(20.dp)
             )
@@ -314,7 +318,7 @@ fun EditModeRow(onDiscardClick: () -> Unit) {
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = "Edición de Perfil",
+                    text = stringResource(R.string.profile_editing),
                     fontSize = 12.sp,
                     color = AppPrimary
                 )
@@ -325,7 +329,7 @@ fun EditModeRow(onDiscardClick: () -> Unit) {
 
         TextButton(onClick = onDiscardClick) {
             Text(
-                text = "Descartar",
+                text = stringResource(R.string.discard),
                 color = AppPrimary,
                 fontWeight = FontWeight.Medium
             )
@@ -343,11 +347,11 @@ fun PhotoSection(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Foto con el botón de cámara (solo visual, la cámara no se integra todavía)
+        // Foto del usuario; se cambia eligiendo una imagen de la galería
         Box(modifier = Modifier.size(110.dp)) {
             AsyncImage(
                 model = photoUrl,
-                contentDescription = "Foto de perfil",
+                contentDescription = stringResource(R.string.profile_photo),
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxSize()
@@ -365,7 +369,7 @@ fun PhotoSection(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Outlined.PhotoCamera,
+                    imageVector = Icons.Outlined.Image,
                     contentDescription = null,
                     tint = Color.White,
                     modifier = Modifier.size(18.dp)
@@ -375,7 +379,7 @@ fun PhotoSection(
 
         TextButton(onClick = onChangePhotoClick) {
             Text(
-                text = "Cambiar fotografía",
+                text = stringResource(R.string.change_photo),
                 color = AppPrimary,
                 fontWeight = FontWeight.Medium
             )
@@ -389,7 +393,7 @@ fun PhotoSection(
         }
 
         Text(
-            text = "Visible para adoptantes, hogares de paso y rescatistas de la red.",
+            text = stringResource(R.string.photo_visible),
             fontSize = 13.sp,
             color = SecondaryText,
             textAlign = TextAlign.Center
@@ -451,33 +455,33 @@ fun ContactSection(
     onBioChange: (String) -> Unit
 ) {
     SectionCard {
-        SectionTitle(icon = Icons.Outlined.Badge, title = "Datos de Contacto e Identidad")
+        SectionTitle(icon = Icons.Outlined.Badge, title = stringResource(R.string.contact_identity))
 
         CompletionCard(completed = state.completedFields)
 
-        ValidatedField(tag = if (state.isNameValid) "✓ Válido" else null) {
+        ValidatedField(tag = if (state.isNameValid) stringResource(R.string.tag_valid) else null) {
             IconoTextField(
-                titulo = "Nombre y apellidos",
+                titulo = stringResource(R.string.name_surname),
                 value = state.name,
                 onValueChange = onNameChange,
-                placeholderText = "Tu nombre completo",
+                placeholderText = stringResource(R.string.full_name_hint),
                 icono = Icons.Outlined.Person,
                 isError = state.nameError != null,
                 mensajeError = state.nameError
             )
         }
-        if (state.isNameValid) HelperText("Nombre completo verificado")
+        if (state.isNameValid) HelperText(stringResource(R.string.name_verified))
 
         // El correo muestra "Verificado" solo si no se ha cambiado
         ValidatedField(
             tag = when {
                 !state.isEmailValid -> null
-                state.isEmailVerified -> "✓ Verificado"
-                else -> "✓ Válido"
+                state.isEmailVerified -> stringResource(R.string.tag_verified)
+                else -> stringResource(R.string.tag_valid)
             }
         ) {
             IconoTextField(
-                titulo = "Correo electrónico",
+                titulo = stringResource(R.string.email_label),
                 value = state.email,
                 onValueChange = onEmailChange,
                 placeholderText = "tu.correo@ejemplo.com",
@@ -487,13 +491,13 @@ fun ContactSection(
             )
         }
         HelperText(
-            if (state.isEmailVerified) "Correo confirmado y verificado para adopciones"
-            else "Se utiliza para coordinar adopciones y validar tu identidad."
+            if (state.isEmailVerified) stringResource(R.string.email_confirmed)
+            else stringResource(R.string.email_usage)
         )
 
-        ValidatedField(tag = if (state.isPhoneValid) "✓ Válido (+57)" else null) {
+        ValidatedField(tag = if (state.isPhoneValid) stringResource(R.string.tag_valid_phone) else null) {
             IconoTextField(
-                titulo = "Teléfono / WhatsApp",
+                titulo = stringResource(R.string.phone_whatsapp),
                 value = state.phone,
                 onValueChange = onPhoneChange,
                 placeholderText = "+57 300 000 0000",
@@ -503,16 +507,16 @@ fun ContactSection(
             )
         }
         HelperText(
-            if (state.isPhoneValid) "Teléfono con formato WhatsApp válido (+57)"
-            else "Crucial para notificaciones inmediatas de rescates prioritarios."
+            if (state.isPhoneValid) stringResource(R.string.phone_valid)
+            else stringResource(R.string.phone_usage)
         )
 
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            FieldLabel(text = "Localidad en Bogotá D.C.", modifier = Modifier.weight(1f))
-            if (state.isLocalityValid) ValidTag("✓ Asignada")
+            FieldLabel(text = stringResource(R.string.district_bogota), modifier = Modifier.weight(1f))
+            if (state.isLocalityValid) ValidTag(stringResource(R.string.tag_assigned))
         }
         // Se reutiliza el desplegable de ubicación del registro
         LocationDropdown(
@@ -524,19 +528,19 @@ fun ContactSection(
             Text(text = error, color = AppRed, fontSize = 12.sp)
         }
         if (state.isLocalityValid) {
-            HelperText("Localidad asignada: ${state.locality.substringAfter("(", state.locality).removeSuffix(")")}")
+            HelperText(stringResource(R.string.locality_assigned, state.locality.substringAfter("(", state.locality).removeSuffix(")")))
         }
 
-        ValidatedField(tag = if (state.isNeighborhoodValid) "✓ Guardado" else null) {
+        ValidatedField(tag = if (state.isNeighborhoodValid) stringResource(R.string.tag_saved) else null) {
             IconoTextField(
-                titulo = "Barrio o sector de referencia (Opcional)",
+                titulo = stringResource(R.string.neighborhood),
                 value = state.neighborhood,
                 onValueChange = onNeighborhoodChange,
-                placeholderText = "Ej: Cedritos",
+                placeholderText = stringResource(R.string.neighborhood_hint),
                 icono = Icons.Outlined.Place
             )
         }
-        if (state.isNeighborhoodValid) HelperText("Sector guardado para ubicación de cercanía")
+        if (state.isNeighborhoodValid) HelperText(stringResource(R.string.sector_saved))
 
         // Presentación con contador de caracteres
         Row(
@@ -544,11 +548,11 @@ fun ContactSection(
             verticalAlignment = Alignment.CenterVertically
         ) {
             FieldLabel(
-                text = "Presentación Comunitaria / Bio",
+                text = stringResource(R.string.bio_title),
                 modifier = Modifier.weight(1f)
             )
             if (state.isBioValid) {
-                ValidTag("✓ Completada")
+                ValidTag(stringResource(R.string.tag_completed))
                 Spacer(modifier = Modifier.width(8.dp))
             }
             Text(
@@ -571,8 +575,8 @@ fun ContactSection(
             )
         )
         HelperText(
-            if (state.isBioValid) "Longitud óptima para presentación comunitaria (${state.bioLength}/$BIO_MAX_LENGTH caracteres)"
-            else "Describe tu disponibilidad o experiencia para construir confianza en la red."
+            if (state.isBioValid) stringResource(R.string.bio_optimal, state.bioLength, BIO_MAX_LENGTH)
+            else stringResource(R.string.bio_help)
         )
     }
 }
@@ -594,19 +598,19 @@ fun VolunteerSection(
             Box(modifier = Modifier.weight(1f)) {
                 SectionTitle(
                     icon = Icons.Outlined.VolunteerActivism,
-                    title = "Preferencias de Voluntariado"
+                    title = stringResource(R.string.volunteer_preferences)
                 )
             }
             AppTag(
-                text = if (isActive) "Activo" else "Inactivo",
+                text = if (isActive) stringResource(R.string.level_active) else stringResource(R.string.inactive),
                 backgroundColor = LightBlueBg,
                 textColor = AppPrimary
             )
         }
 
         PreferenceRow(
-            title = "Hogar de Paso Temporal",
-            description = "Disponible para acoger mascotas en recuperación o tránsito de adopción.",
+            title = stringResource(R.string.foster_preference),
+            description = stringResource(R.string.foster_preference_detail),
             checked = state.isTemporaryHome,
             onCheckedChange = onTemporaryHomeChange
         )
@@ -614,8 +618,8 @@ fun VolunteerSection(
         HorizontalDivider(color = LightBlueBg)
 
         PreferenceRow(
-            title = "Alertas de Mascotas Perdidas",
-            description = "Recibir avisos prioritarios en radio de 3 km en $localityName.",
+            title = stringResource(R.string.lost_alerts),
+            description = stringResource(R.string.lost_alerts_detail, localityName),
             checked = state.lostPetAlerts,
             onCheckedChange = onLostPetAlertsChange
         )
@@ -623,8 +627,8 @@ fun VolunteerSection(
         HorizontalDivider(color = LightBlueBg)
 
         PreferenceRow(
-            title = "Mostrar Teléfono Público",
-            description = "Visibilidad en fichas públicas de animales que publiques.",
+            title = stringResource(R.string.show_public_phone),
+            description = stringResource(R.string.show_public_phone_detail),
             checked = state.showPublicPhone,
             onCheckedChange = onShowPublicPhoneChange
         )
@@ -639,14 +643,14 @@ fun SecuritySection(
     SectionCard {
         SettingsOption(
             icon = Icons.Outlined.LockReset,
-            title = "Cambiar contraseña y seguridad",
-            description = "Protección de acceso y sesiones abiertas",
+            title = stringResource(R.string.change_password_security),
+            description = stringResource(R.string.change_password_detail),
             onClick = onPasswordClick
         )
         SettingsOption(
             icon = Icons.Outlined.NotificationsActive,
-            title = "Preferencias de notificaciones",
-            description = "Avisos por correo, push y WhatsApp",
+            title = stringResource(R.string.notification_preferences),
+            description = stringResource(R.string.notification_preferences_detail),
             onClick = onNotificationsClick
         )
     }
@@ -686,7 +690,7 @@ fun EditProfileFooter(
             )
         ) {
             if (isSaving) {
-                Text(text = "Guardando...", fontWeight = FontWeight.SemiBold)
+                Text(text = stringResource(R.string.saving), fontWeight = FontWeight.SemiBold)
             } else {
                 Icon(
                     imageVector = Icons.Filled.Check,
@@ -696,7 +700,7 @@ fun EditProfileFooter(
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     // Con todos los campos completos el botón lo indica, como en "Datos validos"
-                    text = if (isComplete) "Guardar Cambios · Listo" else "Guardar Cambios",
+                    text = if (isComplete) stringResource(R.string.save_changes_ready) else stringResource(R.string.save_changes),
                     fontWeight = FontWeight.SemiBold
                 )
             }
@@ -713,7 +717,7 @@ fun EditProfileFooter(
                 contentColor = DarkText
             )
         ) {
-            Text(text = "Cancelar y descartar", fontWeight = FontWeight.Medium)
+            Text(text = stringResource(R.string.cancel_discard), fontWeight = FontWeight.Medium)
         }
 
         TextButton(onClick = onDeactivateClick) {
@@ -725,7 +729,7 @@ fun EditProfileFooter(
             )
             Spacer(modifier = Modifier.width(6.dp))
             Text(
-                text = "Desactivar temporalmente mi cuenta",
+                text = stringResource(R.string.deactivate_temp),
                 color = AppRed,
                 fontSize = 13.sp
             )
@@ -812,14 +816,14 @@ private fun CompletionCard(completed: Int) {
             Spacer(modifier = Modifier.width(10.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "$completed de $TOTAL_PROFILE_FIELDS completados",
+                    text = stringResource(R.string.fields_completed, completed, TOTAL_PROFILE_FIELDS),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = DarkText
                 )
                 Text(
-                    text = if (isComplete) "Todos los campos requeridos y opcionales están validados correctamente."
-                    else "Completa los campos para fortalecer tu perfil en la red.",
+                    text = if (isComplete) stringResource(R.string.all_fields_valid)
+                    else stringResource(R.string.complete_fields),
                     fontSize = 12.sp,
                     color = SecondaryText
                 )

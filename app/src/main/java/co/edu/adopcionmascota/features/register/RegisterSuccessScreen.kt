@@ -1,5 +1,8 @@
 package co.edu.adopcionmascota.features.register
 
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -39,7 +42,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import co.edu.adopcionmascota.core.component.AppTag
 import co.edu.adopcionmascota.core.theme.AppPrimary
 import co.edu.adopcionmascota.core.theme.Background
@@ -50,17 +52,12 @@ import co.edu.adopcionmascota.core.theme.SecondaryText
 // Pantalla "comfirmacion" del Figma: bienvenida después de crear la cuenta
 @Composable
 fun RegisterSuccessScreen(
-    name: String,
-    onContinueToFeed: () -> Unit,           // "Continuar al Feed Principal"
-    onConfigureAlerts: () -> Unit,          // "Configurar preferencias de alerta"
-    viewModel: RegisterSuccessViewModel = viewModel(key = "register_success_$name") {
-        RegisterSuccessViewModel(name)
-    }
+    viewModel: RegisterSuccessViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
 
     // La cuenta ya está creada: "atrás" no vuelve al formulario
-    BackHandler { onContinueToFeed() }
+    BackHandler { viewModel.startSession() }
 
     Column(
         modifier = Modifier
@@ -90,7 +87,7 @@ fun RegisterSuccessScreen(
         }
 
         Text(
-            text = "¡Bienvenid@ a la Manada,\n${state.firstName}!",
+            text = stringResource(R.string.welcome_pack, state.firstName),
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             color = DarkText,
@@ -98,7 +95,7 @@ fun RegisterSuccessScreen(
         )
 
         Text(
-            text = "Tu cuenta de Patitas Conectadas ha sido configurada correctamente. Te hemos asignado el Nivel 1: Amigo Animal para comenzar a adoptar y reportar de forma segura.",
+            text = stringResource(R.string.welcome_detail),
             fontSize = 14.sp,
             color = SecondaryText,
             textAlign = TextAlign.Center
@@ -128,25 +125,25 @@ fun RegisterSuccessScreen(
                     AppTag(text = state.levelName)
                     Text(text = state.enabledFeatures, fontSize = 12.sp, color = SecondaryText)
                 }
-                Text(text = "${state.points} pts", fontWeight = FontWeight.Bold, color = AppPrimary)
+                Text(text = stringResource(R.string.points_value, state.points), fontWeight = FontWeight.Bold, color = AppPrimary)
             }
         }
 
         Button(
-            onClick = onContinueToFeed,
+            onClick = viewModel::startSession,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(52.dp),
             shape = CircleShape,
             colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
         ) {
-            Text(text = "Continuar al Feed Principal", fontWeight = FontWeight.SemiBold)
+            Text(text = stringResource(R.string.continue_feed), fontWeight = FontWeight.SemiBold)
         }
 
-        TextButton(onClick = onConfigureAlerts) {
+        TextButton(onClick = viewModel::startSession) {
             Icon(Icons.Outlined.NotificationsActive, contentDescription = null, tint = AppPrimary, modifier = Modifier.size(16.dp))
             Spacer(modifier = Modifier.width(6.dp))
-            Text(text = "Configurar preferencias de alerta", color = AppPrimary)
+            Text(text = stringResource(R.string.configure_alerts), color = AppPrimary)
         }
     }
 }

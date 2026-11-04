@@ -13,5 +13,7 @@ data class Publication(
     val distancia: String,
     val likes: String = "",
     val age: String = "",
-    val gender: String = ""
+    val gender: String = "",
+    val coordinates: Location = Location(latitude = 4.5389, longitude = -75.6725), // Punto en el mapa
+    val ownerId: String = "" // ID del usuario que creó la publicación
 ) 

@@ -1,5 +1,6 @@
 package co.edu.adopcionmascota.features.login
 
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -50,7 +51,6 @@ import co.edu.adopcionmascota.core.util.RequestResult
 @Composable
 fun LoginScreen(
 
-    onNavigationPublicLists: () -> Unit,
     viewModel: LoginViewModel = hiltViewModel(),
     onNavigationPasswordScreen: ()-> Unit,
     onNavigationRegister: () -> Unit,
@@ -67,10 +67,9 @@ fun LoginScreen(
             is RequestResult.Success -> {
                 snackbarHostState.showSnackbar(result.message)
 
+                // Al guardarse la sesión, AppNavigation pasa sola a la navegación principal
                 viewModel.resetLoginResult()
                 viewModel.resetForm()
-
-                onNavigationPublicLists()
             }
 
             is RequestResult.Failure -> {
@@ -99,25 +98,25 @@ fun LoginScreen(
                 .size(180.dp)
                 .align(Alignment.CenterHorizontally),
             painter = painterResource(R.drawable.icono),
-            contentDescription = "Welcome Image"
+            contentDescription = stringResource(R.string.login_image)
         )
 
             Text(
-                text = "Bienvenido de vuelta",
+                text = stringResource(R.string.login_welcome),
                 fontSize = 28.sp,
                 fontWeight = FontWeight.ExtraBold,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
 
             Text(
-                text = "Conectando hogares, rescatando vidas",
+                text = stringResource(R.string.tagline),
                 fontSize = 15.sp,
                 color = Color(0xFF4A5568),
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
 
             IconoText(
-                texto = "Adopta, reporta y ayuda a mascotas comunitarias.",
+                texto = stringResource(R.string.tagline_detail),
                 icono = Icons.Outlined.VolunteerActivism
             )
 
@@ -125,7 +124,7 @@ fun LoginScreen(
 
         // Campo de correo
         IconoTextField(
-            titulo = "Correo electrónico",
+            titulo = stringResource(R.string.email_label),
             value =state.email,
             onValueChange = viewModel::onEmailChange,
             placeholderText = "tu.correo@ejemplo.com",
@@ -137,7 +136,7 @@ fun LoginScreen(
 
         // Campo de contraseña
         IconoTextField(
-            titulo = "Contraseña",
+            titulo = stringResource(R.string.password_label),
             value = state.password,
             onValueChange = viewModel::onPasswordChange,
             placeholderText = "••••••••",
@@ -152,7 +151,7 @@ fun LoginScreen(
                 modifier = Modifier.align(Alignment.End)
             ) {
                 Text(
-                    text = "¿Olvidaste tu contraseña?",
+                    text = stringResource(R.string.forgot_password),
                     color = Color(0xFF4A5CDE),
                     fontSize = 14.sp
                 )
@@ -171,7 +170,7 @@ fun LoginScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "¿No tienes una cuenta aun?",
+                    text = stringResource(R.string.no_account),
                     fontSize = 14.sp
                 )
 
@@ -179,7 +178,7 @@ fun LoginScreen(
                     onClick = onNavigationRegister
                 ) {
                     Text(
-                        text = "Registrarme",
+                        text = stringResource(R.string.sign_up),
                         color = Color(0xFF4A5CDE),
                         fontSize = 14.sp
                     )
@@ -222,7 +221,7 @@ fun ButtonLogin(
     ) {
         if (isLoading) {
             Text(
-                text = "Iniciando sesión...",
+                text = stringResource(R.string.signing_in),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -232,7 +231,7 @@ fun ButtonLogin(
                 horizontalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = "Iniciar Sesión",
+                    text = stringResource(R.string.sign_in),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )

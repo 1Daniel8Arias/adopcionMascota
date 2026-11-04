@@ -1,5 +1,6 @@
 package co.edu.adopcionmascota.features.notification
 
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -86,26 +87,26 @@ fun ApprovedPublicationContent(
 ) {
     DetailCard(color = Green.copy(alpha = 0.08f)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            AppTag(text = "PUBLICACIÓN APROBADA", backgroundColor = Green.copy(alpha = 0.15f), textColor = Green)
+            AppTag(text = stringResource(R.string.publication_approved_tag), backgroundColor = Green.copy(alpha = 0.15f), textColor = Green)
             Spacer(modifier = Modifier.weight(1f))
             Text(text = "ID: max_1", fontSize = 11.sp, color = SecondaryText)
         }
         Text(
-            text = "¡Tu publicación ya está activa!",
+            text = stringResource(R.string.publication_active),
             fontSize = 22.sp,
             fontWeight = FontWeight.Bold,
             color = DarkText
         )
         Text(
-            text = "Max superó la verificación de bienestar y tenencia responsable. Ya está visible en el feed comunitario.",
+            text = stringResource(R.string.publication_active_detail),
             fontSize = 13.sp,
             color = SecondaryText
         )
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(Icons.Outlined.CheckCircle, contentDescription = null, tint = Green, modifier = Modifier.size(16.dp))
             Spacer(modifier = Modifier.width(6.dp))
-            Text(text = "Indexado en radar de adopción activa", fontSize = 12.sp, color = DarkText, modifier = Modifier.weight(1f))
-            AppTag(text = "● En vivo", backgroundColor = Green.copy(alpha = 0.15f), textColor = Green)
+            Text(text = stringResource(R.string.indexed_radar), fontSize = 12.sp, color = DarkText, modifier = Modifier.weight(1f))
+            AppTag(text = stringResource(R.string.live), backgroundColor = Green.copy(alpha = 0.15f), textColor = Green)
         }
     }
 
@@ -121,8 +122,8 @@ fun ApprovedPublicationContent(
         )
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = "Max · 3 meses", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = DarkText)
-                Text(text = "Golden Mestizo • Tamaño Mediano", fontSize = 12.sp, color = SecondaryText)
+                Text(text = stringResource(R.string.max_age), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = DarkText)
+                Text(text = stringResource(R.string.max_breed), fontSize = 12.sp, color = SecondaryText)
             }
             Column(horizontalAlignment = Alignment.End) {
                 Text(text = "84", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = AppPrimary)
@@ -133,7 +134,7 @@ fun ApprovedPublicationContent(
             horizontalArrangement = Arrangement.spacedBy(6.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            listOf("Vacunas al día", "Esterilizado", "Apto con niños", "Hogar responsable").forEach {
+            listOf(stringResource(R.string.vaccines_current), stringResource(R.string.sterilized), stringResource(R.string.tag_children), stringResource(R.string.responsible_home)).forEach {
                 AppTag(text = it)
             }
         }
@@ -141,7 +142,7 @@ fun ApprovedPublicationContent(
             Icon(Icons.Outlined.Shield, contentDescription = null, tint = AppPrimary, modifier = Modifier.size(14.dp))
             Spacer(modifier = Modifier.width(6.dp))
             Text(
-                text = "Protocolo ético completado hoy, 10:45 AM · Ficha Protegida",
+                text = stringResource(R.string.protocol_done),
                 fontSize = 11.sp,
                 color = SecondaryText
             )
@@ -150,23 +151,23 @@ fun ApprovedPublicationContent(
 
     DetailCard {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(text = "Rendimiento en tiempo real", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = DarkText, modifier = Modifier.weight(1f))
-            AppTag(text = "Última hora")
+            Text(text = stringResource(R.string.realtime_performance), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = DarkText, modifier = Modifier.weight(1f))
+            AppTag(text = stringResource(R.string.latest))
         }
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             StatBox(
                 modifier = Modifier.weight(1f),
                 icon = Icons.Outlined.Visibility,
-                label = "Vistas iniciales",
+                label = stringResource(R.string.initial_views),
                 value = "142",
-                detail = "+38% en su primera hora"
+                detail = stringResource(R.string.first_hour)
             )
             StatBox(
                 modifier = Modifier.weight(1f),
                 icon = Icons.Outlined.LocationOn,
-                label = "Zona prioritaria",
+                label = stringResource(R.string.priority_zone),
                 value = "Usaquén & Chapinero",
-                detail = "Radio de 6 km"
+                detail = stringResource(R.string.radius_6)
             )
         }
         Surface(shape = RoundedCornerShape(12.dp), color = SoftBlue) {
@@ -179,23 +180,23 @@ fun ApprovedPublicationContent(
                 Icon(Icons.Outlined.Groups, contentDescription = null, tint = AppPrimary)
                 Spacer(modifier = Modifier.width(10.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(text = "92% Índice de Compatibilidad", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
-                    Text(text = "3 familias precalificadas en espera", fontSize = 12.sp, color = SecondaryText)
+                    Text(text = stringResource(R.string.compatibility), fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
+                    Text(text = stringResource(R.string.families_waiting), fontSize = 12.sp, color = SecondaryText)
                 }
-                AppTag(text = "Alta demanda", backgroundColor = AppRed.copy(alpha = 0.12f), textColor = AppRed)
+                AppTag(text = stringResource(R.string.high_demand), backgroundColor = AppRed.copy(alpha = 0.12f), textColor = AppRed)
             }
         }
     }
 
     PrimaryActionButton(
-        text = "Gestionar Consultas de Adoptantes (2)",
+        text = stringResource(R.string.manage_inquiries),
         onClick = onManageRequests,
         icon = Icons.Outlined.ChatBubbleOutline
     )
     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         Box(modifier = Modifier.weight(1f)) {
             PrimaryActionButton(
-                text = "Ver en Feed",
+                text = stringResource(R.string.view_in_feed),
                 onClick = onViewInFeed,
                 icon = Icons.Outlined.Explore,
                 container = AppPrimary
@@ -203,7 +204,7 @@ fun ApprovedPublicationContent(
         }
         Box(modifier = Modifier.weight(1f)) {
             PrimaryActionButton(
-                text = "Compartir",
+                text = stringResource(R.string.share),
                 onClick = onShare,
                 icon = Icons.Outlined.Share,
                 container = LightBlueBg,
@@ -213,9 +214,9 @@ fun ApprovedPublicationContent(
     }
 
     DetailCard(color = SoftBlue) {
-        Text(text = "Compromiso ético Patitas Conectadas", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
+        Text(text = stringResource(R.string.ethics_commitment), fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
         Text(
-            text = "Todas las solicitudes recibidas filtrarán automáticamente perfiles con contrato de adopción firmado y visita virtual acordada.",
+            text = stringResource(R.string.ethics_commitment_detail),
             fontSize = 12.sp,
             color = SecondaryText
         )
@@ -250,17 +251,17 @@ fun LevelUpContent(
     onShare: () -> Unit
 ) {
     DetailCard(color = AppPrimary.copy(alpha = 0.08f)) {
-        AppTag(text = "COMUNIDAD & IMPACTO", backgroundColor = AppPrimary.copy(alpha = 0.15f), textColor = AppPrimary)
+        AppTag(text = stringResource(R.string.community_impact_tag), backgroundColor = AppPrimary.copy(alpha = 0.15f), textColor = AppPrimary)
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconBadge(icon = Icons.Outlined.EmojiEvents, tint = AppPrimary, size = 56)
             Spacer(modifier = Modifier.width(12.dp))
             Column {
-                Text(text = "¡Subiste a Nivel Guardián!", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = DarkText)
-                Text(text = "Nivel 3 · +50 Puntos de Reputación Ganados", fontSize = 12.sp, color = AppPrimary)
+                Text(text = stringResource(R.string.level_up_title), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = DarkText)
+                Text(text = stringResource(R.string.level_up_detail), fontSize = 12.sp, color = AppPrimary)
             }
         }
         Text(
-            text = "Desbloqueaste la insignia «10 Publicaciones Verificadas» y aumentaste tu prestigio comunitario.",
+            text = stringResource(R.string.level_up_badge),
             fontSize = 13.sp,
             color = SecondaryText
         )
@@ -272,13 +273,13 @@ fun LevelUpContent(
             Spacer(modifier = Modifier.width(10.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = "Camila Morales", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
-                Text(text = "Voluntaria de Rescate & Verificadora", fontSize = 12.sp, color = SecondaryText)
+                Text(text = stringResource(R.string.volunteer_verifier), fontSize = 12.sp, color = SecondaryText)
             }
-            AppTag(text = "Guardián Nv. 3")
+            AppTag(text = stringResource(R.string.guardian_level))
         }
         Row {
-            Text(text = "Reputación en la red", fontSize = 12.sp, color = SecondaryText, modifier = Modifier.weight(1f))
-            Text(text = "390 / 500 pts", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = AppPrimary)
+            Text(text = stringResource(R.string.network_reputation), fontSize = 12.sp, color = SecondaryText, modifier = Modifier.weight(1f))
+            Text(text = stringResource(R.string.points_390), fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = AppPrimary)
         }
         LinearProgressIndicator(
             progress = { 0.78f },
@@ -289,46 +290,46 @@ fun LevelUpContent(
             color = AppPrimary,
             trackColor = LightBlueBg
         )
-        Text(text = "Faltan 110 pts para Defensora Mayor (Nv. 4) · 78%", fontSize = 11.sp, color = SecondaryText)
+        Text(text = stringResource(R.string.points_missing_110), fontSize = 11.sp, color = SecondaryText)
     }
 
     DetailCard {
-        SectionLabel(text = "NUEVOS PRIVILEGIOS DESBLOQUEADOS")
+        SectionLabel(text = stringResource(R.string.new_privileges))
         PrivilegeRow(
             icon = Icons.Outlined.ArrowUpward,
-            title = "Reportes destacados",
-            text = "Tus notificaciones y reportes de rescate crítico aparecen en la cabecera principal de la app vecinal."
+            title = stringResource(R.string.featured_reports),
+            text = stringResource(R.string.featured_reports_detail)
         )
         PrivilegeRow(
             icon = Icons.Outlined.WorkspacePremium,
-            title = "Insignia Dorada en Comentarios",
-            text = "Tu sello oficial de Guardián resalta todas tus respuestas y consejos en hilos de adopción comunitaria."
+            title = stringResource(R.string.golden_badge),
+            text = stringResource(R.string.golden_badge_detail)
         )
         PrivilegeRow(
             icon = Icons.Outlined.Verified,
-            title = "Validar Reportes Vecinales",
-            text = "Poder de revisión para aprobar o clasificar avisos de extravíos y animales encontrados en tu distrito."
+            title = stringResource(R.string.validate_reports),
+            text = stringResource(R.string.validate_reports_detail)
         )
     }
 
     DetailCard {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = "10 Publicaciones que lo Hicieron Posible", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
-                Text(text = "Casos verificados, seguidos y confirmados por tu labor", fontSize = 11.sp, color = SecondaryText)
+                Text(text = stringResource(R.string.ten_publications), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
+                Text(text = stringResource(R.string.ten_publications_detail), fontSize = 11.sp, color = SecondaryText)
             }
             AppTag(text = "10 / 10")
         }
-        CaseRow(name = "Max", detail = "Cachorro rescatado", status = "Adoptado Feliz")
-        CaseRow(name = "Luna", detail = "Esterilización verif.", status = "En Acogida")
-        CaseRow(name = "Pancho", detail = "Caso especial salud", status = "Recuperado")
-        CaseRow(name = "Oliver & Hermanos", detail = "Camada protegida", status = "Verificado")
-        Text(text = "+6 Mascotas · Historial auditado", fontSize = 12.sp, color = SecondaryText)
+        CaseRow(name = "Max", detail = stringResource(R.string.rescued_puppy), status = stringResource(R.string.adopted_happy))
+        CaseRow(name = "Luna", detail = stringResource(R.string.sterilization_verified), status = stringResource(R.string.fostered))
+        CaseRow(name = "Pancho", detail = stringResource(R.string.special_health), status = stringResource(R.string.recovered))
+        CaseRow(name = "Oliver & Hermanos", detail = stringResource(R.string.protected_litter), status = stringResource(R.string.verified))
+        Text(text = stringResource(R.string.more_pets), fontSize = 12.sp, color = SecondaryText)
     }
 
-    PrimaryActionButton(text = "Ver mi Vitrina de Insignias", onClick = onViewBadges, icon = Icons.Outlined.WorkspacePremium)
+    PrimaryActionButton(text = stringResource(R.string.view_badges), onClick = onViewBadges, icon = Icons.Outlined.WorkspacePremium)
     PrimaryActionButton(
-        text = "Compartir Logro en Comunidad",
+        text = stringResource(R.string.share_achievement),
         onClick = onShare,
         icon = Icons.Outlined.Share,
         container = LightBlueBg,
@@ -393,7 +394,7 @@ fun PausedPublicationContent(
     DetailCard(color = Danger.copy(alpha = 0.07f)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             AppTag(
-                text = if (state.isResubmitted) "EN REVISIÓN PRIORITARIA" else "REVISIÓN ÉTICA • PRIORIDAD ALTA",
+                text = if (state.isResubmitted) stringResource(R.string.priority_review_tag) else stringResource(R.string.ethics_review_tag),
                 backgroundColor = Danger.copy(alpha = 0.12f),
                 textColor = Danger
             )
@@ -401,25 +402,25 @@ fun PausedPublicationContent(
             Text(text = "ID: luna_2", fontSize = 11.sp, color = SecondaryText)
         }
         Text(
-            text = if (state.isResubmitted) "Corrección enviada a revisión" else "Publicación Pausada Temporalmente",
+            text = if (state.isResubmitted) stringResource(R.string.correction_sent) else stringResource(R.string.publication_paused),
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
             color = DarkText
         )
         Text(
             text = if (state.isResubmitted)
-                "El comité ético revisará los datos del carnet de Luna. Te avisaremos en cuanto se reactive su visibilidad."
+                stringResource(R.string.committee_review)
             else
-                "La visibilidad pública de Luna fue pausada para proteger la veracidad médica ante adoptantes. Actualiza la evidencia para reactivarla de inmediato.",
+                stringResource(R.string.luna_paused),
             fontSize = 13.sp,
             color = SecondaryText
         )
     }
 
     DetailCard {
-        Text(text = "Dictamen del Moderador Voluntario (Comité Ético)", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
+        Text(text = stringResource(R.string.moderator_ruling), fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
         Text(
-            text = "“Las capturas adjuntas del carnet sanitario no permiten validar los sellos de la vacuna polivalente ni la fecha de vigencia antirrábica por reflejos y desenfoque. Por favor, sube una toma cenital clara y legible.”",
+            text = stringResource(R.string.ruling_text),
             fontSize = 12.sp,
             color = SecondaryText
         )
@@ -435,12 +436,12 @@ fun PausedPublicationContent(
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = "Luna", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = DarkText)
-                Text(text = "2 años • Gatita", fontSize = 12.sp, color = SecondaryText)
-                Text(text = "Refugio Colitas Felices • Fila de espera: 4 postulantes", fontSize = 11.sp, color = SecondaryText)
+                Text(text = stringResource(R.string.luna_age), fontSize = 12.sp, color = SecondaryText)
+                Text(text = stringResource(R.string.luna_shelter), fontSize = 11.sp, color = SecondaryText)
             }
         }
         AppTag(
-            text = if (state.isResubmitted) "En revisión" else "Pausada por Moderación",
+            text = if (state.isResubmitted) stringResource(R.string.in_review) else stringResource(R.string.paused_by_moderation),
             backgroundColor = Danger.copy(alpha = 0.12f),
             textColor = Danger
         )
@@ -450,17 +451,17 @@ fun PausedPublicationContent(
     DetailCard {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = "Evidencia Sanitaria Requerida", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
-                Text(text = "Carnet Antirrábico y Séxtuple / Polivalente", fontSize = 12.sp, color = SecondaryText)
+                Text(text = stringResource(R.string.required_evidence), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
+                Text(text = stringResource(R.string.required_evidence_detail), fontSize = 12.sp, color = SecondaryText)
             }
-            AppTag(text = "Paso 1 de 2")
+            AppTag(text = stringResource(R.string.step_1_of_2))
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconBadge(icon = Icons.Outlined.ReportProblem, tint = Danger, size = 36)
             Spacer(modifier = Modifier.width(10.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = "Rechazada · Ilegible / Reflejo", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = Danger)
-                Text(text = "Foto actual no admitida", fontSize = 11.sp, color = SecondaryText)
+                Text(text = stringResource(R.string.rejected_illegible), fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = Danger)
+                Text(text = stringResource(R.string.photo_not_accepted), fontSize = 11.sp, color = SecondaryText)
             }
         }
         Surface(
@@ -477,30 +478,30 @@ fun PausedPublicationContent(
                 Icon(Icons.Outlined.CameraAlt, contentDescription = null, tint = AppPrimary)
                 Spacer(modifier = Modifier.width(10.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(text = "Subir foto nítida", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
-                    Text(text = "Buena luz, sin flash directo, sellos legibles", fontSize = 11.sp, color = SecondaryText)
+                    Text(text = stringResource(R.string.upload_clear_photo), fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
+                    Text(text = stringResource(R.string.upload_clear_detail), fontSize = 11.sp, color = SecondaryText)
                 }
-                Text(text = "Examinar", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = AppPrimary)
+                Text(text = stringResource(R.string.browse), fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = AppPrimary)
             }
         }
-        Text(text = "Toma recomendada: sin reflejos · carnet completo · firma y sello", fontSize = 11.sp, color = SecondaryText)
+        Text(text = stringResource(R.string.recommended_shot), fontSize = 11.sp, color = SecondaryText)
     }
 
     // Paso 2: validación de lote y fechas
     DetailCard {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = "Validación de Lote y Fechas", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
-                Text(text = "Confirma los datos para agilizar el desbloqueo prioritario", fontSize = 12.sp, color = SecondaryText)
+                Text(text = stringResource(R.string.validate_batch), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
+                Text(text = stringResource(R.string.validate_batch_detail), fontSize = 12.sp, color = SecondaryText)
             }
-            AppTag(text = "Paso 2 de 2")
+            AppTag(text = stringResource(R.string.step_2_of_2))
         }
 
         OutlinedTextField(
             value = state.lotNumber,
             onValueChange = onLotNumberChange,
             modifier = Modifier.fillMaxWidth(),
-            label = { Text("Número de Lote (Polivalente / Séxtuple) *") },
+            label = { Text(stringResource(R.string.batch_number)) },
             placeholder = { Text("POL-8842-XB") },
             singleLine = true,
             enabled = !state.isResubmitted,
@@ -508,11 +509,11 @@ fun PausedPublicationContent(
             supportingText = state.lotNumberError?.let { { Text(it) } }
         )
 
-        Text(text = "Fecha Aplicación *", fontSize = 12.sp, color = SecondaryText)
+        Text(text = stringResource(R.string.application_date), fontSize = 12.sp, color = SecondaryText)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            DateField(value = state.applicationDay, onValueChange = onDayChange, placeholder = "DD", enabled = !state.isResubmitted, modifier = Modifier.weight(1f))
-            DateField(value = state.applicationMonth, onValueChange = onMonthChange, placeholder = "MM", enabled = !state.isResubmitted, modifier = Modifier.weight(1f))
-            DateField(value = state.applicationYear, onValueChange = onYearChange, placeholder = "AAAA", enabled = !state.isResubmitted, modifier = Modifier.weight(1.4f))
+            DateField(value = state.applicationDay, onValueChange = onDayChange, placeholder = stringResource(R.string.day_hint), enabled = !state.isResubmitted, modifier = Modifier.weight(1f))
+            DateField(value = state.applicationMonth, onValueChange = onMonthChange, placeholder = stringResource(R.string.month_hint), enabled = !state.isResubmitted, modifier = Modifier.weight(1f))
+            DateField(value = state.applicationYear, onValueChange = onYearChange, placeholder = stringResource(R.string.year_hint), enabled = !state.isResubmitted, modifier = Modifier.weight(1.4f))
         }
         state.dateError?.let { Text(text = it, color = AppRed, fontSize = 12.sp) }
 
@@ -520,7 +521,7 @@ fun PausedPublicationContent(
             value = state.rabiesLot,
             onValueChange = onRabiesLotChange,
             modifier = Modifier.fillMaxWidth(),
-            label = { Text("Lote Antirrábica *") },
+            label = { Text(stringResource(R.string.rabies_batch)) },
             placeholder = { Text("ANT-9910") },
             singleLine = true,
             enabled = !state.isResubmitted,
@@ -541,7 +542,7 @@ fun PausedPublicationContent(
                 colors = CheckboxDefaults.colors(checkedColor = AppPrimary)
             )
             Text(
-                text = "Confirmo bajo código ético de rescate que la cartilla adjunta pertenece al ejemplar indicado y ha sido sellada por un profesional veterinario colegiado.",
+                text = stringResource(R.string.ethics_confirmation),
                 fontSize = 12.sp,
                 color = DarkText
             )
@@ -550,9 +551,9 @@ fun PausedPublicationContent(
 
     PrimaryActionButton(
         text = when {
-            state.isResubmitted -> "Enviado a Revisión Prioritaria"
-            state.isResubmitting -> "Enviando..."
-            else -> "Reenviar a Revisión Prioritaria"
+            state.isResubmitted -> stringResource(R.string.sent_priority)
+            state.isResubmitting -> stringResource(R.string.sending)
+            else -> stringResource(R.string.resend_priority)
         },
         onClick = onResubmit,
         icon = Icons.AutoMirrored.Outlined.Send,
@@ -561,11 +562,11 @@ fun PausedPublicationContent(
     TextButton(onClick = onGuidelinesClick, modifier = Modifier.fillMaxWidth()) {
         Icon(Icons.AutoMirrored.Outlined.HelpOutline, contentDescription = null, tint = AppPrimary, modifier = Modifier.size(16.dp))
         Spacer(modifier = Modifier.width(6.dp))
-        Text(text = "Consultar pautas con el moderador voluntario", color = AppPrimary, fontSize = 13.sp)
+        Text(text = stringResource(R.string.consult_guidelines), color = AppPrimary, fontSize = 13.sp)
     }
     DetailCard(color = SoftBlue) {
         Text(
-            text = "Cola Prioritaria Activa: las correcciones de perfil pausado se auditan en un promedio de 45 minutos en horario diurno.",
+            text = stringResource(R.string.priority_queue),
             fontSize = 12.sp,
             color = SecondaryText
         )
@@ -608,8 +609,8 @@ fun NewCommentContent(
     onSendReply: () -> Unit
 ) {
     DetailCard(color = AppPrimary.copy(alpha = 0.08f)) {
-        AppTag(text = "NOTIFICACIÓN DE RESCATE", backgroundColor = AppPrimary.copy(alpha = 0.15f), textColor = AppPrimary)
-        Text(text = "Nuevo comentario relevante en el caso de Max", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = DarkText)
+        AppTag(text = stringResource(R.string.rescue_notification_tag), backgroundColor = AppPrimary.copy(alpha = 0.15f), textColor = AppPrimary)
+        Text(text = stringResource(R.string.new_comment_max), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = DarkText)
     }
 
     // Caso al que pertenece el comentario
@@ -625,12 +626,12 @@ fun NewCommentContent(
             )
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
-                SectionLabel(text = "CASO")
+                SectionLabel(text = stringResource(R.string.case_label))
                 Text(text = "Max", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = DarkText)
-                Text(text = "Golden Mestizo • 3 meses • Buscando alimento y cuidados", fontSize = 11.sp, color = SecondaryText)
+                Text(text = stringResource(R.string.max_case_detail), fontSize = 11.sp, color = SecondaryText)
             }
             TextButton(onClick = onViewCase) {
-                Text(text = "Ver caso", color = AppPrimary, fontWeight = FontWeight.SemiBold)
+                Text(text = stringResource(R.string.view_case), color = AppPrimary, fontWeight = FontWeight.SemiBold)
             }
         }
     }
@@ -642,12 +643,12 @@ fun NewCommentContent(
             Spacer(modifier = Modifier.width(10.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = "Dr. Andrés Vega", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
-                Text(text = "Médico Veterinario Verificado", fontSize = 11.sp, color = AppPrimary)
-                Text(text = "Hace 18 minutos • Clínica Vet Usaquén", fontSize = 11.sp, color = SecondaryText)
+                Text(text = stringResource(R.string.verified_vet), fontSize = 11.sp, color = AppPrimary)
+                Text(text = stringResource(R.string.vet_time), fontSize = 11.sp, color = SecondaryText)
             }
         }
         Text(
-            text = "“Puedo aportar un bulto de 15kg de alimento medicado y desparasitación gratuita en mi clínica de Usaquén para que Max continúe estable. Cuenten conmigo para evaluarlo sin costo.”",
+            text = stringResource(R.string.vet_comment),
             fontSize = 13.sp,
             color = DarkText
         )
@@ -677,7 +678,7 @@ fun NewCommentContent(
             ) {
                 Icon(
                     imageVector = if (state.isCommentLiked) Icons.Filled.ThumbUp else Icons.Outlined.ThumbUp,
-                    contentDescription = "Agradecer",
+                    contentDescription = stringResource(R.string.thank),
                     tint = if (state.isCommentLiked) AppPrimary else SecondaryText,
                     modifier = Modifier.size(16.dp)
                 )
@@ -685,17 +686,17 @@ fun NewCommentContent(
                 Text(text = "${state.commentLikes}", fontSize = 13.sp, color = SecondaryText)
             }
             Spacer(modifier = Modifier.width(8.dp))
-            Text(text = "${state.replies.size} respuestas", fontSize = 13.sp, color = SecondaryText, modifier = Modifier.weight(1f))
-            AppTag(text = "Donación Verificada", backgroundColor = Green.copy(alpha = 0.12f), textColor = Green)
+            Text(text = stringResource(R.string.replies_count, state.replies.size), fontSize = 13.sp, color = SecondaryText, modifier = Modifier.weight(1f))
+            AppTag(text = stringResource(R.string.verified_donation), backgroundColor = Green.copy(alpha = 0.12f), textColor = Green)
         }
         PrimaryActionButton(
-            text = if (state.isDonationAccepted) "Donación aceptada ✓" else "Aceptar donación y coordinar entrega",
+            text = if (state.isDonationAccepted) stringResource(R.string.donation_accepted) else stringResource(R.string.accept_donation),
             onClick = onAcceptDonation,
             icon = Icons.Outlined.CheckCircle,
             enabled = !state.isDonationAccepted
         )
         PrimaryActionButton(
-            text = "WhatsApp seguro",
+            text = stringResource(R.string.safe_whatsapp),
             onClick = onWhatsAppClick,
             icon = Icons.Outlined.ChatBubbleOutline,
             container = LightBlueBg,
@@ -706,11 +707,11 @@ fun NewCommentContent(
     // Respuestas en el caso
     DetailCard {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            SectionLabel(text = "RESPUESTAS EN ESTE CASO")
+            SectionLabel(text = stringResource(R.string.case_replies))
             Spacer(modifier = Modifier.weight(1f))
             if (state.replies.size > 1) {
                 TextButton(onClick = onToggleAllReplies) {
-                    Text(text = if (state.showAllReplies) "Ver menos" else "Ver todas", color = AppPrimary, fontSize = 12.sp)
+                    Text(text = if (state.showAllReplies) stringResource(R.string.view_less) else stringResource(R.string.view_all), color = AppPrimary, fontSize = 12.sp)
                 }
             }
         }
@@ -727,8 +728,8 @@ fun NewCommentContent(
 
     // Respuesta pública del gestor del caso
     DetailCard(color = SoftBlue) {
-        Text(text = "Tu respuesta como gestora de Max", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
-        Text(text = "Sugerencias rápidas", fontSize = 11.sp, color = AppPrimary)
+        Text(text = stringResource(R.string.reply_as_manager), fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
+        Text(text = stringResource(R.string.quick_suggestions), fontSize = 11.sp, color = AppPrimary)
         Row(
             modifier = Modifier.horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -753,10 +754,10 @@ fun NewCommentContent(
                 value = state.replyText,
                 onValueChange = onReplyChange,
                 modifier = Modifier.weight(1f),
-                placeholder = { Text("Responder público...") }
+                placeholder = { Text(stringResource(R.string.reply_public)) }
             )
             IconButton(onClick = onSendReply) {
-                Icon(Icons.AutoMirrored.Outlined.Send, contentDescription = "Enviar respuesta", tint = AppPrimary)
+                Icon(Icons.AutoMirrored.Outlined.Send, contentDescription = stringResource(R.string.send_reply), tint = AppPrimary)
             }
         }
     }
@@ -777,17 +778,17 @@ fun BadgeEarnedContent(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(text = "Reconocimiento Comunitario", fontSize = 12.sp, color = Gold, fontWeight = FontWeight.SemiBold)
+            Text(text = stringResource(R.string.community_recognition), fontSize = 12.sp, color = Gold, fontWeight = FontWeight.SemiBold)
             IconBadge(icon = Icons.Outlined.WorkspacePremium, tint = Gold, size = 72)
-            Text(text = "Primera Huella", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = DarkText)
-            Text(text = "Concedida en Enero 2024", fontSize = 12.sp, color = SecondaryText)
+            Text(text = stringResource(R.string.first_paw), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = DarkText)
+            Text(text = stringResource(R.string.granted_jan), fontSize = 12.sp, color = SecondaryText)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                AppTag(text = "Respaldo veterinario oficial")
-                AppTag(text = "25 pts", backgroundColor = Gold.copy(alpha = 0.15f), textColor = Gold)
-                AppTag(text = "VERIFICADO", backgroundColor = Green.copy(alpha = 0.12f), textColor = Green)
+                AppTag(text = stringResource(R.string.official_vet_support))
+                AppTag(text = stringResource(R.string.points_25), backgroundColor = Gold.copy(alpha = 0.15f), textColor = Gold)
+                AppTag(text = stringResource(R.string.verified_upper), backgroundColor = Green.copy(alpha = 0.12f), textColor = Green)
             }
             Text(
-                text = "Mención honorífica por tu destacado compromiso con el bienestar animal y la adopción responsable en la comunidad.",
+                text = stringResource(R.string.honor_mention),
                 fontSize = 13.sp,
                 color = SecondaryText
             )
@@ -795,7 +796,7 @@ fun BadgeEarnedContent(
     }
 
     DetailCard {
-        SectionLabel(text = "CASO QUE ORIGINÓ EL LOGRO")
+        SectionLabel(text = stringResource(R.string.origin_case))
         Row(verticalAlignment = Alignment.CenterVertically) {
             AsyncImage(
                 model = R.drawable.imagen_max,
@@ -807,13 +808,13 @@ fun BadgeEarnedContent(
             )
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = "Caso #1 · Max", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = DarkText)
-                Text(text = "Cachorro mestizo • Clínica Veterinaria San Roque", fontSize = 11.sp, color = SecondaryText)
+                Text(text = stringResource(R.string.case_1_max), fontSize = 14.sp, fontWeight = FontWeight.Bold, color = DarkText)
+                Text(text = stringResource(R.string.mixed_puppy_clinic), fontSize = 11.sp, color = SecondaryText)
             }
-            AppTag(text = "Adoptado", backgroundColor = Green.copy(alpha = 0.12f), textColor = Green)
+            AppTag(text = stringResource(R.string.adopted), backgroundColor = Green.copy(alpha = 0.12f), textColor = Green)
         }
         Text(
-            text = "\"Gracias al reporte oportuno y la confirmación de vacunas y desparasitación, Max encontró un hogar definitivo en menos de 3 semanas. Tu dedicación transformó su vida.\"",
+            text = stringResource(R.string.max_thanks),
             fontSize = 12.sp,
             color = SecondaryText
         )
@@ -821,17 +822,17 @@ fun BadgeEarnedContent(
 
     DetailCard {
         Row {
-            Text(text = "Próximas insignias al alcance", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = DarkText, modifier = Modifier.weight(1f))
-            AppTag(text = "3 disponibles")
+            Text(text = stringResource(R.string.next_badges), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = DarkText, modifier = Modifier.weight(1f))
+            AppTag(text = stringResource(R.string.three_available))
         }
-        NextBadgeRow(title = "Hogar Temporal", points = "+50 pts", text = "Brinda refugio de paso a un peludo en recuperación")
-        NextBadgeRow(title = "Rescatista Constante", points = "+75 pts", text = "3 casos validados por entidades aliadas")
-        NextBadgeRow(title = "Héroe del Mes", points = "+120 pts", text = "Lidera adopciones comunitarias en tu localidad")
+        NextBadgeRow(title = stringResource(R.string.foster_badge), points = "+50 pts", text = stringResource(R.string.foster_badge_detail))
+        NextBadgeRow(title = stringResource(R.string.steady_rescuer), points = "+75 pts", text = stringResource(R.string.steady_rescuer_detail))
+        NextBadgeRow(title = stringResource(R.string.hero_month), points = "+120 pts", text = stringResource(R.string.hero_month_detail))
     }
 
-    PrimaryActionButton(text = "Ver Perfil Completo y Logros", onClick = onViewProfile, icon = Icons.Outlined.Person)
+    PrimaryActionButton(text = stringResource(R.string.view_full_profile), onClick = onViewProfile, icon = Icons.Outlined.Person)
     PrimaryActionButton(
-        text = "Volver a Notificaciones",
+        text = stringResource(R.string.back_to_notifications),
         onClick = onBackToNotifications,
         container = LightBlueBg,
         content = DarkText

@@ -1,5 +1,8 @@
 package co.edu.adopcionmascota.features.profile.delete
 
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -67,9 +70,9 @@ private val SoftBlue = Color(0xFFEDF4FF)
 // Pantalla "Eliminar cuenta": hoja de confirmación sobre un fondo oscuro
 @Composable
 fun DeleteAccountScreen(
-    onCancel: () -> Unit,           // "Cancelar y conservar mi cuenta" o tocar fuera de la hoja
+    onCancel: () -> Unit,           // stringResource(R.string.cancel_keep_account) o tocar fuera de la hoja
     onAccountDeleted: () -> Unit,   // Ir a "Cuenta eliminada"
-    viewModel: DeleteAccountViewModel = viewModel()
+    viewModel: DeleteAccountViewModel = hiltViewModel()
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val state by viewModel.uiState.collectAsState()
@@ -165,7 +168,7 @@ private fun DeleteHeader() {
             )
         }
         Text(
-            text = "¿Eliminar tu cuenta de\nPatitas Conectadas?",
+            text = stringResource(R.string.delete_account_title),
             fontSize = 24.sp,
             lineHeight = 32.sp,
             fontWeight = FontWeight.Bold,
@@ -181,7 +184,7 @@ private fun DeleteHeader() {
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
-                text = "Esta acción es permanente e irreversible",
+                text = stringResource(R.string.delete_permanent),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = DangerRed
@@ -202,7 +205,7 @@ private fun ConsequencesCard() {
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = "CONSECUENCIAS DIRECTAS PARA TU PERFIL",
+                text = stringResource(R.string.delete_consequences),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = SecondaryText
@@ -210,11 +213,11 @@ private fun ConsequencesCard() {
             ConsequenceItem(icon = Icons.Outlined.Shield) {
                 Text(
                     text = buildAnnotatedString {
-                        append("Perderás tu ")
+                        append(stringResource(R.string.delete_lose_1))
                         withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
-                            append("Reputación Comunitaria (Nivel 2: Protector, 340 pts)")
+                            append(stringResource(R.string.delete_lose_2))
                         }
-                        append(" acumulada desde enero 2024.")
+                        append(stringResource(R.string.delete_lose_3))
                     },
                     fontSize = 12.sp,
                     color = SecondaryText
@@ -222,14 +225,14 @@ private fun ConsequencesCard() {
             }
             ConsequenceItem(icon = Icons.Outlined.Pets) {
                 Text(
-                    text = "Tus 2 publicaciones activas y el historial de rescates se desvincularán definitivamente.",
+                    text = stringResource(R.string.delete_publications),
                     fontSize = 12.sp,
                     color = SecondaryText
                 )
             }
             ConsequenceItem(icon = Icons.Outlined.MilitaryTech) {
                 Text(
-                    text = "Perderás todas tus insignias obtenidas ('Primera Huella' y 'Hogar Temporal').",
+                    text = stringResource(R.string.delete_badges),
                     fontSize = 12.sp,
                     color = SecondaryText
                 )
@@ -272,13 +275,13 @@ private fun BreakSuggestionCard() {
             Spacer(modifier = Modifier.width(12.dp))
             Column {
                 Text(
-                    text = "¿Solo necesitas un descanso?",
+                    text = stringResource(R.string.need_a_break),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = DarkText
                 )
                 Text(
-                    text = "Puedes pausar tu cuenta o silenciar notificaciones temporales sin perder tus logros ni el historial de rescate comunitario.",
+                    text = stringResource(R.string.need_a_break_detail),
                     fontSize = 12.sp,
                     color = SecondaryText
                 )
@@ -308,7 +311,7 @@ private fun ConfirmationCheck(
                 colors = CheckboxDefaults.colors(checkedColor = Color(0xFF172DF2))
             )
             Text(
-                text = "Comprendo que perderé todos mis datos, historial de rescate, insignias y reputación comunitaria acumulada de manera irreversible.",
+                text = stringResource(R.string.delete_confirm),
                 fontSize = 12.sp,
                 color = DarkText
             )
@@ -346,7 +349,7 @@ private fun DeleteActions(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = if (isDeleting) "Eliminando..." else "Eliminar definitivamente",
+                text = if (isDeleting) stringResource(R.string.deleting) else stringResource(R.string.delete_forever),
                 fontWeight = FontWeight.SemiBold
             )
         }
@@ -369,7 +372,7 @@ private fun DeleteActions(
                 modifier = Modifier.size(18.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text(text = "Cancelar y conservar mi cuenta", fontWeight = FontWeight.SemiBold)
+            Text(text = stringResource(R.string.cancel_keep_account), fontWeight = FontWeight.SemiBold)
         }
     }
 }

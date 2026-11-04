@@ -1,5 +1,7 @@
 package co.edu.adopcionmascota.core.component
 
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
@@ -19,7 +21,7 @@ import co.edu.adopcionmascota.core.theme.AppSecondaryText
 fun AppSearchBar(
     value: String,
     onValueChange: (String) -> Unit,
-    placeholder: String = "Buscar...",
+    placeholder: String = stringResource(R.string.search_default),
     onFilterClick: () -> Unit = {}
 ) {
 
@@ -42,7 +44,7 @@ fun AppSearchBar(
         leadingIcon = {
             Icon(
                 imageVector = Icons.Outlined.Search,
-                contentDescription = "Buscar"
+                contentDescription = stringResource(R.string.search)
             )
         },
 
@@ -52,7 +54,7 @@ fun AppSearchBar(
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Tune,
-                    contentDescription = "Filtros"
+                    contentDescription = stringResource(R.string.filters)
                 )
             }
         },

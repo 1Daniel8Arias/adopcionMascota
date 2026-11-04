@@ -1,5 +1,7 @@
 package co.edu.adopcionmascota.features.profile.component
 
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -55,13 +57,13 @@ fun ProfileMetricsSection(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Impacto y Métricas",
+                    text = stringResource(R.string.impact_metrics),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = DarkText
                 )
                 Text(
-                    text = "Aportes en la comunidad de rescate",
+                    text = stringResource(R.string.impact_detail),
                     fontSize = 13.sp,
                     color = SecondaryText
                 )
@@ -69,7 +71,7 @@ fun ProfileMetricsSection(
 
             Surface(shape = CircleShape, color = LightBlueBg) {
                 Text(
-                    text = "Actualizado hoy",
+                    text = stringResource(R.string.updated_today),
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                     fontSize = 12.sp,
                     color = AppPrimary,
@@ -84,16 +86,16 @@ fun ProfileMetricsSection(
         ) {
             MetricCard(
                 icon = Icons.Outlined.Campaign,
-                topLabel = "En curso",
+                topLabel = stringResource(R.string.in_progress),
                 value = state.activePublications.toString(),
-                label = "Publicaciones Activas",
+                label = stringResource(R.string.active_publications),
                 modifier = Modifier.weight(1f).fillMaxHeight()
             )
             MetricCard(
                 icon = Icons.Outlined.Favorite,
-                topLabel = "Finalizadas",
+                topLabel = stringResource(R.string.finished),
                 value = state.finishedPublications.toString(),
-                label = "Finalizadas / Resueltas",
+                label = stringResource(R.string.finished_resolved),
                 modifier = Modifier.weight(1f).fillMaxHeight()
             )
         }
@@ -104,16 +106,16 @@ fun ProfileMetricsSection(
         ) {
             MetricCard(
                 icon = Icons.Outlined.HourglassTop,
-                topLabel = "Revisión",
+                topLabel = stringResource(R.string.review),
                 value = state.pendingPublications.toString(),
-                label = "Por Verificar",
+                label = stringResource(R.string.to_verify),
                 modifier = Modifier.weight(1f).fillMaxHeight()
             )
             MetricCard(
                 icon = Icons.Outlined.ThumbUp,
-                topLabel = "+${state.votesThisMonth} este mes",
+                topLabel = stringResource(R.string.votes_month, state.votesThisMonth),
                 value = state.importantVotes.toString(),
-                label = "Votos 'Es importante'",
+                label = stringResource(R.string.important_votes),
                 modifier = Modifier.weight(1f).fillMaxHeight()
             )
         }
@@ -138,7 +140,7 @@ fun ProfileMetricsSection(
                 )
                 Spacer(modifier = Modifier.width(10.dp))
                 Text(
-                    text = "Ver todas mis publicaciones (${state.myPublicationsCount})",
+                    text = stringResource(R.string.view_all_publications, state.myPublicationsCount),
                     modifier = Modifier.weight(1f),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,

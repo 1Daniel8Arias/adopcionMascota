@@ -1,5 +1,7 @@
 package co.edu.adopcionmascota.features.moderator
 
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -127,7 +129,7 @@ fun ModeratorScreen(
     ModeratorScreenContent(
         name = user.name,
         email = user.email,
-        roleLabel = if (isAdmin) "Moderador" else level.name,
+        roleLabel = if (isAdmin) stringResource(R.string.moderator) else level.name,
         roleIcon = if (isAdmin) Icons.Filled.Gavel else level.icon,
         isAdmin = isAdmin,
         onNavigationClick = onNavigationClick,
@@ -193,7 +195,7 @@ private fun ModeratorScreenContent(
                     onEthicalSettings = onEthicalSettings,
                     name = name,
                     email = email,
-                    roleLabel = if(isAdmin) "Moderador" else roleLabel,
+                    roleLabel = if(isAdmin) stringResource(R.string.moderator) else roleLabel,
                     roleIcon = if (isAdmin) Icons.Filled.Gavel else roleIcon
 
                 )
@@ -201,8 +203,8 @@ private fun ModeratorScreenContent(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 SectionTitle(
-                    title = "Impacto Comunitario y Auditoría",
-                    subtitle = "Últimos 30 días",
+                    title = stringResource(R.string.impact_audit),
+                    subtitle = stringResource(R.string.last_30_days),
                     icon = {
                         Icon(
                             Icons.Default.Analytics,
@@ -221,9 +223,9 @@ private fun ModeratorScreenContent(
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         MetricCard(
-                            title = "Casos Auditados",
+                            title = stringResource(R.string.audited_cases),
                             value = "1,248",
-                            description = "+42 esta semana",
+                            description = stringResource(R.string.this_week),
                             icon = {
                                 Icon(
                                     Icons.Default.Checklist,
@@ -235,9 +237,9 @@ private fun ModeratorScreenContent(
                         )
 
                         MetricCard(
-                            title = "Aprobados",
+                            title = stringResource(R.string.approved),
                             value = "1,089",
-                            description = "87.2% tasa de aprobación",
+                            description = stringResource(R.string.approval_rate),
                             icon = {
                                 Icon(
                                     Icons.Default.Verified,
@@ -253,9 +255,9 @@ private fun ModeratorScreenContent(
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         MetricCard(
-                            title = "Subsanaciones",
+                            title = stringResource(R.string.remedies),
                             value = "159",
-                            description = "Carnet ilegible / sospecha",
+                            description = stringResource(R.string.remedies_detail),
                             icon = {
                                 Icon(
                                     Icons.Default.Report,
@@ -267,9 +269,9 @@ private fun ModeratorScreenContent(
                         )
 
                         MetricCard(
-                            title = "Tiempo Promedio",
+                            title = stringResource(R.string.average_time),
                             value = "18 min",
-                            description = "Meta: <30 min (Excelente)",
+                            description = stringResource(R.string.target_time),
                             icon = {
                                 Icon(
                                     Icons.Default.Timer,
@@ -289,8 +291,8 @@ private fun ModeratorScreenContent(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 SectionTitle(
-                    title = "Últimas Acciones Registradas",
-                    actionText = "Ver historial",
+                    title = stringResource(R.string.last_actions),
+                    actionText = stringResource(R.string.view_history),
                     onAction = onViewHistory,
                     icon = {
                         Icon(
@@ -308,7 +310,7 @@ private fun ModeratorScreenContent(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 SectionTitle(
-                    title = "Herramientas y Protocolo Ético",
+                    title = stringResource(R.string.tools_protocol),
                     icon = {
                         Icon(
                             Icons.Default.Gavel,
@@ -351,7 +353,7 @@ private fun ModeratorScreenContent(
                     Spacer(modifier = Modifier.width(10.dp))
 
                     Text(
-                        text = "CERRAR SESIÓN DE MODERADOR",
+                        text = stringResource(R.string.log_out_moderator),
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -383,7 +385,7 @@ private fun ModeratorTopBar(
             Box(contentAlignment = Alignment.Center) {
                 Icon(
                     imageVector = Icons.Default.Pets,
-                    contentDescription = "Patitas Conectadas",
+                    contentDescription = stringResource(R.string.brand),
                     tint = ModeratorBlue,
                     modifier = Modifier.size(27.dp)
                 )
@@ -399,7 +401,7 @@ private fun ModeratorTopBar(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "PATITAS CONECTADAS",
+                    text = stringResource(R.string.brand_upper),
                     color = ModeratorBlue,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
@@ -416,7 +418,7 @@ private fun ModeratorTopBar(
             }
 
             Text(
-                text = "Perfil De Moderador",
+                text = stringResource(R.string.moderator_profile),
                 color = ModeratorDark,
                 fontSize = 19.sp,
                 fontWeight = FontWeight.Bold
@@ -426,7 +428,7 @@ private fun ModeratorTopBar(
         IconButton(onClick = onNotifications) {
             Icon(
                 imageVector = Icons.Default.Notifications,
-                contentDescription = "Notificaciones",
+                contentDescription = stringResource(R.string.notifications),
                 tint = ModeratorDark
             )
         }
@@ -467,7 +469,7 @@ private fun ModeratorProfileCard(
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
                             imageVector = Icons.Default.Person,
-                            contentDescription = "Foto del moderador",
+                            contentDescription = stringResource(R.string.moderator_photo),
                             tint = ModeratorBlue,
                             modifier = Modifier.size(52.dp)
                         )
@@ -484,7 +486,7 @@ private fun ModeratorProfileCard(
                         color = androidx.compose.ui.graphics.Color(0xFFE9ECFF)
                     ) {
                         Text(
-                            text = "MOD NIVEL 3 • VERIFICADO",
+                            text = stringResource(R.string.moderator_level),
                             modifier = Modifier.padding(
                                 horizontal = 10.dp,
                                 vertical = 5.dp
@@ -554,7 +556,7 @@ private fun ModeratorProfileCard(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         InfoChip(
-                            text = "Activo en Turno",
+                            text = stringResource(R.string.on_duty),
                             dotColor = ModeratorGreen
                         )
 
@@ -601,7 +603,7 @@ private fun ModeratorProfileCard(
                     Spacer(modifier = Modifier.width(6.dp))
 
                     Text(
-                        text = "Editar Credenciales",
+                        text = stringResource(R.string.edit_credentials),
                         fontSize = 12.sp,
                         lineHeight = 15.sp
                     )
@@ -629,7 +631,7 @@ private fun ModeratorProfileCard(
                     Spacer(modifier = Modifier.width(6.dp))
 
                     Text(
-                        text = "Configuración Ética",
+                        text = stringResource(R.string.ethics_settings),
                         fontSize = 12.sp,
                         lineHeight = 15.sp
                     )
@@ -823,7 +825,7 @@ private fun EthicalQueueCard() {
                     color = ModeratorBlue
                 ) {
                     Text(
-                        text = "TURNO BOGOTÁ NORTE",
+                        text = stringResource(R.string.shift_north),
                         modifier = Modifier.padding(
                             horizontal = 12.dp,
                             vertical = 6.dp
@@ -856,7 +858,7 @@ private fun EthicalQueueCard() {
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
-                text = "Cola de Revisión Ética Activa",
+                text = stringResource(R.string.review_queue),
                 fontSize = 19.sp,
                 fontWeight = FontWeight.Bold,
                 color = androidx.compose.ui.graphics.Color.White
@@ -865,7 +867,7 @@ private fun EthicalQueueCard() {
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "4 expedientes pendientes de validación veterinaria y legal.",
+                text = stringResource(R.string.review_pending),
                 color = androidx.compose.ui.graphics.Color(0xFF9CA3AF),
                 fontSize = 13.sp,
                 lineHeight = 19.sp
@@ -875,8 +877,8 @@ private fun EthicalQueueCard() {
 
             QueueItem(
                 emoji = "✱",
-                title = "Adopción Urgente (Cachorros en calle)",
-                count = "2 casos",
+                title = stringResource(R.string.urgent_adoption),
+                count = stringResource(R.string.two_cases),
                 accent = androidx.compose.ui.graphics.Color(0xFFFF8AA2)
             )
 
@@ -884,8 +886,8 @@ private fun EthicalQueueCard() {
 
             QueueItem(
                 emoji = "☻",
-                title = "Mascota Perdida • Caso Luna",
-                count = "1 caso",
+                title = stringResource(R.string.lost_pet_case),
+                count = stringResource(R.string.one_case),
                 accent = ModeratorYellow
             )
 
@@ -893,8 +895,8 @@ private fun EthicalQueueCard() {
 
             QueueItem(
                 emoji = "⚑",
-                title = "Reporte de Comunidad (Posible Criadero)",
-                count = "1 caso",
+                title = stringResource(R.string.community_report),
+                count = stringResource(R.string.one_case),
                 accent = androidx.compose.ui.graphics.Color(0xFF55D5FF)
             )
         }
@@ -968,10 +970,10 @@ private fun RecentActionsCard() {
         ) {
             RecentActionItem(
                 title = "Milo #204 (Golden Mestizo)",
-                time = "Hace 20 min",
-                status = "Aprobación concedida:",
-                description = "Carnet de vacunación",
-                tag = "Adopción Responsable",
+                time = stringResource(R.string.twenty_min_ago),
+                status = stringResource(R.string.approval_granted),
+                description = stringResource(R.string.vaccination_card),
+                tag = stringResource(R.string.responsible_adoption),
                 secondaryTag = "Usaquén",
                 icon = {
                     Icon(
@@ -990,10 +992,10 @@ private fun RecentActionsCard() {
 
             RecentActionItem(
                 title = "Luna #102 (Gatita Carey)",
-                time = "Hace 2 h",
-                status = "Rechazo subsanable:",
-                description = "Carnet de vacunación...",
-                tag = "Falta Doc Oficial",
+                time = stringResource(R.string.two_hours_ago),
+                status = stringResource(R.string.fixable_rejection),
+                description = stringResource(R.string.vaccination_card_short),
+                tag = stringResource(R.string.missing_official_doc),
                 secondaryTag = "Suba",
                 icon = {
                     Icon(
@@ -1012,10 +1014,10 @@ private fun RecentActionsCard() {
 
             RecentActionItem(
                 title = "Toby (Schnauzer Adulto)",
-                time = "Hace 1 día",
-                status = "Caso cerrado exitoso:",
-                description = "Adopción formalizada...",
-                tag = "Final Feliz",
+                time = stringResource(R.string.one_day_ago),
+                status = stringResource(R.string.case_closed),
+                description = stringResource(R.string.adoption_formalized),
+                tag = stringResource(R.string.happy_ending),
                 icon = {
                     Icon(
                         Icons.Default.Star,
@@ -1159,8 +1161,8 @@ private fun ToolsCard(
             )
         ) {
             ToolItem(
-                title = "Manual de Criterios Éticos",
-                description = "Políticas anti-lucro y Ley de Protección Animal Col.",
+                title = stringResource(R.string.ethics_manual),
+                description = stringResource(R.string.ethics_manual_detail),
                 icon = {
                     Icon(
                         Icons.Default.Book,
@@ -1171,8 +1173,8 @@ private fun ToolsCard(
             )
 
             ToolItem(
-                title = "Plantillas de Subsanación",
-                description = "Gestionar motivos de rechazo y feedback amable",
+                title = stringResource(R.string.remedy_templates),
+                description = stringResource(R.string.remedy_templates_detail),
                 icon = {
                     Icon(
                         Icons.Default.ArrowForward,
@@ -1183,8 +1185,8 @@ private fun ToolsCard(
             )
 
             ToolItem(
-                title = "Registro de Refugios Avalados",
-                description = "Base de fundaciones y veterinarias asociadas",
+                title = stringResource(R.string.shelter_registry),
+                description = stringResource(R.string.shelter_registry_detail),
                 icon = {
                     Icon(
                         Icons.Default.Shield,
@@ -1255,7 +1257,7 @@ private fun ToolItem(
         IconButton(onClick = onClick) {
             Icon(
                 Icons.Default.ArrowForward,
-                contentDescription = "Abrir $title",
+                contentDescription = stringResource(R.string.open_item, title),
                 tint = ModeratorMuted
             )
         }
@@ -1271,7 +1273,7 @@ private fun ModeratorScreenPreview() {
         ModeratorScreenContent(
             name = "María González",
             email = "moderadora@ejemplo.com",
-            roleLabel = "Moderador",
+            roleLabel = stringResource(R.string.moderator),
             roleIcon = Icons.Filled.Gavel,
             isAdmin = true
         )

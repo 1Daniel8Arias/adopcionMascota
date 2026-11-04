@@ -1,41 +1,12 @@
 package co.edu.adopcionmascota.features.publication
 
+import co.edu.adopcionmascota.domain.model.MyPublication
+import co.edu.adopcionmascota.domain.model.MyPublicationStatus
 import co.edu.adopcionmascota.R
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-
-// Estados de una publicación propia ("Mis Publicaciones" del Figma)
-enum class MyPublicationStatus(val label: String) {
-    ACTIVE("Verificada en Feed"),
-    IN_REVIEW("En Revisión Ética"),
-    RESOLVED("¡Finalizada con Éxito!"),
-    OBSERVATION("Acción Requerida"),
-    PAUSED("Pausada")
-}
-
-data class MyPublication(
-    val id: String,
-    val feedId: String?,            // Id de la publicación en el feed (null si aún no está publicada)
-    val name: String,
-    val category: String,           // Adopción, Perdido, Encontrado...
-    val species: String = "Perro",
-    val breed: String = "",
-    val size: String = "Mediano",
-    val description: String,
-    val location: String,
-    val image: Int,
-    val status: MyPublicationStatus,
-    val isVaccinated: Boolean = true,
-    val isDewormed: Boolean = true,
-    val isSterilized: Boolean = false,
-    val hasMicrochip: Boolean = false,
-    val followers: Int = 0,
-    val comments: Int = 0,
-    val shares: Int = 0,
-    val moderatorNote: String? = null
-)
 
 // Por ahora las publicaciones propias viven en memoria; más adelante vendrán del repositorio / Firebase
 object MyPublicationsStore {

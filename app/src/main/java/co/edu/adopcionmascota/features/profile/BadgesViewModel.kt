@@ -1,5 +1,9 @@
 package co.edu.adopcionmascota.features.profile
 
+import co.edu.adopcionmascota.R
+import androidx.annotation.StringRes
+import co.edu.adopcionmascota.domain.model.Badge
+import co.edu.adopcionmascota.domain.model.BadgeStatus
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -7,20 +11,20 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 // Filtros de la "Vitrina de Insignias"
-enum class BadgeFilter(val label: String) {
-    ALL("Todas"),
-    GRANTED("Obtenidas"),
-    IN_PROGRESS("En Progreso"),
-    LOCKED("Por Desbloquear")
+enum class BadgeFilter(@StringRes val label: Int) {
+    ALL(R.string.all),
+    GRANTED(R.string.badge_filter_earned),
+    IN_PROGRESS(R.string.badge_filter_progress),
+    LOCKED(R.string.badge_filter_locked)
 }
 
-enum class BadgeCategory(val label: String) {
-    RESCUE("🐾 Rescate y Adopción"),
-    COMMUNITY("🤝 Comunidad y Apoyo")
+enum class BadgeCategory(@StringRes val label: Int) {
+    RESCUE(R.string.badge_cat_rescue),
+    COMMUNITY(R.string.badge_cat_community)
 }
 
 data class BadgeDetail(
-    val badge: BadgeUi,
+    val badge: Badge,
     val category: BadgeCategory,
     val points: Int,
     val date: String? = null,           // Fecha en que se obtuvo
@@ -58,35 +62,35 @@ private fun BadgeDetail.matches(filter: BadgeFilter): Boolean = when (filter) {
 // Catálogo quemado; las 4 primeras son las mismas que muestra el perfil
 fun badgeCatalog(): List<BadgeDetail> = listOf(
     BadgeDetail(
-        BadgeUi("first_paw", "Primera Huella", "Completaste exitosamente tu primer reporte de rescate verificado.", BadgeStatus.GRANTED),
+        Badge("first_paw", "Primera Huella", "Completaste exitosamente tu primer reporte de rescate verificado.", BadgeStatus.GRANTED),
         BadgeCategory.RESCUE, points = 50, date = "14 Feb 2024"
     ),
     BadgeDetail(
-        BadgeUi("temporary_home", "Hogar Temporal", "Acogiste temporalmente a 3 animales durante su proceso de adopción.", BadgeStatus.GRANTED),
+        Badge("temporary_home", "Hogar Temporal", "Acogiste temporalmente a 3 animales durante su proceso de adopción.", BadgeStatus.GRANTED),
         BadgeCategory.RESCUE, points = 60, date = "02 Mar 2024"
     ),
     BadgeDetail(
-        BadgeUi("verified_10", "10 Verificadas", "Alcanza 10 publicaciones verificadas por moderadores.", BadgeStatus.IN_PROGRESS, progress = 7, target = 10),
+        Badge("verified_10", "10 Verificadas", "Alcanza 10 publicaciones verificadas por moderadores.", BadgeStatus.IN_PROGRESS, progress = 7, target = 10),
         BadgeCategory.COMMUNITY, points = 80, requirement = "Faltan 3 publicaciones verificadas"
     ),
     BadgeDetail(
-        BadgeUi("hero_month", "Héroe del Mes", "Mayor número de rescates y adopciones concretadas en el mes.", BadgeStatus.LOCKED),
+        Badge("hero_month", "Héroe del Mes", "Mayor número de rescates y adopciones concretadas en el mes.", BadgeStatus.LOCKED),
         BadgeCategory.RESCUE, points = 120, requirement = "Requiere Nivel 3 (Guardián) y 10 rescates activos"
     ),
     BadgeDetail(
-        BadgeUi("gold_support", "Aporte de Oro", "Aporta insumos o transporte voluntario para 3 brigadas veterinarias.", BadgeStatus.IN_PROGRESS, progress = 2, target = 3),
+        Badge("gold_support", "Aporte de Oro", "Aporta insumos o transporte voluntario para 3 brigadas veterinarias.", BadgeStatus.IN_PROGRESS, progress = 2, target = 3),
         BadgeCategory.COMMUNITY, points = 50, requirement = "Falta 1 brigada"
     ),
     BadgeDetail(
-        BadgeUi("tracker", "Rastreador Distrital", "Valida 10 reportes de avistamiento con datos precisos.", BadgeStatus.IN_PROGRESS, progress = 7, target = 10),
+        Badge("tracker", "Rastreador Distrital", "Valida 10 reportes de avistamiento con datos precisos.", BadgeStatus.IN_PROGRESS, progress = 7, target = 10),
         BadgeCategory.RESCUE, points = 40, requirement = "Faltan 3 reportes"
     ),
     BadgeDetail(
-        BadgeUi("friendly_voice", "Voz Amiga Comunitaria", "Recibe 50 reacciones útiles en comentarios de apoyo.", BadgeStatus.IN_PROGRESS, progress = 38, target = 50),
+        Badge("friendly_voice", "Voz Amiga Comunitaria", "Recibe 50 reacciones útiles en comentarios de apoyo.", BadgeStatus.IN_PROGRESS, progress = 38, target = 50),
         BadgeCategory.COMMUNITY, points = 35, requirement = "Faltan 12 reacciones"
     ),
     BadgeDetail(
-        BadgeUi("ethics_tutor", "Tutor de la Ética Animal", "Participa como veedor ciudadano en 50 deliberaciones éticas.", BadgeStatus.LOCKED),
+        Badge("ethics_tutor", "Tutor de la Ética Animal", "Participa como veedor ciudadano en 50 deliberaciones éticas.", BadgeStatus.LOCKED),
         BadgeCategory.COMMUNITY, points = 100, requirement = "Desbloqueable al alcanzar el rango Guardián (500 pts)"
     )
 )

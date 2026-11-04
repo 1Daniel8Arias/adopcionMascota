@@ -1,5 +1,7 @@
 package co.edu.adopcionmascota.features.login
 
+import co.edu.adopcionmascota.core.util.ResourceProvider
+import co.edu.adopcionmascota.R
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import co.edu.adopcionmascota.core.util.RequestResult
@@ -35,7 +37,8 @@ data class LoginUiState(
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val loginUserUseCase: LoginUserUseCase
+    private val loginUserUseCase: LoginUserUseCase,
+    private val resources: ResourceProvider
 )   : ViewModel() {
 
     // Un único flujo con el estado completo de la pantalla
@@ -67,16 +70,16 @@ class LoginViewModel @Inject constructor(
 
     private fun validateEmail(email: String): String? {
         return when {
-            email.isBlank() -> "El email es obligatorio"
-            !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> "Ingresa un email válido"
+            email.isBlank() -> resources.getString(R.string.error_email_empty)
+            !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> resources.getString(R.string.error_email_invalid)
             else -> null
         }
     }
 
     private fun validatePassword(password: String): String? {
         return when {
-            password.isBlank() -> "La contraseña es obligatoria"
-            password.length < 6 -> "La contraseña debe tener al menos 6 caracteres"
+            password.isBlank() -> resources.getString(R.string.error_password_empty)
+            password.length < 6 -> resources.getString(R.string.error_password_short)
             else -> null
         }
     }
@@ -102,9 +105,9 @@ class LoginViewModel @Inject constructor(
             // Se publica el resultado final de la solicitud
             _uiState.update { it.copy(
                 loginResult = if(user !=null){
-                RequestResult.Success("login exitoso")
+                RequestResult.Success(resources.getString(R.string.login_success))
             }else {
-                    RequestResult.Failure("Credenciales invalidas")
+                    RequestResult.Failure(resources.getString(R.string.login_failure))
                 }
             )
             }

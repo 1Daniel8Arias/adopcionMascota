@@ -1,10 +1,14 @@
 package co.edu.adopcionmascota.features.profile.edit
 
+import co.edu.adopcionmascota.R
+import javax.inject.Inject
+import dagger.hilt.android.lifecycle.HiltViewModel
+import co.edu.adopcionmascota.core.util.ResourceProvider
+import co.edu.adopcionmascota.domain.model.UserProfile
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import co.edu.adopcionmascota.core.util.RequestResult
-import co.edu.adopcionmascota.features.profile.UserProfile
 import co.edu.adopcionmascota.features.profile.UserProfileStore
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -83,7 +87,10 @@ const val TOTAL_PROFILE_FIELDS = 6
 // Longitud máxima de la presentación comunitaria
 const val BIO_MAX_LENGTH = 250
 
-class EditProfileViewModel : ViewModel() {
+@HiltViewModel
+class EditProfileViewModel @Inject constructor(
+    private val resources: ResourceProvider
+) : ViewModel() {
 
     // Un único flujo con el estado completo de la pantalla
     private val _uiState = MutableStateFlow(EditProfileUiState())
@@ -212,10 +219,11 @@ class EditProfileViewModel : ViewModel() {
                     isTemporaryHome = state.isTemporaryHome,
                     lostPetAlerts = state.lostPetAlerts,
                     showPublicPhone = state.showPublicPhone
-                )
+                ),
+                resources
             )
             _uiState.update {
-                it.copy(saveResult = RequestResult.Success("Cambios guardados correctamente"))
+                it.copy(saveResult = RequestResult.Success(resources.getString(R.string.changes_saved)))
             }
         }
     }
@@ -262,7 +270,7 @@ class EditProfileViewModel : ViewModel() {
             _uiState.update { it.copy(deactivateResult = RequestResult.Loading) }
             delay(1500) // Simula la petición al servidor
             _uiState.update {
-                it.copy(deactivateResult = RequestResult.Success("Cuenta desactivada temporalmente"))
+                it.copy(deactivateResult = RequestResult.Success(resources.getString(R.string.account_deactivated)))
             }
         }
     }
@@ -273,22 +281,20 @@ class EditProfileViewModel : ViewModel() {
 
     // ---------- Opciones aún no disponibles ----------
 
-    // La cámara y la galería todavía no hacen parte del alcance del proyecto
-    fun onChangePhotoClick() {
-        _uiState.update {
-            it.copy(infoMessage = "El cambio de fotografía estará disponible cuando se integre la cámara")
-        }
+    // Imagen elegida en la galería; se guarda con "Guardar Cambios"
+    fun onPhotoSelected(uri: String) {
+        _uiState.update { it.copy(photoUrl = uri) }
     }
 
     fun onNotificationPreferencesClick() {
         _uiState.update {
-            it.copy(infoMessage = "Las preferencias de notificaciones estarán disponibles próximamente")
+            it.copy(infoMessage = resources.getString(R.string.notif_pref_soon))
         }
     }
 
     fun onHelpClick() {
         _uiState.update {
-            it.copy(infoMessage = "Edita tus datos y presiona \"Guardar Cambios\" para conservarlos")
+            it.copy(infoMessage = resources.getString(R.string.edit_help))
         }
     }
 
@@ -301,16 +307,16 @@ class EditProfileViewModel : ViewModel() {
 
     private fun validateName(name: String): String? {
         return when {
-            name.isBlank() -> "El nombre es obligatorio"
-            name.length < 3 -> "El nombre debe tener al menos 3 caracteres"
+            name.isBlank() -> resources.getString(R.string.error_name_empty)
+            name.length < 3 -> resources.getString(R.string.error_name_short)
             else -> null
         }
     }
 
     private fun validateEmail(email: String): String? {
         return when {
-            email.isBlank() -> "El email es obligatorio"
-            !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> "Ingresa un email válido"
+            email.isBlank() -> resources.getString(R.string.error_email_empty)
+            !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> resources.getString(R.string.error_email_invalid)
             else -> null
         }
     }
@@ -319,14 +325,14 @@ class EditProfileViewModel : ViewModel() {
         // Se cuentan solo los dígitos, así se permiten espacios y el prefijo +57
         val digits = phone.count { it.isDigit() }
         return when {
-            phone.isBlank() -> "El teléfono es obligatorio"
-            phone.any { !it.isDigit() && it != ' ' && it != '+' } -> "Usa solo números, espacios y +"
-            digits != 10 && digits != 12 -> "Ingresa un número de 10 dígitos (puedes anteponer +57)"
+            phone.isBlank() -> resources.getString(R.string.error_phone_required)
+            phone.any { !it.isDigit() && it != ' ' && it != '+' } -> resources.getString(R.string.error_phone_chars)
+            digits != 10 && digits != 12 -> resources.getString(R.string.error_phone_digits)
             else -> null
         }
     }
 
     private fun validateLocality(locality: String): String? {
-        return if (locality.isBlank()) "Selecciona una localidad" else null
+        return if (locality.isBlank()) resources.getString(R.string.error_locality) else null
     }
 }

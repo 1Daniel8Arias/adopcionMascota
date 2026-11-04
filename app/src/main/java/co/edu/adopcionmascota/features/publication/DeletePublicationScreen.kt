@@ -1,5 +1,9 @@
 package co.edu.adopcionmascota.features.publication
 
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import co.edu.adopcionmascota.domain.model.MyPublicationStatus
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -70,9 +74,7 @@ fun DeletePublicationScreen(
     publicationId: String,
     onNavigateBack: () -> Unit,                 // "Conservar publicación"
     onNavigateToMyPublications: () -> Unit,     // "Volver a 'Mis Publicaciones'"
-    viewModel: DeletePublicationViewModel = viewModel(key = "delete_pub_$publicationId") {
-        DeletePublicationViewModel(publicationId)
-    }
+    viewModel: DeletePublicationViewModel = hiltViewModel()
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val state by viewModel.uiState.collectAsState()
@@ -106,13 +108,13 @@ fun DeletePublicationScreen(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Volver", tint = DarkText)
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back), tint = DarkText)
                     }
-                    Text(text = "Eliminar Publicación", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = DarkText)
+                    Text(text = stringResource(R.string.delete_publication), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = DarkText)
                 }
 
                 if (publication == null) {
-                    Text(text = "La publicación ya no existe.", color = SecondaryText)
+                    Text(text = stringResource(R.string.publication_gone), color = SecondaryText)
                     return@Column
                 }
 
@@ -125,7 +127,7 @@ fun DeletePublicationScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         AsyncImage(
-                            model = publication.image,
+                            model = publication.imageUri ?: publication.image,
                             contentDescription = publication.name,
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
@@ -134,12 +136,12 @@ fun DeletePublicationScreen(
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Text(text = "Caso #${publication.id}", fontSize = 11.sp, color = SecondaryText)
-                            Text(text = "${publication.name} (${publication.breed})", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = DarkText)
+                            Text(text = stringResource(R.string.case_number, publication.id), fontSize = 11.sp, color = SecondaryText)
+                            Text(text = stringResource(R.string.name_breed, publication.name, publication.breed), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = DarkText)
                             Text(text = publication.location, fontSize = 12.sp, color = SecondaryText)
                             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                                AppTag(text = publication.status.label)
-                                AppTag(text = "${publication.followers} seguidores")
+                                AppTag(text = stringResource(publication.status.label))
+                                AppTag(text = stringResource(R.string.followers_count, publication.followers))
                             }
                         }
                     }
@@ -151,9 +153,9 @@ fun DeletePublicationScreen(
                         Icon(Icons.Outlined.Warning, contentDescription = null, tint = Danger)
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
-                            Text(text = "Esta acción es permanente y no se puede deshacer", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Danger)
+                            Text(text = stringResource(R.string.permanent_action), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Danger)
                             Text(
-                                text = "Se borrarán de forma irrevocable el expediente de ${publication.name}, su galería fotográfica, las ${publication.followers} personas que guardaron su perfil y todas las interacciones vecinales registradas.",
+                                text = stringResource(R.string.delete_pub_detail, publication.name, publication.followers),
                                 fontSize = 12.sp,
                                 color = DarkText
                             )
@@ -162,12 +164,12 @@ fun DeletePublicationScreen(
                 }
 
                 // Opciones recomendadas antes de borrar
-                Text(text = "OPCIONES RECOMENDADAS ANTES DE BORRAR", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = SecondaryText)
+                Text(text = stringResource(R.string.recommended_options), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = SecondaryText)
                 Surface(shape = RoundedCornerShape(16.dp), color = Green.copy(alpha = 0.08f)) {
                     Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(text = "¿${publication.name} ya encontró una familia?", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
+                        Text(text = stringResource(R.string.found_family, publication.name), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
                         Text(
-                            text = "¡Celebremos juntos! Marcar como adoptado envía una notificación de alegría a quienes apoyaron y archiva la historia de éxito sin perderla.",
+                            text = stringResource(R.string.celebrate_detail),
                             fontSize = 12.sp,
                             color = SecondaryText
                         )
@@ -179,7 +181,7 @@ fun DeletePublicationScreen(
                         ) {
                             Icon(Icons.Outlined.Celebration, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text(text = "Celebrar: Marcar a ${publication.name} como Adoptado")
+                            Text(text = stringResource(R.string.celebrate_adopted, publication.name))
                         }
                     }
                 }
@@ -193,15 +195,15 @@ fun DeletePublicationScreen(
                         Icon(Icons.Outlined.PauseCircle, contentDescription = null, tint = AppPrimary)
                         Spacer(modifier = Modifier.width(10.dp))
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(text = "Pausar publicación temporalmente", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
-                            Text(text = "Ocultar del mapa mientras está en periodo de prueba", fontSize = 11.sp, color = SecondaryText)
+                            Text(text = stringResource(R.string.pause_publication), fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
+                            Text(text = stringResource(R.string.pause_detail), fontSize = 11.sp, color = SecondaryText)
                         }
                         OutlinedButton(
                             onClick = viewModel::onPause,
                             enabled = publication.status != MyPublicationStatus.PAUSED,
                             shape = CircleShape
                         ) {
-                            Text(text = if (publication.status == MyPublicationStatus.PAUSED) "Pausada" else "Pausar")
+                            Text(text = if (publication.status == MyPublicationStatus.PAUSED) stringResource(R.string.paused) else stringResource(R.string.pause))
                         }
                     }
                 }
@@ -209,8 +211,8 @@ fun DeletePublicationScreen(
                 // Motivo de la baja
                 Surface(shape = RoundedCornerShape(16.dp), color = Color.White) {
                     Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text(text = "Motivo de la baja del caso", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
-                        Text(text = "Ayúdanos a mantener estadísticas transparentes de rescate en la comunidad.", fontSize = 12.sp, color = SecondaryText)
+                        Text(text = stringResource(R.string.delete_reason), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
+                        Text(text = stringResource(R.string.delete_reason_detail), fontSize = 12.sp, color = SecondaryText)
                         DeleteReason.entries.forEach { reason ->
                             Row(
                                 modifier = Modifier
@@ -224,8 +226,8 @@ fun DeletePublicationScreen(
                                     onClick = { viewModel.onReasonSelected(reason) }
                                 )
                                 Column {
-                                    Text(text = reason.title, fontSize = 13.sp, color = DarkText)
-                                    Text(text = reason.description, fontSize = 11.sp, color = SecondaryText)
+                                    Text(text = stringResource(reason.title), fontSize = 13.sp, color = DarkText)
+                                    Text(text = stringResource(reason.description), fontSize = 11.sp, color = SecondaryText)
                                 }
                             }
                         }
@@ -247,7 +249,7 @@ fun DeletePublicationScreen(
                         colors = CheckboxDefaults.colors(checkedColor = Danger)
                     )
                     Text(
-                        text = "Entiendo que al proceder perderé definitivamente el seguimiento de ${publication.followers} personas, las solicitudes pendientes y los comentarios de apoyo recibidos para ${publication.name}.",
+                        text = stringResource(R.string.delete_understand, publication.followers, publication.name),
                         fontSize = 12.sp,
                         color = DarkText
                     )
@@ -270,7 +272,7 @@ fun DeletePublicationScreen(
                     Icon(Icons.Outlined.DeleteForever, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = if (state.deleteResult is RequestResult.Loading) "Eliminando..." else "Eliminar definitivamente esta publicación",
+                        text = if (state.deleteResult is RequestResult.Loading) stringResource(R.string.deleting) else stringResource(R.string.delete_this_forever),
                         fontWeight = FontWeight.SemiBold
                     )
                 }
@@ -282,11 +284,11 @@ fun DeletePublicationScreen(
                     shape = CircleShape,
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
                 ) {
-                    Text(text = "Conservar publicación de ${publication.name}")
+                    Text(text = stringResource(R.string.keep_publication, publication.name))
                 }
 
                 Text(
-                    text = "Compromiso de Trazabilidad y Ética: Patitas Conectadas audita las cancelaciones de rescate para asegurar el bienestar animal y la veracidad de los casos comunitarios.",
+                    text = stringResource(R.string.traceability),
                     fontSize = 11.sp,
                     color = SecondaryText
                 )
@@ -296,10 +298,10 @@ fun DeletePublicationScreen(
         if (state.deleteResult is RequestResult.Success) {
             val deleted = MyPublicationsStore.lastDeleted
             PublicationSuccessSheet(
-                title = "¡Publicación Eliminada con Éxito!",
-                message = "La publicación de ${deleted?.first?.name.orEmpty()} ha sido dada de baja del feed y del mapa comunitario.",
-                detail = "Motivo: ${deleted?.second.orEmpty()}. Se notificó a los seguidores y el expediente quedó resguardado en el archivo histórico sin exposición pública.",
-                primaryText = "Volver a \"Mis Publicaciones\"",
+                title = stringResource(R.string.publication_deleted),
+                message = stringResource(R.string.publication_deleted_detail, deleted?.first?.name.orEmpty()),
+                detail = stringResource(R.string.deletion_reason_detail, deleted?.second.orEmpty()),
+                primaryText = stringResource(R.string.back_to_my_publications),
                 onPrimaryClick = onNavigateToMyPublications
             )
         }

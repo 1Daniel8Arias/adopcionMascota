@@ -1,6 +1,7 @@
 package co.edu.adopcionmascota.data.repository.memory
 
 import co.edu.adopcionmascota.R
+import co.edu.adopcionmascota.domain.model.Location
 import co.edu.adopcionmascota.domain.model.PetType
 import co.edu.adopcionmascota.domain.model.Publication
 import co.edu.adopcionmascota.domain.model.PublicationStatus
@@ -49,7 +50,9 @@ class PublicationRepositoryImpl @Inject constructor(): PublicationRepository {
                         distancia = "1.2 km",
                         likes = "45",
                         age = "3 meses",
-                        gender = "Macho"
+                        gender = "Macho",
+                        coordinates = Location(latitude = 4.6733, longitude = -75.6583),
+                        ownerId = "1"
                     ),
 
                     Publication(
@@ -64,7 +67,9 @@ class PublicationRepositoryImpl @Inject constructor(): PublicationRepository {
                         distancia = "3.8 km",
                         likes = "78",
                         age = "2 años",
-                        gender = "Hembra"
+                        gender = "Hembra",
+                        coordinates = Location(latitude = 4.6189, longitude = -75.6356),
+                        ownerId = "2"
                     ),
 
                     Publication(
@@ -79,7 +84,9 @@ class PublicationRepositoryImpl @Inject constructor(): PublicationRepository {
                         distancia = "850 m",
                         likes = "32",
                         age = "5 años",
-                        gender = "Macho"
+                        gender = "Macho",
+                        coordinates = Location(latitude = 4.5389, longitude = -75.6725),
+                        ownerId = "1"
                     )
                 )
 

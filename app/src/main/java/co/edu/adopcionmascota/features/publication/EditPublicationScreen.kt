@@ -1,5 +1,9 @@
 package co.edu.adopcionmascota.features.publication
 
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import co.edu.adopcionmascota.core.component.rememberGalleryPicker
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -59,10 +63,8 @@ import co.edu.adopcionmascota.core.util.RequestResult
 fun EditPublicationScreen(
     publicationId: String,
     onNavigateBack: () -> Unit,
-    onNavigateToMyPublications: () -> Unit,     // "Ver en 'Mis Publicaciones'"
-    viewModel: EditPublicationViewModel = viewModel(key = "edit_pub_$publicationId") {
-        EditPublicationViewModel(publicationId)
-    }
+    onNavigateToMyPublications: () -> Unit,     // stringResource(R.string.view_my_publications)
+    viewModel: EditPublicationViewModel = hiltViewModel()
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val state by viewModel.uiState.collectAsState()
@@ -95,22 +97,22 @@ fun EditPublicationScreen(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Volver", tint = DarkText)
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back), tint = DarkText)
                     }
                     Text(
-                        text = "Editar Publicación",
+                        text = stringResource(R.string.edit_publication),
                         modifier = Modifier.weight(1f),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = DarkText
                     )
                     TextButton(onClick = viewModel::onSaveDraft) {
-                        Text(text = "Guardar\nborrador", color = DarkText, fontSize = 13.sp)
+                        Text(text = stringResource(R.string.save_draft), color = DarkText, fontSize = 13.sp)
                     }
                 }
 
                 if (state.original == null) {
-                    Text(text = "No se encontró la publicación.", color = DarkText)
+                    Text(text = stringResource(R.string.publication_not_found), color = DarkText)
                     return@Column
                 }
 
@@ -124,7 +126,7 @@ fun EditPublicationScreen(
 
                 PetPhotosSection(
                     photos = state.photos,
-                    onAddPhotoClick = viewModel::onAddPhoto,
+                    onAddPhotoClick = rememberGalleryPicker { viewModel.onPhotoSelected(it.toString()) },
                     onRemovePhotoClick = viewModel::onRemovePhoto
                 )
 
@@ -167,7 +169,7 @@ fun EditPublicationScreen(
                     Icon(Icons.Outlined.Edit, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = if (state.isSaving) "Guardando..." else "Guardar Cambios (Actualizar Publicación)",
+                        text = if (state.isSaving) stringResource(R.string.saving) else stringResource(R.string.save_changes_update),
                         fontWeight = FontWeight.SemiBold
                     )
                 }
@@ -176,10 +178,10 @@ fun EditPublicationScreen(
 
         if (state.saveResult is RequestResult.Success) {
             PublicationSuccessSheet(
-                title = "¡Publicación Editada con Éxito!",
-                message = "Los cambios de ${state.title} han sido actualizados y enviados a revalidación ética comunitaria.",
-                detail = "Los moderadores voluntarios revisarán las actualizaciones de vacunas o ubicación para asegurar la veracidad del caso.",
-                primaryText = "Ver en 'Mis Publicaciones'",
+                title = stringResource(R.string.publication_edited),
+                message = stringResource(R.string.publication_edited_detail, state.title),
+                detail = stringResource(R.string.publication_edited_more),
+                primaryText = stringResource(R.string.view_my_publications),
                 onPrimaryClick = onNavigateToMyPublications
             )
         }

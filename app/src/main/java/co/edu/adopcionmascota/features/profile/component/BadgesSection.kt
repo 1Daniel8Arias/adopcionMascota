@@ -1,5 +1,9 @@
 package co.edu.adopcionmascota.features.profile.component
 
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
+import co.edu.adopcionmascota.domain.model.Badge
+import co.edu.adopcionmascota.domain.model.BadgeStatus
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -37,12 +41,10 @@ import co.edu.adopcionmascota.core.theme.AppPrimary
 import co.edu.adopcionmascota.core.theme.DarkText
 import co.edu.adopcionmascota.core.theme.LightBlueBg
 import co.edu.adopcionmascota.core.theme.SecondaryText
-import co.edu.adopcionmascota.features.profile.BadgeStatus
-import co.edu.adopcionmascota.features.profile.BadgeUi
 
 @Composable
 fun BadgesSection(
-    badges: List<BadgeUi>,
+    badges: List<Badge>,
     totalBadges: Int,
     onViewAllClick: () -> Unit
 ) {
@@ -55,20 +57,20 @@ fun BadgesSection(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Vitrina de Insignias",
+                    text = stringResource(R.string.badges_showcase),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = DarkText
                 )
                 Text(
-                    text = "Reconocimientos de la comunidad",
+                    text = stringResource(R.string.badges_detail),
                     fontSize = 13.sp,
                     color = SecondaryText
                 )
             }
             TextButton(onClick = onViewAllClick) {
                 Text(
-                    text = "Ver todas ($totalBadges)",
+                    text = stringResource(R.string.view_all_count, totalBadges),
                     color = AppPrimary,
                     fontWeight = FontWeight.Medium,
                     fontSize = 14.sp
@@ -107,7 +109,7 @@ private fun badgeIcon(id: String): ImageVector = when (id) {
 
 @Composable
 private fun BadgeCard(
-    badge: BadgeUi,
+    badge: Badge,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -201,9 +203,9 @@ private fun BadgeCard(
             Surface(shape = CircleShape, color = Color(0xFFE2E4FF)) {
                 Text(
                     text = when (badge.status) {
-                        BadgeStatus.GRANTED -> "✓ Otorgada"
-                        BadgeStatus.IN_PROGRESS -> "${badge.percent}% alcanzado"
-                        BadgeStatus.LOCKED -> "Bloqueada"
+                        BadgeStatus.GRANTED -> stringResource(R.string.badge_granted)
+                        BadgeStatus.IN_PROGRESS -> stringResource(R.string.badge_percent, badge.percent)
+                        BadgeStatus.LOCKED -> stringResource(R.string.badge_locked)
                     },
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp),
                     fontSize = 12.sp,

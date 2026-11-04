@@ -1,18 +1,16 @@
 package co.edu.adopcionmascota.features.adoption.list
 
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
 import android.content.Intent
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -24,7 +22,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.ViewList
 import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.MyLocation
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material.icons.outlined.Visibility
@@ -50,12 +47,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import co.edu.adopcionmascota.R
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import co.edu.adopcionmascota.core.component.MapBox
 import co.edu.adopcionmascota.core.component.AppBottomBar
 import co.edu.adopcionmascota.core.component.AppDestination
 import co.edu.adopcionmascota.core.component.AppSearchBar
@@ -67,14 +63,14 @@ import co.edu.adopcionmascota.core.theme.SecondaryText
 import co.edu.adopcionmascota.domain.model.PetType
 import coil3.compose.AsyncImage
 
-// Pantalla "Feed Principal - Vista Mapa": imagen estática de un mapa con marcadores de las mascotas
+// Pantalla "Feed Principal - Vista Mapa": mapa de Mapbox con un marcador por cada mascota
 @Composable
 fun PublicationMapScreen(
-    onNavigateBack: () -> Unit,                     // Botón "Lista" / volver
+    onNavigateBack: () -> Unit,                     // Botón stringResource(R.string.list) / volver
     onOpenFilters: () -> Unit,                      // "Filtros avanzados"
-    onViewPublication: (String) -> Unit,            // "Ver Ficha"
+    onViewPublication: (String) -> Unit,            // stringResource(R.string.view_card)
     onNavigationClick: (AppDestination) -> Unit,
-    viewModel: PublicationMapViewModel = viewModel()
+    viewModel: PublicationMapViewModel = hiltViewModel()
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val state by viewModel.uiState.collectAsState()
@@ -102,72 +98,13 @@ fun PublicationMapScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Mapa estático con los marcadores encima
-            BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-                Image(
-                    painter = painterResource(id = R.drawable.icono_mapa),
-                    contentDescription = "Mapa de mascotas cercanas",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
-
-                // "Tú estás aquí"
-                Column(
-                    modifier = Modifier.offset(x = maxWidth * 0.5f - 40.dp, y = maxHeight * 0.45f),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(18.dp)
-                            .clip(CircleShape)
-                            .background(Color.White)
-                            .padding(3.dp)
-                            .clip(CircleShape)
-                            .background(AppPrimary)
-                    )
-                    Surface(shape = RoundedCornerShape(8.dp), color = Color.White) {
-                        Text(
-                            text = "Tú estás aquí",
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                            fontSize = 10.sp,
-                            color = DarkText
-                        )
-                    }
-                }
-
-                state.visibleMarkers.forEach { marker ->
-                    val selected = marker.publication.id == state.selectedId
-                    Surface(
-                        onClick = { viewModel.onMarkerClick(marker.publication.id) },
-                        modifier = Modifier.offset(x = maxWidth * marker.x - 28.dp, y = maxHeight * marker.y),
-                        shape = CircleShape,
-                        color = if (selected) Color.Black else Color.White,
-                        shadowElevation = 4.dp
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            AsyncImage(
-                                model = marker.publication.image,
-                                contentDescription = marker.publication.name,
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier
-                                    .size(30.dp)
-                                    .clip(CircleShape)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = marker.publication.name,
-                                modifier = Modifier.padding(end = 6.dp),
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = if (selected) Color.White else marker.publication.type.markerColor()
-                            )
-                        }
-                    }
-                }
-            }
+            MapBox(
+                modifier = Modifier.fillMaxSize(),
+                publications = state.visiblePublications,
+                locationButtonTopPadding = 160.dp, // Debajo del buscador y los filtros
+                onMarkerClick = { viewModel.onMarkerClick(it.id) },
+                onMapClick = { viewModel.onCloseCard() }
+            )
 
             // Buscador, botones y filtros sobre el mapa
             Column(
@@ -181,14 +118,14 @@ fun PublicationMapScreen(
                         onClick = onNavigateBack,
                         colors = IconButtonDefaults.iconButtonColors(containerColor = Color.White)
                     ) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Volver a la lista", tint = DarkText)
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back_to_list), tint = DarkText)
                     }
                     Spacer(modifier = Modifier.width(6.dp))
                     Box(modifier = Modifier.weight(1f)) {
                         AppSearchBar(
                             value = state.searchText,
                             onValueChange = viewModel::onSearchChange,
-                            placeholder = "Buscar mascotas cerca a ti...",
+                            placeholder = stringResource(R.string.search_map),
                             onFilterClick = onOpenFilters
                         )
                     }
@@ -197,15 +134,14 @@ fun PublicationMapScreen(
                     modifier = Modifier.horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    MapChip("Todos (${state.countFor(null)})", state.typeFilter == null) { viewModel.onTypeFilterChange(null) }
-                    MapChip("Adopción (${state.countFor(PetType.ADOPCION)})", state.typeFilter == PetType.ADOPCION) { viewModel.onTypeFilterChange(PetType.ADOPCION) }
-                    MapChip("🚨 Perdidos (${state.countFor(PetType.PERDIDO)})", state.typeFilter == PetType.PERDIDO) { viewModel.onTypeFilterChange(PetType.PERDIDO) }
-                    MapChip("Encontrados (${state.countFor(PetType.ENCONTRADO)})", state.typeFilter == PetType.ENCONTRADO) { viewModel.onTypeFilterChange(PetType.ENCONTRADO) }
+                    MapChip(stringResource(R.string.map_all, state.countFor(null)), state.typeFilter == null) { viewModel.onTypeFilterChange(null) }
+                    MapChip(stringResource(R.string.map_adoption, state.countFor(PetType.ADOPCION)), state.typeFilter == PetType.ADOPCION) { viewModel.onTypeFilterChange(PetType.ADOPCION) }
+                    MapChip(stringResource(R.string.map_lost, state.countFor(PetType.PERDIDO)), state.typeFilter == PetType.PERDIDO) { viewModel.onTypeFilterChange(PetType.PERDIDO) }
+                    MapChip(stringResource(R.string.map_found, state.countFor(PetType.ENCONTRADO)), state.typeFilter == PetType.ENCONTRADO) { viewModel.onTypeFilterChange(PetType.ENCONTRADO) }
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    MapActionButton(text = "Lista", icon = Icons.AutoMirrored.Outlined.ViewList, onClick = onNavigateBack)
-                    MapActionButton(text = "Re-centrar área", icon = Icons.Outlined.MyLocation, onClick = viewModel::onRecenter)
-                    MapActionButton(text = "Filtros", icon = Icons.Outlined.Tune, onClick = onOpenFilters)
+                    MapActionButton(text = stringResource(R.string.list), icon = Icons.AutoMirrored.Outlined.ViewList, onClick = onNavigateBack)
+                    MapActionButton(text = stringResource(R.string.filters), icon = Icons.Outlined.Tune, onClick = onOpenFilters)
                 }
             }
 
@@ -218,23 +154,23 @@ fun PublicationMapScreen(
                         .padding(12.dp),
                     name = selected.name,
                     type = selected.type,
-                    subtitle = "${selected.gender} • ${selected.age}",
+                    subtitle = stringResource(R.string.pet_subtitle, selected.gender, selected.age),
                     description = selected.description,
-                    meta = "${selected.time} · A ${selected.distancia} de ti · ${selected.location}",
+                    meta = stringResource(R.string.map_meta, selected.time, selected.distancia, selected.location),
                     sightings = state.sightings[selected.id] ?: 0,
                     image = selected.image,
                     onClose = viewModel::onCloseCard,
                     onShare = {
                         val intent = Intent(Intent.ACTION_SEND).apply {
                             type = "text/plain"
-                            putExtra(Intent.EXTRA_TEXT, "Ayúdanos a difundir: ${selected.name} en ${selected.location} · Patitas Conectadas")
+                            putExtra(Intent.EXTRA_TEXT, context.getString(R.string.map_share_text, selected.name, selected.location))
                         }
-                        context.startActivity(Intent.createChooser(intent, "Difundir"))
+                        context.startActivity(Intent.createChooser(intent, context.getString(R.string.spread_chooser)))
                     },
                     onSeen = viewModel::onSeenClick,
                     onViewDetail = { onViewPublication(selected.id) }
                 )
-            } else if (state.visibleMarkers.isEmpty()) {
+            } else if (state.visiblePublications.isEmpty()) {
                 Surface(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
@@ -243,7 +179,7 @@ fun PublicationMapScreen(
                     color = Color.White
                 ) {
                     Text(
-                        text = "No hay mascotas con estos filtros en el mapa",
+                        text = stringResource(R.string.map_empty),
                         modifier = Modifier.padding(16.dp),
                         color = SecondaryText
                     )
@@ -259,10 +195,11 @@ private fun PetType.markerColor(): Color = when (this) {
     PetType.ENCONTRADO -> Color(0xFF067647)
 }
 
+@Composable
 private fun PetType.label(): String = when (this) {
-    PetType.ADOPCION -> "En Adopción"
-    PetType.PERDIDO -> "🚨 Perdido"
-    PetType.ENCONTRADO -> "Encontrado"
+    PetType.ADOPCION -> stringResource(R.string.type_adoption)
+    PetType.PERDIDO -> stringResource(R.string.type_lost)
+    PetType.ENCONTRADO -> stringResource(R.string.type_found)
 }
 
 @Composable
@@ -329,7 +266,7 @@ private fun SelectedPetCard(
                 AppTag(text = type.label(), backgroundColor = type.markerColor().copy(alpha = 0.12f), textColor = type.markerColor())
                 Spacer(modifier = Modifier.weight(1f))
                 IconButton(onClick = onClose, modifier = Modifier.size(28.dp)) {
-                    Icon(Icons.Outlined.Close, contentDescription = "Cerrar", tint = SecondaryText)
+                    Icon(Icons.Outlined.Close, contentDescription = stringResource(R.string.close), tint = SecondaryText)
                 }
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -350,18 +287,18 @@ private fun SelectedPetCard(
             }
             Text(text = meta, fontSize = 11.sp, color = SecondaryText)
             if (sightings > 0) {
-                Text(text = "Has reportado $sightings avistamiento(s)", fontSize = 11.sp, color = AppPrimary)
+                Text(text = stringResource(R.string.sightings, sightings), fontSize = 11.sp, color = AppPrimary)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedButton(onClick = onShare, modifier = Modifier.weight(1f), shape = CircleShape) {
                     Icon(Icons.Outlined.Share, contentDescription = null, modifier = Modifier.size(14.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = "Difundir", fontSize = 12.sp)
+                    Text(text = stringResource(R.string.spread), fontSize = 12.sp)
                 }
                 OutlinedButton(onClick = onSeen, modifier = Modifier.weight(1f), shape = CircleShape) {
                     Icon(Icons.Outlined.Visibility, contentDescription = null, modifier = Modifier.size(14.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = "Lo he visto", fontSize = 12.sp)
+                    Text(text = stringResource(R.string.seen_it), fontSize = 12.sp)
                 }
                 Button(
                     onClick = onViewDetail,
@@ -369,7 +306,7 @@ private fun SelectedPetCard(
                     shape = CircleShape,
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
                 ) {
-                    Text(text = "Ver Ficha", fontSize = 12.sp)
+                    Text(text = stringResource(R.string.view_card), fontSize = 12.sp)
                 }
             }
         }

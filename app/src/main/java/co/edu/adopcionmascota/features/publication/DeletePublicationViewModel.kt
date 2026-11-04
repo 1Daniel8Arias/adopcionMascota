@@ -1,5 +1,13 @@
 package co.edu.adopcionmascota.features.publication
 
+import co.edu.adopcionmascota.R
+import androidx.annotation.StringRes
+import androidx.lifecycle.SavedStateHandle
+import javax.inject.Inject
+import dagger.hilt.android.lifecycle.HiltViewModel
+import co.edu.adopcionmascota.core.util.ResourceProvider
+import co.edu.adopcionmascota.domain.model.MyPublication
+import co.edu.adopcionmascota.domain.model.MyPublicationStatus
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import co.edu.adopcionmascota.core.util.RequestResult
@@ -11,11 +19,11 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 // Motivos de la baja del caso
-enum class DeleteReason(val title: String, val description: String) {
-    ADOPTED_ELSEWHERE("Ya fue adoptado felizmente por otro medio", "Adoptado fuera de la plataforma o con conocidos"),
-    RETURNED_TO_OWNER("El animalito regresó con su tutor original", "Se trataba de un extravío y ya fue reconocido"),
-    REDO_PUBLICATION("Necesito rehacer la publicación", "Para actualizar fotos principales, edad o historia"),
-    OTHER("Otro motivo logístico o personal", "Cambio de refugio o gestión administrativa")
+enum class DeleteReason(@StringRes val title: Int, @StringRes val description: Int) {
+    ADOPTED_ELSEWHERE(R.string.reason_adopted, R.string.reason_adopted_detail),
+    RETURNED_TO_OWNER(R.string.reason_returned, R.string.reason_returned_detail),
+    REDO_PUBLICATION(R.string.reason_redo, R.string.reason_redo_detail),
+    OTHER(R.string.reason_other, R.string.reason_other_detail)
 }
 
 data class DeletePublicationUiState(
@@ -30,9 +38,14 @@ data class DeletePublicationUiState(
         get() = reason != null && isConfirmed && deleteResult !is RequestResult.Loading
 }
 
-class DeletePublicationViewModel(
-    private val publicationId: String
+@HiltViewModel
+class DeletePublicationViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
+    private val resources: ResourceProvider
 ) : ViewModel() {
+
+    private val publicationId: String = checkNotNull(savedStateHandle["publicationId"])
+
 
     private val _uiState = MutableStateFlow(
         DeletePublicationUiState(publication = MyPublicationsStore.findById(publicationId))
@@ -54,7 +67,7 @@ class DeletePublicationViewModel(
         _uiState.update {
             it.copy(
                 publication = MyPublicationsStore.findById(publicationId),
-                infoMessage = "Publicación pausada: ya no se muestra en el mapa"
+                infoMessage = resources.getString(R.string.publication_paused_message)
             )
         }
     }
@@ -69,9 +82,9 @@ class DeletePublicationViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(deleteResult = RequestResult.Loading) }
             delay(1500) // Simula la petición al servidor
-            MyPublicationsStore.delete(publicationId, reason.title)
+            MyPublicationsStore.delete(publicationId, resources.getString(reason.title))
             _uiState.update {
-                it.copy(deleteResult = RequestResult.Success("¡Publicación Eliminada con Éxito!"))
+                it.copy(deleteResult = RequestResult.Success(resources.getString(R.string.publication_deleted_vm)))
             }
         }
     }

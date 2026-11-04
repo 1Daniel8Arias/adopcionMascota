@@ -1,5 +1,8 @@
 package co.edu.adopcionmascota.features.adoption.list
 
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,7 +26,6 @@ import co.edu.adopcionmascota.features.adoption.list.component.PublicationCard
 
 import co.edu.adopcionmascota.core.component.AppBottomBar
 import co.edu.adopcionmascota.core.component.AppDestination
-import co.edu.adopcionmascota.core.component.AppFloatingButton
 import co.edu.adopcionmascota.core.component.AppSearchBar
 import co.edu.adopcionmascota.core.component.AppTopBar
 import androidx.compose.runtime.collectAsState
@@ -35,12 +37,11 @@ import co.edu.adopcionmascota.core.component.AppTag
 
 @Composable
 fun PublicationListScreen(
-    viewModel: PublicationListViewModel = viewModel(),
+    viewModel: PublicationListViewModel = hiltViewModel(),
     onPublicationClick: (Publication) -> Unit = {},
     onPublishClick: () -> Unit = {},
     onNavigationClick: (AppDestination) -> Unit = {},
-    onNavigationToPublications:()-> Unit,
-    onMapClick: () -> Unit = {},          // Botón "Mapa" → Vista Mapa
+    onMapClick: () -> Unit = {},          // Botón stringResource(R.string.map) → Vista Mapa
     onFiltersClick: () -> Unit = {},      // "Filtros avanzados" → Filtros y Búsqueda
     onNotificationClick: () -> Unit = {}, // Campana de la barra superior
     onProfileClick: () -> Unit = {}       // Avatar de la barra superior
@@ -63,18 +64,10 @@ fun PublicationListScreen(
         topBar = {
 
             AppTopBar(
-                title = "Patitas Con...",
-                location = "Armenia, Quindío",
+                title = stringResource(R.string.app_short_name),
+                location = stringResource(R.string.feed_location),
                 onNotificationClick = onNotificationClick,
                 onProfileClick = onProfileClick
-            )
-        },
-
-        floatingActionButton = {
-
-            AppFloatingButton(
-                text = "Publicar",
-                onClick = onNavigationToPublications
             )
         },
 
@@ -117,7 +110,7 @@ fun PublicationListScreen(
                     onValueChange = viewModel::onSearchChange,
 
                     placeholder =
-                        "Buscar por nombre, raza, zona...",
+                        stringResource(R.string.search_feed),
 
                     onFilterClick = onFiltersClick
                 )
@@ -127,9 +120,9 @@ fun PublicationListScreen(
             if (state.advancedFilter.isActive) {
                 item {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        AppTag(text = "Filtros avanzados activos (${state.advancedFilter.activeCount})")
+                        AppTag(text = stringResource(R.string.advanced_filters_active, state.advancedFilter.activeCount))
                         TextButton(onClick = viewModel::onClearAdvancedFilters) {
-                            Text("Limpiar")
+                            Text(stringResource(R.string.clear))
                         }
                     }
                 }
@@ -151,7 +144,7 @@ fun PublicationListScreen(
                     },
 
                     // La etiqueta de distancia abre los filtros avanzados
-                    distanceLabel = if (state.advancedFilter.maxDistanceKm < 20) "< ${state.advancedFilter.maxDistanceKm} km" else "Distancia",
+                    distanceLabel = if (state.advancedFilter.maxDistanceKm < 20) stringResource(R.string.distance_less_than, state.advancedFilter.maxDistanceKm) else stringResource(R.string.distance),
                     onDistanceClick = onFiltersClick
                 )
             }
@@ -194,10 +187,10 @@ fun PublicationListScreen(
                                 type = "text/plain"
                                 putExtra(
                                     Intent.EXTRA_TEXT,
-                                    "${publication.name} en ${publication.location}: ${publication.description} · Patitas Conectadas"
+                                    context.getString(R.string.share_publication_text, publication.name, publication.location, publication.description)
                                 )
                             }
-                            context.startActivity(Intent.createChooser(intent, "Compartir publicación"))
+                            context.startActivity(Intent.createChooser(intent, context.getString(R.string.share_publication)))
                         }
                     )
                 }

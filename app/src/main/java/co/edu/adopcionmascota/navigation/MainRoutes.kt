@@ -11,6 +11,9 @@ data object Login : MainRoutes()
 
     @Serializable
     data object Moderator: MainRoutes()
+
+    @Serializable
+    data object ModeratorPanel: MainRoutes()
 @Serializable
 data object Register: MainRoutes()
 
@@ -64,7 +67,7 @@ data object PasswordScreen: MainRoutes()
     data class DeletePublication(val publicationId: String): MainRoutes()
 
     @Serializable
-    data class RegisterSuccess(val name: String): MainRoutes()
+    data class RegisterSuccess(val name: String, val userId: String): MainRoutes()
 
     @Serializable
     data object Badges: MainRoutes()

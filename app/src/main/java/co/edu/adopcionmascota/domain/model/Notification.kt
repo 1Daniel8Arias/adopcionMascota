@@ -1,13 +1,16 @@
 package co.edu.adopcionmascota.domain.model
 
-import java.time.LocalDateTime
-
 data class Notification(
     val id: String,
-    val type: String,
+    val type: NotificationType,
+    val category: String,       // Ej: "APROBACIÓN ÉTICA"
     val title: String,
     val message: String,
-    val date: LocalDateTime,
-    val read: Boolean = false, // Indica si el usuario ya abrió la notificación
-    val reportId: String? = null // Reporte relacionado con la notificación (si lo hay)
-)
+    val time: String,
+    val referenceId: String? = null,    // Ej: "ID: max_1"
+    val actionLabel: String? = null,    // Botón de acción rápida en la lista
+    val isRead: Boolean = false
+) {
+    val isAchievement: Boolean
+        get() = type == NotificationType.LEVEL_UP || type == NotificationType.BADGE_EARNED
+}

@@ -1,5 +1,8 @@
 package co.edu.adopcionmascota.features.adoption.list
 
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -60,7 +63,7 @@ import coil3.compose.AsyncImage
 fun AdvancedFiltersScreen(
     onNavigateBack: () -> Unit,
     onShowResults: () -> Unit,          // "Mostrar N Resultados" → feed principal
-    viewModel: AdvancedFiltersViewModel = viewModel()
+    viewModel: AdvancedFiltersViewModel = hiltViewModel()
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val state by viewModel.uiState.collectAsState()
@@ -94,12 +97,12 @@ fun AdvancedFiltersScreen(
                     shape = CircleShape,
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
                 ) {
-                    Text(text = "Mostrar ${state.resultsCount} Resultados", fontWeight = FontWeight.SemiBold)
+                    Text(text = stringResource(R.string.show_results, state.resultsCount), fontWeight = FontWeight.SemiBold)
                 }
                 TextButton(onClick = viewModel::onSaveFavorite, modifier = Modifier.fillMaxWidth()) {
                     Icon(Icons.Outlined.BookmarkBorder, contentDescription = null, tint = AppPrimary, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text(text = "Guardar como búsqueda favorita", color = AppPrimary)
+                    Text(text = stringResource(R.string.save_favorite), color = AppPrimary)
                 }
             }
         }
@@ -114,20 +117,20 @@ fun AdvancedFiltersScreen(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = onNavigateBack) {
-                    Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Volver", tint = DarkText)
+                    Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back), tint = DarkText)
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(text = "Filtros y Búsqueda", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = DarkText)
-                    Text(text = "Feed Principal", fontSize = 12.sp, color = SecondaryText)
+                    Text(text = stringResource(R.string.filters_title), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = DarkText)
+                    Text(text = stringResource(R.string.main_feed), fontSize = 12.sp, color = SecondaryText)
                 }
                 TextButton(onClick = viewModel::onReset) {
-                    Text(text = "Restablecer", color = AppPrimary)
+                    Text(text = stringResource(R.string.reset), color = AppPrimary)
                 }
             }
 
             Surface(shape = RoundedCornerShape(14.dp), color = AppPrimary.copy(alpha = 0.1f)) {
                 Text(
-                    text = "${state.resultsCount} mascotas encontradas en tu radio de ${state.maxDistanceKm} km",
+                    text = stringResource(R.string.filters_found, state.resultsCount, state.maxDistanceKm),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(12.dp),
@@ -137,63 +140,63 @@ fun AdvancedFiltersScreen(
                 )
             }
 
-            FilterSection(title = "Tipo de Publicación", subtitle = "Multiselección") {
+            FilterSection(title = stringResource(R.string.filter_type), subtitle = stringResource(R.string.multi_select)) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    SelectChip("Adopción · Hogar definitivo", PetType.ADOPCION in state.types) { viewModel.onTypeToggle(PetType.ADOPCION) }
-                    SelectChip("Perdidas · Búsqueda activa", PetType.PERDIDO in state.types) { viewModel.onTypeToggle(PetType.PERDIDO) }
-                    SelectChip("Encontradas · Reporte callejero", PetType.ENCONTRADO in state.types) { viewModel.onTypeToggle(PetType.ENCONTRADO) }
+                    SelectChip(stringResource(R.string.filter_type_adoption), PetType.ADOPCION in state.types) { viewModel.onTypeToggle(PetType.ADOPCION) }
+                    SelectChip(stringResource(R.string.filter_type_lost), PetType.PERDIDO in state.types) { viewModel.onTypeToggle(PetType.PERDIDO) }
+                    SelectChip(stringResource(R.string.filter_type_found), PetType.ENCONTRADO in state.types) { viewModel.onTypeToggle(PetType.ENCONTRADO) }
                 }
             }
 
-            FilterSection(title = "Distancia de búsqueda", subtitle = "Perímetro activo: ${state.maxDistanceKm} km") {
+            FilterSection(title = stringResource(R.string.filter_distance), subtitle = stringResource(R.string.filter_distance_active, state.maxDistanceKm)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     DISTANCE_OPTIONS.forEach { km ->
-                        SelectChip("$km km", state.maxDistanceKm == km) { viewModel.onDistanceSelected(km) }
+                        SelectChip(stringResource(R.string.km_value, km), state.maxDistanceKm == km) { viewModel.onDistanceSelected(km) }
                     }
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(text = "Notificar mascotas perdidas cercanas", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
-                        Text(text = "Recibe alertas en tu perímetro de ${state.maxDistanceKm} km", fontSize = 11.sp, color = SecondaryText)
+                        Text(text = stringResource(R.string.notify_lost), fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
+                        Text(text = stringResource(R.string.notify_lost_detail, state.maxDistanceKm), fontSize = 11.sp, color = SecondaryText)
                     }
                     Switch(checked = state.notifyLostNearby, onCheckedChange = viewModel::onNotifyLostChange)
                 }
             }
 
-            FilterSection(title = "Características del Animal") {
-                Text(text = "Especie", fontSize = 12.sp, color = SecondaryText)
+            FilterSection(title = stringResource(R.string.animal_traits)) {
+                Text(text = stringResource(R.string.species), fontSize = 12.sp, color = SecondaryText)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf("Perros", "Gatos", "Conejos", "Otros").forEach {
+                    listOf(stringResource(R.string.species_dogs), stringResource(R.string.species_cats), stringResource(R.string.species_rabbits), stringResource(R.string.species_others)).forEach {
                         SelectChip(it, it in state.species) { viewModel.onSpeciesToggle(it) }
                     }
                 }
-                Text(text = "Tamaño", fontSize = 12.sp, color = SecondaryText)
+                Text(text = stringResource(R.string.size), fontSize = 12.sp, color = SecondaryText)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf("Pequeño", "Mediano", "Grande").forEach {
+                    listOf(stringResource(R.string.size_small_label), stringResource(R.string.size_medium_label), stringResource(R.string.size_large_label)).forEach {
                         SelectChip(it, it in state.sizes) { viewModel.onSizeToggle(it) }
                     }
                 }
-                Text(text = "Etapa de Vida", fontSize = 12.sp, color = SecondaryText)
+                Text(text = stringResource(R.string.life_stage), fontSize = 12.sp, color = SecondaryText)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf("Cachorro (<1 año)", "Joven (1-3 años)", "Adulto (3-7 años)", "Senior (8+ años)").forEach {
+                    listOf(stringResource(R.string.stage_puppy), stringResource(R.string.stage_young), stringResource(R.string.stage_adult), stringResource(R.string.stage_senior)).forEach {
                         SelectChip(it, it in state.lifeStages) { viewModel.onLifeStageToggle(it) }
                     }
                 }
-                Text(text = "Sexo", fontSize = 12.sp, color = SecondaryText)
+                Text(text = stringResource(R.string.sex), fontSize = 12.sp, color = SecondaryText)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    SelectChip("Macho", state.sex == "Macho") { viewModel.onSexSelected("Macho") }
-                    SelectChip("Hembra", state.sex == "Hembra") { viewModel.onSexSelected("Hembra") }
-                    SelectChip("Cualquiera", state.sex == null) { viewModel.onSexSelected(null) }
+                    SelectChip(stringResource(R.string.sex_male), state.sex == "Macho") { viewModel.onSexSelected("Macho") }
+                    SelectChip(stringResource(R.string.sex_female), state.sex == "Hembra") { viewModel.onSexSelected("Hembra") }
+                    SelectChip(stringResource(R.string.sex_any), state.sex == null) { viewModel.onSexSelected(null) }
                 }
             }
 
-            FilterSection(title = "Sellos Patitas Conectadas", subtitle = "Filtros de bienestar y seguridad veterinaria") {
+            FilterSection(title = stringResource(R.string.seals), subtitle = stringResource(R.string.seals_detail)) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     listOf(
-                        "Verificación veterinaria oficial",
-                        "Esterilizado / Castrado",
-                        "Apto con niños y otros animales",
-                        "Casos prioritarios / Hogar de paso"
+                        stringResource(R.string.seal_vet),
+                        stringResource(R.string.seal_sterilized),
+                        stringResource(R.string.seal_children),
+                        stringResource(R.string.seal_priority)
                     ).forEach {
                         SelectChip(it, it in state.seals) { viewModel.onSealToggle(it) }
                     }
@@ -201,7 +204,7 @@ fun AdvancedFiltersScreen(
             }
 
             if (state.highlighted.isNotEmpty()) {
-                Text(text = "MASCOTAS DESTACADAS EN ESTE FILTRO", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = SecondaryText)
+                Text(text = stringResource(R.string.featured_pets), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = SecondaryText)
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     state.highlighted.forEach { publication ->
                         Surface(
@@ -221,7 +224,7 @@ fun AdvancedFiltersScreen(
                                 )
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Text(text = publication.name, fontWeight = FontWeight.Bold, color = DarkText)
-                                Text(text = "${publication.location} • ${publication.age}", fontSize = 11.sp, color = SecondaryText)
+                                Text(text = stringResource(R.string.location_age, publication.location, publication.age), fontSize = 11.sp, color = SecondaryText)
                             }
                         }
                     }

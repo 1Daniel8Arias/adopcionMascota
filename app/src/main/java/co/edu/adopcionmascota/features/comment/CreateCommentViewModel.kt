@@ -1,5 +1,12 @@
 package co.edu.adopcionmascota.features.comment
 
+import co.edu.adopcionmascota.R
+import androidx.lifecycle.SavedStateHandle
+import javax.inject.Inject
+import dagger.hilt.android.lifecycle.HiltViewModel
+import co.edu.adopcionmascota.core.util.ResourceProvider
+import co.edu.adopcionmascota.domain.model.Comment
+import co.edu.adopcionmascota.domain.model.ContributionType
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import co.edu.adopcionmascota.core.util.RequestResult
@@ -56,9 +63,14 @@ data class CreateCommentUiState(
         get() = publishResult is RequestResult.Loading
 }
 
-class CreateCommentViewModel(
-    private val publicationId: String
+@HiltViewModel
+class CreateCommentViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
+    private val resources: ResourceProvider
 ) : ViewModel() {
+
+    private val publicationId: String = checkNotNull(savedStateHandle["publicationId"])
+
 
     private val _uiState = MutableStateFlow(CreateCommentUiState())
     val uiState: StateFlow<CreateCommentUiState> = _uiState.asStateFlow()
@@ -130,19 +142,19 @@ class CreateCommentViewModel(
     // La cámara y el mapa todavía no hacen parte del alcance del proyecto
     fun onAttachPhotoClick() {
         _uiState.update {
-            it.copy(infoMessage = "Adjuntar fotos estará disponible cuando se integre la cámara")
+            it.copy(infoMessage = resources.getString(R.string.attach_unavailable))
         }
     }
 
     fun onShareLocationClick() {
         _uiState.update {
-            it.copy(infoMessage = "Compartir ubicación estará disponible cuando se integre el mapa")
+            it.copy(infoMessage = resources.getString(R.string.share_location_unavailable))
         }
     }
 
     fun onHelpClick() {
         _uiState.update {
-            it.copy(infoMessage = "Elige el tipo de aporte, escribe tu mensaje y presiona \"Publicar Comentario\"")
+            it.copy(infoMessage = resources.getString(R.string.comment_help))
         }
     }
 
@@ -174,7 +186,7 @@ class CreateCommentViewModel(
                 publicationId = publicationId,
                 author = state.authorName,
                 authorTag = "Nivel 2",
-                time = "Ahora",
+                time = resources.getString(R.string.now),
                 text = state.text.trim(),
                 type = state.type
             )
@@ -183,7 +195,7 @@ class CreateCommentViewModel(
 
             _uiState.update {
                 it.copy(
-                    publishResult = RequestResult.Success("Aporte agregado con éxito"),
+                    publishResult = RequestResult.Success(resources.getString(R.string.contribution_success)),
                     publishedComment = comment,
                     text = "",
                     isDraftSaved = false
@@ -215,8 +227,8 @@ class CreateCommentViewModel(
     private fun validateText(text: String): String? {
         val length = text.trim().length
         return when {
-            length == 0 -> "Escribe tu aporte antes de publicar"
-            length < COMMENT_MIN_LENGTH -> "El aporte debe tener al menos $COMMENT_MIN_LENGTH caracteres"
+            length == 0 -> resources.getString(R.string.comment_empty)
+            length < COMMENT_MIN_LENGTH -> resources.getString(R.string.comment_short, COMMENT_MIN_LENGTH)
             else -> null
         }
     }

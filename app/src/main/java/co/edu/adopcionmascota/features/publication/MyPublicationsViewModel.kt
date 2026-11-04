@@ -1,5 +1,12 @@
 package co.edu.adopcionmascota.features.publication
 
+import co.edu.adopcionmascota.R
+import androidx.annotation.StringRes
+import javax.inject.Inject
+import dagger.hilt.android.lifecycle.HiltViewModel
+import co.edu.adopcionmascota.core.util.ResourceProvider
+import co.edu.adopcionmascota.domain.model.MyPublication
+import co.edu.adopcionmascota.domain.model.MyPublicationStatus
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -9,12 +16,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 // Pestañas de "Mis Publicaciones"
-enum class MyPublicationsTab(val label: String) {
-    ALL("Todas"),
-    ACTIVE("Activas"),
-    IN_REVIEW("En Revisión"),
-    RESOLVED("Resueltas"),
-    OBSERVATION("Observaciones")
+enum class MyPublicationsTab(@StringRes val label: Int) {
+    ALL(R.string.all),
+    ACTIVE(R.string.tab_active),
+    IN_REVIEW(R.string.tab_review),
+    RESOLVED(R.string.tab_resolved),
+    OBSERVATION(R.string.tab_observations)
 }
 
 data class MyPublicationsUiState(
@@ -60,7 +67,10 @@ private fun MyPublication.matches(tab: MyPublicationsTab): Boolean = when (tab) 
     MyPublicationsTab.OBSERVATION -> status == MyPublicationStatus.OBSERVATION
 }
 
-class MyPublicationsViewModel : ViewModel() {
+@HiltViewModel
+class MyPublicationsViewModel @Inject constructor(
+    private val resources: ResourceProvider
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MyPublicationsUiState())
     val uiState: StateFlow<MyPublicationsUiState> = _uiState.asStateFlow()
@@ -84,7 +94,7 @@ class MyPublicationsViewModel : ViewModel() {
 
     fun onMarkResolved(id: String) {
         MyPublicationsStore.changeStatus(id, MyPublicationStatus.RESOLVED)
-        _uiState.update { it.copy(infoMessage = "¡Caso marcado como resuelto! Se notificó a sus seguidores") }
+        _uiState.update { it.copy(infoMessage = resources.getString(R.string.case_resolved)) }
     }
 
     // ---------- Cancelar solicitud en revisión ----------
@@ -95,11 +105,11 @@ class MyPublicationsViewModel : ViewModel() {
 
     fun onConfirmCancelRequest() {
         val publication = _uiState.value.publicationToCancel ?: return
-        MyPublicationsStore.delete(publication.id, "Solicitud cancelada por el usuario")
+        MyPublicationsStore.delete(publication.id, resources.getString(R.string.request_cancelled_reason))
         _uiState.update {
             it.copy(
                 publicationToCancel = null,
-                infoMessage = "Se canceló la solicitud de ${publication.name}"
+                infoMessage = resources.getString(R.string.request_cancelled, publication.name)
             )
         }
     }

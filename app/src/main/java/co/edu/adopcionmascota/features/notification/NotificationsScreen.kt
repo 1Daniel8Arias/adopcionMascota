@@ -1,5 +1,10 @@
 package co.edu.adopcionmascota.features.notification
 
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import co.edu.adopcionmascota.domain.model.Notification
+import co.edu.adopcionmascota.domain.model.NotificationType
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -64,7 +69,7 @@ private val UnreadBg = Color(0xFFF3F7FF)
 fun NotificationsScreen(
     onNotificationClick: (String) -> Unit,          // Abre el detalle de la notificación
     onNavigationClick: (AppDestination) -> Unit,    // Barra inferior
-    viewModel: NotificationsViewModel = viewModel()
+    viewModel: NotificationsViewModel = hiltViewModel()
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val state by viewModel.uiState.collectAsState()
@@ -175,7 +180,7 @@ private fun NotificationsTopBar(
             Box(modifier = Modifier.size(40.dp), contentAlignment = Alignment.Center) {
                 Icon(
                     imageVector = Icons.Outlined.Notifications,
-                    contentDescription = "Ver no leídas",
+                    contentDescription = stringResource(R.string.view_unread),
                     tint = DarkText
                 )
                 if (unreadCount > 0) {
@@ -207,13 +212,13 @@ private fun NotificationsHeader(
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = "Notificaciones",
+                text = stringResource(R.string.notifications),
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = DarkText
             )
             Text(
-                text = if (unreadCount == 0) "Estás al día" else "$unreadCount pendientes",
+                text = if (unreadCount == 0) stringResource(R.string.up_to_date) else stringResource(R.string.pending_unread, unreadCount),
                 fontSize = 13.sp,
                 color = AppPrimary
             )
@@ -227,7 +232,7 @@ private fun NotificationsHeader(
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
-                text = "Marcar todas\nleídas",
+                text = stringResource(R.string.mark_all_read),
                 fontSize = 12.sp,
                 lineHeight = 14.sp,
                 color = AppPrimary
@@ -253,7 +258,9 @@ private fun FilterRow(
                 color = if (isSelected) Color.Black else SoftBlue
             ) {
                 Text(
-                    text = state.labelFor(filter),
+                    text = state.countFor(filter)?.let { count ->
+                        stringResource(R.string.filter_count, stringResource(filter.label), count)
+                    } ?: stringResource(filter.label),
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Medium,
@@ -280,8 +287,8 @@ private fun EmptyNotifications(filter: NotificationFilter) {
         )
         Spacer(modifier = Modifier.size(8.dp))
         Text(
-            text = if (filter == NotificationFilter.UNREAD) "No tienes notificaciones sin leer"
-            else "No hay notificaciones en esta categoría",
+            text = if (filter == NotificationFilter.UNREAD) stringResource(R.string.no_unread)
+            else stringResource(R.string.no_notifications_category),
             fontSize = 14.sp,
             color = SecondaryText
         )
@@ -290,7 +297,7 @@ private fun EmptyNotifications(filter: NotificationFilter) {
 
 @Composable
 private fun NotificationCard(
-    notification: AppNotification,
+    notification: Notification,
     onClick: () -> Unit
 ) {
     val accent = notification.type.accentColor()

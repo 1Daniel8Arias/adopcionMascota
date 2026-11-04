@@ -1,5 +1,8 @@
 package co.edu.adopcionmascota.features.password
 
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -51,9 +54,9 @@ import co.edu.adopcionmascota.core.util.RequestResult
 
 @Composable
 fun PasswordScreen(
-    onNavigateToLogin: () -> Unit = {},       // Flecha y "Volver a Iniciar Sesión"
-    onNavigateToRegister: () -> Unit = {},    // "Regístrate aquí"
-    viewModel: PasswordViewModel = viewModel()
+    onNavigateToLogin: () -> Unit = {},       // Flecha y stringResource(R.string.back_to_sign_in)
+    onNavigateToRegister: () -> Unit = {},    // stringResource(R.string.register_here)
+    viewModel: PasswordViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
 
@@ -70,7 +73,7 @@ fun PasswordScreen(
         IconButton(onClick = onNavigateToLogin) {
             Icon(
                 imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                contentDescription = "Volver a Iniciar Sesión",
+                contentDescription = stringResource(R.string.back_to_sign_in),
                 tint = Color(0xFF0F172A)
             )
         }
@@ -119,7 +122,7 @@ fun PasswordScreen(
         }
 
         Text(
-            text = "¿Olvidaste tu contraseña?",
+            text = stringResource(R.string.forgot_password),
             fontSize = 22.sp,
             fontWeight = FontWeight.ExtraBold,
             color = Color(0xFF0F172A),
@@ -128,7 +131,7 @@ fun PasswordScreen(
         )
 
         Text(
-            text = "No te preocupes. Ingresa el correo electrónico asociado a tu cuenta de Patitas Conectadas y te enviaremos un enlace seguro para restablecer tu acceso.",
+            text = stringResource(R.string.password_intro),
             fontSize = 13.sp,
             color = Color(0xFF64748B),
             textAlign = TextAlign.Center,
@@ -141,7 +144,7 @@ fun PasswordScreen(
         // ------------------------------------------------------------------
         Column(modifier = Modifier.fillMaxWidth()) {
             IconoTextField(
-                titulo = "Correo electrónico registrado",
+                titulo = stringResource(R.string.registered_email),
                 value = state.email,
                 onValueChange = viewModel::onEmailChange,
                 placeholderText = "camila.morales@ejemplo.com",
@@ -171,7 +174,7 @@ fun PasswordScreen(
                     modifier = Modifier.size(14.dp)
                 )
                 Text(
-                    text = "Asegúrate de que coincida con tu correo registrado en Bogotá.",
+                    text = stringResource(R.string.password_email_help),
                     fontSize = 11.sp,
                     color = Color(0xFF64748B)
                 )
@@ -195,7 +198,7 @@ fun PasswordScreen(
                 horizontalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = "Enviar enlace de recuperación",
+                    text = stringResource(R.string.send_recovery_link),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -234,12 +237,12 @@ fun PasswordScreen(
         }
 
         IconoText(
-            texto = "¿No recibes el mensaje?\nRevisa tu carpeta de spam o correo no deseado. El enlace es válido durante 30 minutos por razones de seguridad ciudadana y protección animal.",
+            texto = stringResource(R.string.password_no_message),
             icono = Icons.AutoMirrored.Outlined.HelpOutline
         )
 
         IconoText(
-            texto = "Soporte Comunitario Bogotá\n¿Perdiste acceso total a tu correo o cambiaste de número? Nuestro equipo de bienestar animal en Bogotá te acompaña en el proceso de validación.",
+            texto = stringResource(R.string.password_support),
             icono = Icons.Outlined.SupportAgent
         )
 
@@ -265,7 +268,7 @@ fun PasswordScreen(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Volver a Iniciar Sesión",
+                    text = stringResource(R.string.back_to_sign_in),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -280,7 +283,7 @@ fun PasswordScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "¿Aún no tienes cuenta? ",
+                text = stringResource(R.string.no_account_yet),
                 fontSize = 13.sp,
                 color = Color(0xFF64748B)
             )
@@ -288,7 +291,7 @@ fun PasswordScreen(
                 onClick = onNavigateToRegister
             ) {
                 Text(
-                    text = "Regístrate aquí",
+                    text = stringResource(R.string.register_here),
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF3B52E1)

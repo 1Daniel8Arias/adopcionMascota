@@ -1,28 +1,12 @@
 package co.edu.adopcionmascota.features.profile
 
+import co.edu.adopcionmascota.core.util.ResourceProvider
+import co.edu.adopcionmascota.R
+import co.edu.adopcionmascota.domain.model.User
+import co.edu.adopcionmascota.domain.model.UserProfile
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-
-// Datos del usuario que comparten el perfil y la pantalla de edición
-data class UserProfile(
-    val photoUrl: String = "https://i.pravatar.cc/300?img=47",
-    val name: String = "Camila Morales Restrepo",
-    val email: String = "camila.morales@ejemplo.com",
-    val isEmailVerified: Boolean = true,
-    val phone: String = "+57 310 123 4567",
-    val locality: String = "Usaquén (Zona Norte)",
-    val neighborhood: String = "Cedritos / Santa Bárbara",
-    val bio: String = "Amante de los animales, hogar de paso temporal para cachorros y promotora de esterilización responsable en Bogotá",
-    val isTemporaryHome: Boolean = true,
-    val lostPetAlerts: Boolean = true,
-    val showPublicPhone: Boolean = false
-) {
-
-    val localityName: String
-        get() = locality.substringBefore(" (")
-}
-
 
 object UserProfileStore {
 
@@ -33,8 +17,23 @@ object UserProfileStore {
     private val _lastChanges = MutableStateFlow<List<String>>(emptyList())
     val lastChanges: StateFlow<List<String>> = _lastChanges.asStateFlow()
 
-    fun save(newProfile: UserProfile) {
-        _lastChanges.value = describeChanges(_profile.value, newProfile)
+    // Carga en el perfil los datos del usuario que inició sesión
+    fun loadFromUser(user: User) {
+        if (_profile.value.email == user.email) return
+        _lastChanges.value = emptyList()
+        _profile.value = UserProfile(
+            photoUrl = user.profilePictureUrl,
+            name = user.name,
+            email = user.email,
+            phone = user.phoneNumber,
+            locality = user.city,
+            neighborhood = user.address,
+            bio = ""
+        )
+    }
+
+    fun save(newProfile: UserProfile, resources: ResourceProvider) {
+        _lastChanges.value = describeChanges(_profile.value, newProfile, resources)
         _profile.value = newProfile
     }
 
@@ -44,25 +43,28 @@ object UserProfileStore {
         _lastChanges.value = emptyList()
     }
 
-    private fun describeChanges(old: UserProfile, new: UserProfile): List<String> {
+    private fun describeChanges(old: UserProfile, new: UserProfile, resources: ResourceProvider): List<String> {
         val changes = mutableListOf<String>()
-        if (old.name != new.name) changes.add("Nombre: ${new.name}")
-        if (old.email != new.email) changes.add("Correo: ${new.email}")
-        if (old.phone != new.phone) changes.add("Teléfono: ${new.phone}")
+        if (old.name != new.name) changes.add(resources.getString(R.string.change_name, new.name))
+        if (old.email != new.email) changes.add(resources.getString(R.string.change_email, new.email))
+        if (old.phone != new.phone) changes.add(resources.getString(R.string.change_phone, new.phone))
         if (old.locality != new.locality || old.neighborhood != new.neighborhood) {
             val sector = new.neighborhood.substringBefore(" /").ifBlank { new.localityName }
-            changes.add("Ubicación: $sector / ${new.localityName}")
+            changes.add(resources.getString(R.string.change_location, sector, new.localityName))
         }
         if (old.isTemporaryHome != new.isTemporaryHome) {
-            changes.add("Hogar de Paso: ${if (new.isTemporaryHome) "Activo" else "Inactivo"}")
+            val value = resources.getString(if (new.isTemporaryHome) R.string.level_active else R.string.inactive)
+            changes.add(resources.getString(R.string.change_foster, value))
         }
         if (old.lostPetAlerts != new.lostPetAlerts) {
-            changes.add("Alertas: ${if (new.lostPetAlerts) "Activas" else "Inactivas"}")
+            val value = resources.getString(if (new.lostPetAlerts) R.string.alerts_on else R.string.alerts_off)
+            changes.add(resources.getString(R.string.change_alerts, value))
         }
         if (old.showPublicPhone != new.showPublicPhone) {
-            changes.add("Teléfono público: ${if (new.showPublicPhone) "Visible" else "Oculto"}")
+            val value = resources.getString(if (new.showPublicPhone) R.string.phone_visible else R.string.phone_hidden)
+            changes.add(resources.getString(R.string.change_public_phone, value))
         }
-        if (old.bio != new.bio) changes.add("Bio comunitaria actualizada")
+        if (old.bio != new.bio) changes.add(resources.getString(R.string.change_bio))
         return changes
     }
 }

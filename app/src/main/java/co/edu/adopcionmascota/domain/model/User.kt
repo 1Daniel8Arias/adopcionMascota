@@ -1,6 +1,5 @@
 package co.edu.adopcionmascota.domain.model
 
-import okhttp3.Address
 
 data class User(
     val id: String,

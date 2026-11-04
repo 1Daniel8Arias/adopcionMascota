@@ -1,5 +1,8 @@
 package co.edu.adopcionmascota.features.adoption.detail
 
+import androidx.compose.ui.res.stringResource
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import co.edu.adopcionmascota.domain.model.Comment
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
@@ -57,7 +60,8 @@ import co.edu.adopcionmascota.core.component.AppTopBar
 import co.edu.adopcionmascota.core.component.ConfirmAlertDialog
 import co.edu.adopcionmascota.core.util.RequestResult
 import co.edu.adopcionmascota.domain.model.Publication
-import co.edu.adopcionmascota.features.comment.Comment
+import co.edu.adopcionmascota.core.component.MapBox
+import com.mapbox.geojson.Point
 import co.edu.adopcionmascota.features.comment.CommentCard
 import coil3.compose.AsyncImage
 
@@ -68,9 +72,7 @@ fun PublicationDetailScreen(
     onNavigateToComment: () -> Unit = {},     // Abre "Crear comentario"
     onNotificationClick: () -> Unit = {},     // Campana de la barra superior
     onProfileClick: () -> Unit = {},          // Avatar de la barra superior
-    viewModel: PublicationDetailViewModel = viewModel(key = "detail_$publicationId") {
-        PublicationDetailViewModel(publicationId)
-    }
+    viewModel: PublicationDetailViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -101,12 +103,12 @@ fun PublicationDetailScreen(
 
     // Abre WhatsApp con un mensaje para el publicador (sin permisos ni dependencias)
     val openWhatsApp: (String, String) -> Unit = { phone, petName ->
-        val message = Uri.encode("Hola, vi la publicación de $petName en Patitas Conectadas")
+        val message = Uri.encode(context.getString(R.string.whatsapp_message, petName))
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/$phone?text=$message"))
         try {
             context.startActivity(intent)
         } catch (e: ActivityNotFoundException) {
-            viewModel.showInfo("No hay una app disponible para abrir WhatsApp")
+            viewModel.showInfo(context.getString(R.string.whatsapp_missing))
         }
     }
 
@@ -116,12 +118,12 @@ fun PublicationDetailScreen(
         topBar = {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = onNavigateBack) {
-                    Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Volver")
+                    Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
                 }
                 Box(modifier = Modifier.weight(1f)) {
                     AppTopBar(
-                        title = "Patitas Conectadas",
-                        location = "Armenia, Quindío",
+                        title = stringResource(R.string.brand),
+                        location = stringResource(R.string.feed_location),
                         onNotificationClick = onNotificationClick,
                         onProfileClick = onProfileClick
                     )
@@ -151,7 +153,7 @@ fun PublicationDetailScreen(
                     .padding(padding),
                 contentAlignment = Alignment.Center
             ) {
-                Text("Esta publicación ya no está disponible")
+                Text(stringResource(R.string.publication_unavailable))
             }
             return@Scaffold
         }
@@ -197,7 +199,7 @@ fun PublicationDetailScreen(
 
                                 Icon(
                                     if (state.isLiked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                                    "Me importa",
+                                    stringResource(R.string.i_care),
                                     tint = Color.Blue
                                 )
 
@@ -236,7 +238,7 @@ fun PublicationDetailScreen(
             }
 
             item {
-                MapCard()
+                MapCard(publication = publication)
             }
 
             item {
@@ -253,14 +255,14 @@ fun PublicationDetailScreen(
     state.pendingRequest?.let { request ->
         val name = state.publication?.name.orEmpty()
         ConfirmAlertDialog(
-            title = if (request == DetailRequest.TEMPORARY_HOME) "¿Ofrecer hogar de paso?" else "¿${state.primaryActionText}?",
+            title = if (request == DetailRequest.TEMPORARY_HOME) stringResource(R.string.offer_foster) else stringResource(R.string.confirm_action, state.primaryActionText),
             message = if (request == DetailRequest.TEMPORARY_HOME)
-                "El publicador recibirá tu ofrecimiento para acoger temporalmente a $name."
+                stringResource(R.string.foster_message, name)
             else
-                "El publicador recibirá tu solicitud y se pondrá en contacto contigo sobre $name.",
+                stringResource(R.string.request_message, name),
             onConfirm = viewModel::onConfirmRequest,
             onDismiss = viewModel::onDismissRequest,
-            confirmText = "Enviar"
+            confirmText = stringResource(R.string.send)
         )
     }
 }
@@ -293,7 +295,7 @@ fun PetInfoCard(
             }
 
             Text(
-                "${info.breed} · ${publication.age} · ${info.size}"
+                stringResource(R.string.pet_breed_line, info.breed, publication.age, info.size)
             )
 
             Spacer(
@@ -317,7 +319,7 @@ fun HealthCard(tags: List<String>) {
         ) {
 
             Text(
-                "Salud y Cuidados",
+                stringResource(R.string.health_care),
                 style = MaterialTheme.typography.titleMedium
             )
 
@@ -345,7 +347,7 @@ fun HistoryCard(name: String, history: String) {
         ) {
 
             Text(
-                "Historia de $name",
+                stringResource(R.string.history_of, name),
                 style = MaterialTheme.typography.titleMedium
             )
 
@@ -393,13 +395,13 @@ fun PublisherCard(
             Button(
                 onClick = onWhatsAppClick
             ) {
-                Text("WhatsApp")
+                Text(stringResource(R.string.whatsapp))
             }
         }
     }
 }
 @Composable
-fun MapCard() {
+fun MapCard(publication: Publication) {
 
     ElevatedCard(
         modifier = Modifier.fillMaxWidth()
@@ -410,7 +412,7 @@ fun MapCard() {
         ) {
 
             Text(
-                text = "Punto de Referencia"
+                text = stringResource(R.string.reference_point)
             )
 
             Spacer(
@@ -423,20 +425,13 @@ fun MapCard() {
                     .height(180.dp)
             ) {
 
-                Image(
-                    painter = painterResource(
-                        id = R.drawable.icono_mapa
-                    ),
-                    contentDescription = "Mapa de referencia",
+                // Mapa de solo lectura: va dentro de una pantalla con scroll
+                MapBox(
                     modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
-
-                // Aquí podrías colocar un marcador
-                Text(
-                    text = "📍",
-                    modifier = Modifier
-                        .align(Alignment.Center)
+                    center = Point.fromLngLat(publication.coordinates.longitude, publication.coordinates.latitude),
+                    zoom = 15.5,
+                    publications = listOf(publication),
+                    interactive = false
                 )
             }
         }
@@ -457,10 +452,10 @@ fun CommentsCard(
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    "Comentarios y Avances",
+                    stringResource(R.string.comments_progress),
                     modifier = Modifier.weight(1f)
                 )
-                AppTag("${comments.size} aportes")
+                AppTag(stringResource(R.string.contributions_count, comments.size))
             }
 
             Spacer(
@@ -484,7 +479,7 @@ fun CommentsCard(
                     modifier = Modifier.fillMaxWidth(),
                     readOnly = true,
                     placeholder = {
-                        Text("Aportar información...")
+                        Text(stringResource(R.string.contribute_info))
                     }
                 )
                 Box(
@@ -504,7 +499,7 @@ fun CommentsCard(
                     Alignment.End
                 )
             ) {
-                Text("Comentar")
+                Text(stringResource(R.string.comment))
             }
         }
     }
@@ -531,7 +526,7 @@ fun PublicationBottomBar(
             enabled = !isSending,
             modifier = Modifier.weight(1f)
         ) {
-            Text(if (temporaryHomeSent) "Hogar de Paso ✓" else "Hogar de Paso")
+            Text(if (temporaryHomeSent) stringResource(R.string.foster_sent) else stringResource(R.string.foster_home))
         }
 
         Button(
@@ -539,7 +534,7 @@ fun PublicationBottomBar(
             enabled = !isSending,
             modifier = Modifier.weight(1f)
         ) {
-            Text(if (primarySent) "Solicitud enviada ✓" else primaryText)
+            Text(if (primarySent) stringResource(R.string.request_sent) else primaryText)
         }
     }
 }

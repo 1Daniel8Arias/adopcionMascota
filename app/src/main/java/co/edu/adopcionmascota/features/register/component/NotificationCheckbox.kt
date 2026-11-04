@@ -1,5 +1,7 @@
 package co.edu.adopcionmascota.features.register.component
 
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -33,7 +35,7 @@ import androidx.compose.ui.unit.dp
         Text(
             text = buildAnnotatedString {
 
-                append("Deseo recibir notificaciones prioritarias de ")
+                append(stringResource(R.string.notif_1))
 
                 pushStyle(
                     SpanStyle(
@@ -41,11 +43,11 @@ import androidx.compose.ui.unit.dp
                     )
                 )
 
-                append("mascotas perdidas o en riesgo inmediato")
+                append(stringResource(R.string.notif_2))
 
                 pop()
 
-                append(" en mi localidad.")
+                append(stringResource(R.string.notif_3))
             },
             modifier = Modifier.padding(
                 top = 12.dp,

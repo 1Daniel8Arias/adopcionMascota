@@ -1,5 +1,7 @@
 package co.edu.adopcionmascota.features.register.component
 
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -51,34 +53,34 @@ fun TermsCheckbox(
         Text(
             text = buildAnnotatedString {
 
-                append("Acepto los ")
+                append(stringResource(R.string.terms_1))
 
                 pushStyle(
                     SpanStyle(
                         color = Color(0xFF182BE3)
                     )
                 )
-                append("Términos y Condiciones")
+                append(stringResource(R.string.terms_2))
                 pop()
 
-                append(", la ")
+                append(stringResource(R.string.terms_3))
 
                 pushStyle(
                     SpanStyle(
                         color = Color(0xFF182BE3)
                     )
                 )
-                append("Política de Privacidad")
+                append(stringResource(R.string.terms_4))
                 pop()
 
-                append(" y me comprometo formalmente a ")
+                append(stringResource(R.string.terms_5))
 
                 pushStyle(
                     SpanStyle(
                         fontWeight = FontWeight.Bold
                     )
                 )
-                append("no comerciar ni vender ningún animal.")
+                append(stringResource(R.string.terms_6))
                 pop()
             },
             modifier = Modifier.padding(

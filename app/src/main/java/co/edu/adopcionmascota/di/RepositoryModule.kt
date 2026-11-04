@@ -1,5 +1,7 @@
 package co.edu.adopcionmascota.di
 
+import co.edu.adopcionmascota.domain.repository.FilterPreferencesRepository
+import co.edu.adopcionmascota.data.repository.local.FilterPreferencesRepositoryImpl
 import co.edu.adopcionmascota.data.repository.local.SessionRepositoryImpl
 import co.edu.adopcionmascota.data.repository.memory.PublicationRepositoryImpl
 import co.edu.adopcionmascota.data.repository.memory.UserRepositoryImpl
@@ -29,6 +31,12 @@ abstract class RepositoryModule {
     abstract fun bindUserRepository(
         userRepository: UserRepositoryImpl
     ): UserRepository // Vincula UserRepositoryImpl con UserRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindFilterPreferencesRepository(
+        impl: FilterPreferencesRepositoryImpl
+    ): FilterPreferencesRepository
 
     @Binds
     @Singleton

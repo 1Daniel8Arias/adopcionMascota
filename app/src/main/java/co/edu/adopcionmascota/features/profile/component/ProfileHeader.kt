@@ -1,5 +1,7 @@
 package co.edu.adopcionmascota.features.profile.component
 
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.border
@@ -64,7 +66,7 @@ fun ProfileTopBar(
         IconButton(onClick = onNavigateBack) {
             Icon(
                 imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                contentDescription = "Volver"
+                contentDescription = stringResource(R.string.back)
             )
         }
 
@@ -90,13 +92,13 @@ fun ProfileTopBar(
 
         Column {
             Text(
-                text = "PATITAS CONECTADAS",
+                text = stringResource(R.string.brand_upper),
                 color = AppPrimary,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Medium
             )
             Text(
-                text = "Mi Perfil",
+                text = stringResource(R.string.my_profile),
                 color = DarkText,
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold
@@ -133,7 +135,7 @@ fun ProfileStatusRow(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "Voluntaria Activa",
+                        text = stringResource(R.string.active_volunteer),
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Medium,
                         color = DarkText
@@ -146,10 +148,10 @@ fun ProfileStatusRow(
 
         Row {
             IconButton(onClick = onShareClick) {
-                Icon(Icons.Outlined.Share, contentDescription = "Compartir perfil")
+                Icon(Icons.Outlined.Share, contentDescription = stringResource(R.string.share_profile))
             }
             IconButton(onClick = onSettingsClick) {
-                Icon(Icons.Outlined.Settings, contentDescription = "Configuración")
+                Icon(Icons.Outlined.Settings, contentDescription = stringResource(R.string.settings))
             }
         }
     }
@@ -187,14 +189,14 @@ fun ProfileHeaderCard(
                     if (state.photoUrl.isNotBlank()) {
                         AsyncImage(
                             model = state.photoUrl,
-                            contentDescription = "Foto de perfil",
+                            contentDescription = stringResource(R.string.profile_photo),
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop
                         )
                     } else {
                         Icon(
                             imageVector = Icons.Outlined.Person,
-                            contentDescription = "Sin foto",
+                            contentDescription = stringResource(R.string.no_photo),
                             tint = SecondaryText,
                             modifier = Modifier.size(56.dp)
                         )
@@ -218,7 +220,7 @@ fun ProfileHeaderCard(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "Nv. ${state.currentLevel}",
+                            text = stringResource(R.string.level_short, state.currentLevel),
                             color = Color.White,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
@@ -246,7 +248,7 @@ fun ProfileHeaderCard(
             Spacer(modifier = Modifier.height(6.dp))
 
             InfoLine(icon = Icons.Outlined.LocationOn, text = state.location)
-            InfoLine(icon = Icons.Outlined.CalendarMonth, text = "Miembro desde ${state.memberSince}")
+            InfoLine(icon = Icons.Outlined.CalendarMonth, text = stringResource(R.string.member_since, state.memberSince))
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -271,7 +273,7 @@ fun ProfileHeaderCard(
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = "Editar Perfil", fontWeight = FontWeight.Medium)
+                    Text(text = stringResource(R.string.edit_profile), fontWeight = FontWeight.Medium)
                 }
 
                 Spacer(modifier = Modifier.width(12.dp))

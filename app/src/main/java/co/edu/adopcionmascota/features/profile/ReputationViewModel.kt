@@ -1,5 +1,7 @@
 package co.edu.adopcionmascota.features.profile
 
+import co.edu.adopcionmascota.domain.model.Badge
+import co.edu.adopcionmascota.domain.model.BadgeStatus
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

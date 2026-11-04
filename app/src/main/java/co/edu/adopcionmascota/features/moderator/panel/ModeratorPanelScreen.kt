@@ -1,5 +1,9 @@
 package co.edu.adopcionmascota.features.moderator.panel
 
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
+import co.edu.adopcionmascota.core.component.AppDestination
+import co.edu.adopcionmascota.core.component.AppBottomBar
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -80,21 +84,23 @@ private val MutedText = Color(0xFF64748B)
 private val CardBackground = Color(0xFFEAF2FF)
 private val CardBorder = Color(0xFFD5E4FF)
 private val StatusOptions = listOf(
-    "Pendientes (8)",
-    "Revisadas (142)",
-    "Reportadas"
+    R.string.moderation_tab_pending,
+    R.string.moderation_tab_reviewed,
+    R.string.moderation_tab_reported
 )
 
+// El valor interno sigue en español porque el filtro lo compara; solo se traduce lo que se ve
 private val FilterOptions = listOf(
-    "Todas",
-    "Posible venta",
-    "Adopción",
-    "Urgente"
+    "Todas" to R.string.all,
+    "Posible venta" to R.string.moderation_possible_sale,
+    "Adopción" to R.string.adoption,
+    "Urgente" to R.string.moderation_urgent
 )
-
 
 @Composable
-fun ModerationScreen() {
+fun ModerationScreen(
+    onNavigationClick: (AppDestination) -> Unit = {}
+) {
 
     var selectedTab by remember {
         mutableIntStateOf(0)
@@ -141,7 +147,10 @@ fun ModerationScreen() {
             ModerationTopBar()
         },
         bottomBar = {
-            BottomNavigationBar()
+            AppBottomBar(
+                currentDestination = AppDestination.MODERATE,
+                onDestinationSelected = onNavigationClick
+            )
         }
     ) { padding ->
 
@@ -158,7 +167,7 @@ fun ModerationScreen() {
             item {
                 Column {
                     Text(
-                        text = "Panel de Moderación",
+                        text = stringResource(R.string.moderation_panel),
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Bold,
                         color = DarkBlue
@@ -169,7 +178,7 @@ fun ModerationScreen() {
                     )
 
                     Text(
-                        text = "Audita y valida solicitudes de adopción",
+                        text = stringResource(R.string.moderation_panel_detail),
                         color = MutedText
                     )
                 }
@@ -205,7 +214,7 @@ fun ModerationScreen() {
 
                 item {
                     Text(
-                        text = "No hay publicaciones que coincidan con este filtro.",
+                        text = stringResource(R.string.moderation_empty),
                         color = MutedText,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -264,7 +273,7 @@ fun ModerationTopBar(
                 horizontalAlignment = Alignment.Start
             ) {
                 Text(
-                    text = "Patitas Conectadas",
+                    text = stringResource(R.string.brand),
                     fontSize = 21.sp,
                     fontWeight = FontWeight.Bold,
                     color = DarkBlue
@@ -281,7 +290,7 @@ fun ModerationTopBar(
                     Spacer(Modifier.width(4.dp))
 
                     Text(
-                        text = "Bogotá, Colombia",
+                        text = stringResource(R.string.default_location),
                         fontSize = 12.sp,
                         color = MutedText
                     )
@@ -297,7 +306,7 @@ fun ModerationTopBar(
             IconButton(onClick = { }) {
                 Icon(
                     imageVector = Icons.Default.Notifications,
-                    contentDescription = "Notificaciones"
+                    contentDescription = stringResource(R.string.notifications)
                 )
             }
 
@@ -310,7 +319,7 @@ fun ModerationTopBar(
             ) {
                 Icon(
                     imageVector = Icons.Default.Security,
-                    contentDescription = "Perfil de moderador",
+                    contentDescription = stringResource(R.string.moderator_profile_short),
                     tint = DarkBlue
                 )
             }
@@ -339,7 +348,7 @@ fun ModerationTopBar(
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(Modifier.width(5.dp))
-                    Text("Oficial", color = Color.White)
+                    Text(stringResource(R.string.official), color = Color.White)
                 }
             }
 
@@ -348,7 +357,7 @@ fun ModerationTopBar(
                 shape = RoundedCornerShape(50)
             ) {
                 Text(
-                    text = "$pendingCount pendientes",
+                    text = stringResource(R.string.pending_count, pendingCount),
                     modifier = Modifier.padding(
                         horizontal = 12.dp,
                         vertical = 7.dp
@@ -370,7 +379,7 @@ fun StatusTabs(
     ) {
         items(StatusOptions.size) { index ->
             ModerationTab(
-                text = StatusOptions[index],
+                text = stringResource(StatusOptions[index]),
                 selected = selectedTab == index,
                 icon = when (index) {
                     0 -> Icons.Outlined.Inventory2
@@ -431,14 +440,14 @@ fun DashboardMetrics() {
         ) {
             MetricCard(
                 value = "8",
-                title = "Por revisar",
+                title = stringResource(R.string.to_review),
                 icon = Icons.Default.Inbox,
                 modifier = Modifier.weight(1f)
             )
 
             MetricCard(
                 value = "14",
-                title = "Aprobadas hoy",
+                title = stringResource(R.string.approved_today),
                 icon = Icons.Default.ThumbUp,
                 modifier = Modifier.weight(1f)
             )
@@ -449,14 +458,14 @@ fun DashboardMetrics() {
         ) {
             MetricCard(
                 value = "12 min",
-                title = "Tiempo promedio",
+                title = stringResource(R.string.average_time_lower),
                 icon = Icons.Default.Timer,
                 modifier = Modifier.weight(1f)
             )
 
             MetricCard(
                 value = "0",
-                title = "Reportes críticos",
+                title = stringResource(R.string.critical_reports),
                 icon = Icons.Default.Security,
                 modifier = Modifier.weight(1f)
             )
@@ -514,11 +523,11 @@ fun FilterSection(
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(FilterOptions) { filter ->
+        items(FilterOptions) { (filter, label) ->
             FilterChip(
                 selected = selectedFilter == filter,
                 onClick = { onFilterSelected(filter) },
-                label = { Text(filter) }
+                label = { Text(stringResource(label)) }
             )
         }
     }
@@ -632,8 +641,10 @@ fun AdoptionCard(
 
             // Imagen
 
-            Image(
-                painter = painterResource(id = publication.imageUrl),
+            // Coil reduce la imagen al tamaño de pantalla; con painterResource las fotos
+            // grandes (imagen_rocky.jpg) cierran la app por superar el límite de memoria
+            AsyncImage(
+                model = publication.imageUrl,
                 contentDescription = null,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -652,9 +663,9 @@ fun AdoptionCard(
                     label = {
                         Text(
                             if (publication.vaccinesComplete) {
-                                "Vacunas completas"
+                                stringResource(R.string.vaccines_complete)
                             } else {
-                                "Vacunas incompletas"
+                                stringResource(R.string.vaccines_incomplete)
                             }
                         )
                     }
@@ -665,9 +676,9 @@ fun AdoptionCard(
                     label = {
                         Text(
                             if (publication.sterilized) {
-                                "Esterilizado"
+                                stringResource(R.string.sterilized)
                             } else {
-                                "Sin esterilizar"
+                                stringResource(R.string.not_sterilized)
                             }
                         )
                     }
@@ -684,7 +695,7 @@ fun AdoptionCard(
                 ) {
                     Text(
                         text = publication.ethicsMessage.ifBlank {
-                            "Posible infracción detectada"
+                            stringResource(R.string.possible_infraction)
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -711,7 +722,7 @@ fun AdoptionCard(
                         horizontal = 4.dp
                     )
                 ) {
-                    Text("Rechazar")
+                    Text(stringResource(R.string.reject))
                 }
 
                 FilledTonalButton(
@@ -723,7 +734,7 @@ fun AdoptionCard(
                         horizontal = 4.dp
                     )
                 ) {
-                    Text("Inspeccionar")
+                    Text(stringResource(R.string.inspect))
                 }
 
                 Button(
@@ -735,50 +746,13 @@ fun AdoptionCard(
                         horizontal = 4.dp
                     )
                 ) {
-                    Text("Aprobar")
+                    Text(stringResource(R.string.approve))
                 }
             }
         }
     }
 }
 
-
-@Composable
-fun BottomNavigationBar() {
-    NavigationBar(
-        containerColor = Color.White
-    ) {
-        NavigationBarItem(
-            selected = true,
-            onClick = { },
-            icon = {
-                Icon(Icons.Default.Pets, contentDescription = null)
-            },
-            label = { Text("Explorar") }
-        )
-
-        NavigationBarItem(
-            selected = false,
-            onClick = { },
-            icon = {
-                Icon(Icons.Default.AddCircle, contentDescription = null)
-            },
-            label = { Text("Publicar") }
-        )
-
-        NavigationBarItem(
-            selected = false,
-            onClick = { },
-            icon = {
-                Icon(
-                    Icons.Default.Notifications,
-                    contentDescription = null
-                )
-            },
-            label = { Text("Alertas") }
-        )
-    }
-}
 
 @Preview(showBackground = true)
 @Composable

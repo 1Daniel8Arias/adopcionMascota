@@ -7,7 +7,7 @@ import co.edu.adopcionmascota.domain.model.PublicationStatus
 import co.edu.adopcionmascota.domain.model.User
 import co.edu.adopcionmascota.domain.usecase.auth.LogoutUseCase
 import co.edu.adopcionmascota.domain.usecase.publication.ObserveReportsUseCase
-import co.edu.adopcionmascota.domain.usecase.user.GetUserByIdUseCase
+import co.edu.adopcionmascota.domain.usecase.user.GetCurrentUserUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,7 +28,7 @@ data class ProfileUiState(
 
 @HiltViewModel
 class ModeratorProfileViewModel @Inject constructor(
-    private val getUserByIdUseCase: GetUserByIdUseCase,
+    private val getCurrentUserUseCase: GetCurrentUserUseCase,
     observerReportUseCase: ObserveReportsUseCase,
     private val logotUseCase: LogoutUseCase,
     ) : ViewModel(){
@@ -53,7 +53,7 @@ class ModeratorProfileViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            user.value = getUserByIdUseCase(CURRENT_USER_ID)
+            user.value = getCurrentUserUseCase()
         }
     }
 
@@ -61,12 +61,6 @@ class ModeratorProfileViewModel @Inject constructor(
         viewModelScope.launch {
             logotUseCase()
         }
-    }
-
-
-    companion object {
-        // TODO: reemplazar por el ID del usuario que inició sesión cuando la app maneje la sesión
-        private const val CURRENT_USER_ID = "1"
     }
 
     }

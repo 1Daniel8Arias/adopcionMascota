@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -6,6 +8,12 @@ plugins {
     alias(libs.plugins.devtools.ksp)
 }
 
+// Se lee fuera de android { } para que localProperties se pueda usar en todo el archivo
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.inputStream().use { localProperties.load(it) }
+}
 
 android {
     namespace = "co.edu.adopcionmascota"
@@ -21,6 +29,15 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Crea el recurso "mapbox_access_token" con el token de local.properties
+        resValue("string", "mapbox_access_token", localProperties.getProperty("MAPBOX_ACCESS_TOKEN") ?: "")
+
+        // Solo se empaquetan las librerías nativas para procesadores de 64 bits:
+        // arm64-v8a (casi todos los teléfonos) y x86_64 (emuladores en PC)
+        ndk {
+            abiFilters += listOf("arm64-v8a", "x86_64")
+        }
     }
 
     buildTypes {
@@ -36,6 +53,7 @@ android {
     }
     buildFeatures {
         compose = true
+        resValues = true
     }
 }
 
@@ -74,6 +92,9 @@ dependencies {
     ksp(libs.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.data.store)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.mapbox.android)
+    implementation(libs.mapbox.compose)
 
 
 }

@@ -1,5 +1,18 @@
 package co.edu.adopcionmascota.features.publication
 
+import co.edu.adopcionmascota.core.component.rememberGalleryPicker
+import androidx.compose.ui.layout.ContentScale
+import coil3.compose.AsyncImage
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.key
+import androidx.compose.foundation.clickable
+import co.edu.adopcionmascota.core.component.MapBox
+import co.edu.adopcionmascota.domain.model.Location
+import com.mapbox.geojson.Point
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -77,11 +90,14 @@ import co.edu.adopcionmascota.core.component.AppDestination
 @Preview(showBackground = true, heightDp = 1620)
 @Composable
 fun PublicationScreen(
-    viewModel: PublicationViewModel = viewModel(),
+    viewModel: PublicationViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit = {},
     onPublishSuccess: () -> Unit = {},
     onNavigationClick: (AppDestination) -> Unit = {}     // Barra inferior compartida
 ) {
+    // Controla si está abierto el mapa para elegir la ubicación
+    var showLocationPicker by remember { mutableStateOf(false) }
+
     val state by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -127,7 +143,7 @@ fun PublicationScreen(
 
             PetPhotosSection(
                 photos = state.photos,
-                onAddPhotoClick = { viewModel.onAddPhoto() },
+                onAddPhotoClick = rememberGalleryPicker { viewModel.onPhotoSelected(it.toString()) },
                 onRemovePhotoClick = { photo -> viewModel.onRemovePhoto(photo) }
             )
 
@@ -162,7 +178,8 @@ fun PublicationScreen(
                 address = state.address,
                 cityRegion = state.cityRegion,
                 latitude = state.latitude,
-                longitude = state.longitude
+                longitude = state.longitude,
+                onPickLocation = { showLocationPicker = true }
             )
 
             PublishFooterSection(
@@ -173,12 +190,23 @@ fun PublicationScreen(
         }
     }
 
+    if (showLocationPicker) {
+        LocationPickerDialog(
+            initialLocation = Location(state.latitude, state.longitude),
+            onConfirm = { location ->
+                viewModel.onLocationSelected(location)
+                showLocationPicker = false
+            },
+            onDismiss = { showLocationPicker = false }
+        )
+    }
+
     if (state.publicationResult is RequestResult.Success) {
         PublicationSuccessSheet(
-            title = "¡Publicación Creada con Éxito!",
-            message = "Tu reporte ha entrado a revisión ética comunitaria.",
-            detail = "Los moderadores voluntarios revisarán las vacunas y ubicación en aproximadamente 15 a 30 minutos para garantizar el bienestar animal antes de mostrarlo en el feed principal.",
-            primaryText = "Ver en 'Mis Publicaciones'",
+            title = stringResource(R.string.publish_success_title),
+            message = stringResource(R.string.publish_success_message),
+            detail = stringResource(R.string.publish_success_detail),
+            primaryText = stringResource(R.string.view_my_publications),
             onPrimaryClick = {
                 viewModel.resetPublicationResult()
                 onPublishSuccess()
@@ -202,14 +230,14 @@ fun PublicationHeaderSection(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                    contentDescription = "Volver",
+                    contentDescription = stringResource(R.string.back),
                     modifier = Modifier
                         .clickable { onNavigateBack() }
                         .padding(end = 8.dp),
                     tint = DarkText
                 )
                 Text(
-                    text = "Nueva\nPublicación",
+                    text = stringResource(R.string.new_publication),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = DarkText,
@@ -217,7 +245,7 @@ fun PublicationHeaderSection(
                 )
             }
             Text(
-                text = "Guardar\nborrador",
+                text = stringResource(R.string.save_draft),
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Medium,
                 color = DarkText,
@@ -229,9 +257,9 @@ fun PublicationHeaderSection(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            StepItem(text = "Paso 1: Información\nesencial", isActive = true, modifier = Modifier.weight(1f))
-            StepItem(text = "Paso 2: Historia y\nSalud", isActive = false, modifier = Modifier.weight(1f))
-            StepItem(text = "Paso 3:\nContacto", isActive = false, modifier = Modifier.weight(1f))
+            StepItem(text = stringResource(R.string.step_1), isActive = true, modifier = Modifier.weight(1f))
+            StepItem(text = stringResource(R.string.step_2), isActive = false, modifier = Modifier.weight(1f))
+            StepItem(text = stringResource(R.string.step_3), isActive = false, modifier = Modifier.weight(1f))
         }
     }
 }
@@ -283,14 +311,14 @@ fun EthicalCommitmentCard() {
         Spacer(modifier = Modifier.width(12.dp))
         Column {
             Text(
-                text = "Compromiso ético de moderación",
+                text = stringResource(R.string.ethics_title),
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
                 color = DarkText
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
-                text = "Tu publicación pasará por revisión comunitaria en Bogotá para asegurar autenticidad y resguardar el bienestar animal ante comercio ilegal.",
+                text = stringResource(R.string.ethics_detail),
                 fontSize = 11.sp,
                 color = SecondaryText,
                 lineHeight = 15.sp
@@ -309,8 +337,8 @@ fun CategorySelectorSection(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("Categoría *", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = DarkText)
-            Text("Obligatorio", fontSize = 11.sp, color = SecondaryText)
+            Text(stringResource(R.string.category_required), fontWeight = FontWeight.Bold, fontSize = 14.sp, color = DarkText)
+            Text(stringResource(R.string.required), fontSize = 11.sp, color = SecondaryText)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             val categories = listOf(
@@ -320,7 +348,7 @@ fun CategorySelectorSection(
             )
             categories.forEach { (category, icon, modifier) ->
                 CategoryChip(
-                    text = category,
+                    text = publicationOptionLabel(category),
                     icon = icon,
                     isSelected = selectedCategory == category,
                     onClick = { onCategorySelected(category) },
@@ -329,6 +357,22 @@ fun CategorySelectorSection(
             }
         }
     }
+}
+
+// El valor interno sigue en español porque se guarda en la publicación; solo se traduce lo que se ve
+@Composable
+private fun publicationOptionLabel(value: String): String = when (value) {
+    "Adopción" -> stringResource(R.string.adoption)
+    "Perdido" -> stringResource(R.string.option_lost)
+    "Encontrado" -> stringResource(R.string.type_found)
+    "Perro" -> stringResource(R.string.option_dog)
+    "Gato" -> stringResource(R.string.option_cat)
+    "Conejo" -> stringResource(R.string.option_rabbit)
+    "Otro" -> stringResource(R.string.option_other)
+    "Pequeño" -> stringResource(R.string.size_small_label)
+    "Mediano" -> stringResource(R.string.size_medium_label)
+    "Grande" -> stringResource(R.string.size_large_label)
+    else -> value
 }
 
 @Composable
@@ -377,11 +421,11 @@ fun PetPhotosSection(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("Fotos de la mascota *", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = DarkText)
-            Text("${photos.size} de 5 añadidas", fontSize = 11.sp, color = SecondaryText)
+            Text(stringResource(R.string.pet_photos), fontWeight = FontWeight.Bold, fontSize = 14.sp, color = DarkText)
+            Text(stringResource(R.string.photos_added, photos.size), fontSize = 11.sp, color = SecondaryText)
         }
         Text(
-            text = "Sube fotografías claras con buena luz natural. Mínimo 1 foto obligatoria.",
+            text = stringResource(R.string.photos_help),
             fontSize = 11.sp,
             color = SecondaryText
         )
@@ -393,6 +437,7 @@ fun PetPhotosSection(
         ) {
             itemsIndexed(photos) { index, photo ->
                 PhotoMockCard(
+                    photo = photo,
                     isPrincipal = index == 0,
                     onRemove = { onRemovePhotoClick(photo) }
                 )
@@ -420,15 +465,15 @@ fun AnimalDetailsSection(
     onSizeSelected: (String) -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("Detalles del animal", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = DarkText)
+        Text(stringResource(R.string.animal_details), fontWeight = FontWeight.Bold, fontSize = 16.sp, color = DarkText)
 
         Column {
-            Text("Título del anuncio *", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
+            Text(stringResource(R.string.ad_title), fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
             Spacer(modifier = Modifier.height(4.dp))
             OutlinedTextField(
                 value = title,
                 onValueChange = onTitleChange,
-                placeholder = { Text("Perrito mestizo juguetón busca familia amorosa") },
+                placeholder = { Text(stringResource(R.string.ad_title_hint)) },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
@@ -437,7 +482,7 @@ fun AnimalDetailsSection(
                 )
             )
             Text(
-                "Usa palabras afectuosas que describan su personalidad.",
+                stringResource(R.string.ad_title_help),
                 fontSize = 11.sp,
                 color = SecondaryText,
                 modifier = Modifier.padding(top = 2.dp)
@@ -445,12 +490,12 @@ fun AnimalDetailsSection(
         }
 
         Column {
-            Text("Especie *", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
+            Text(stringResource(R.string.species_required), fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
             Spacer(modifier = Modifier.height(6.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf("Perro", "Gato", "Conejo", "Otro").forEach { species ->
                     SpeciesItem(
-                        name = species,
+                        name = publicationOptionLabel(species),
                         isSelected = selectedSpecies == species,
                         onClick = { onSpeciesSelected(species) },
                         modifier = Modifier.weight(1f)
@@ -460,12 +505,12 @@ fun AnimalDetailsSection(
         }
 
         Column {
-            Text("Raza aproximada", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
+            Text(stringResource(R.string.breed), fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
             Spacer(modifier = Modifier.height(4.dp))
             OutlinedTextField(
                 value = breed,
                 onValueChange = onBreedChange,
-                placeholder = { Text("Cruce de Golden Retriever") },
+                placeholder = { Text(stringResource(R.string.breed_hint)) },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(unfocusedContainerColor = Color.White)
@@ -473,7 +518,7 @@ fun AnimalDetailsSection(
         }
 
         Column {
-            Text("Tamaño estimado", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
+            Text(stringResource(R.string.estimated_size), fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
             Spacer(modifier = Modifier.height(6.dp))
             Row(
                 modifier = Modifier
@@ -483,7 +528,7 @@ fun AnimalDetailsSection(
             ) {
                 listOf("Pequeño", "Mediano", "Grande").forEach { size ->
                     SizeSegment(
-                        text = size,
+                        text = publicationOptionLabel(size),
                         isSelected = selectedSize == size,
                         onClick = { onSizeSelected(size) },
                         modifier = Modifier.weight(1f)
@@ -564,20 +609,20 @@ fun HealthStatusSection(
     onMicrochipToggle: () -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text("Estado de salud verificado", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = DarkText)
+        Text(stringResource(R.string.health_status), fontWeight = FontWeight.Bold, fontSize = 14.sp, color = DarkText)
         Text(
-            "Selecciona todos los tratamientos médicos al día que posee.",
+            stringResource(R.string.health_help),
             fontSize = 11.sp,
             color = SecondaryText
         )
 
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            HealthChip("Vacunado", isChecked = isVaccinated, onClick = onVaccinatedToggle)
-            HealthChip("Desparasitado", isChecked = isDewormed, onClick = onDewormedToggle)
+            HealthChip(stringResource(R.string.vaccinated), isChecked = isVaccinated, onClick = onVaccinatedToggle)
+            HealthChip(stringResource(R.string.dewormed), isChecked = isDewormed, onClick = onDewormedToggle)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            HealthChip("Esterilizado / Castrado", isChecked = isSterilized, onClick = onSterilizedToggle)
-            HealthChip("Microchip", isChecked = hasMicrochip, onClick = onMicrochipToggle)
+            HealthChip(stringResource(R.string.seal_sterilized), isChecked = isSterilized, onClick = onSterilizedToggle)
+            HealthChip(stringResource(R.string.microchip), isChecked = hasMicrochip, onClick = onMicrochipToggle)
         }
     }
 }
@@ -623,13 +668,13 @@ fun HistorySection(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("Historia y temperamento", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = DarkText)
-            Text("${history.length} / 500", fontSize = 11.sp, color = SecondaryText)
+            Text(stringResource(R.string.story_temperament), fontWeight = FontWeight.Bold, fontSize = 14.sp, color = DarkText)
+            Text(stringResource(R.string.history_length, history.length), fontSize = 11.sp, color = SecondaryText)
         }
         OutlinedTextField(
             value = history,
             onValueChange = onHistoryChange,
-            placeholder = { Text("Describe cómo convive con personas, felinos o caninos...") },
+            placeholder = { Text(stringResource(R.string.story_hint)) },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(110.dp),
@@ -640,7 +685,7 @@ fun HistorySection(
             )
         )
         Text(
-            "Describe cómo convive con personas, felinos o caninos y si requiere cuidados particulares.",
+            stringResource(R.string.story_help),
             fontSize = 11.sp,
             color = SecondaryText
         )
@@ -652,7 +697,8 @@ fun LocationSection(
     address: String,
     cityRegion: String,
     latitude: Double,
-    longitude: Double
+    longitude: Double,
+    onPickLocation: () -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Row(
@@ -668,9 +714,12 @@ fun LocationSection(
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(4.dp))
-                Text("Ubicación del reporte", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = DarkText)
+                Text(stringResource(R.string.report_location), fontWeight = FontWeight.Bold, fontSize = 14.sp, color = DarkText)
             }
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.clickable(onClick = onPickLocation),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Icon(
                     imageVector = Icons.Outlined.MyLocation,
                     contentDescription = null,
@@ -678,7 +727,7 @@ fun LocationSection(
                     modifier = Modifier.size(14.dp)
                 )
                 Spacer(modifier = Modifier.width(4.dp))
-                Text("Mi GPS", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = DarkText)
+                Text(stringResource(R.string.my_gps), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = DarkText)
             }
         }
 
@@ -690,11 +739,21 @@ fun LocationSection(
                 .background(MapBg),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = Icons.Outlined.LocationOn,
-                contentDescription = null,
-                tint = Color.Black,
-                modifier = Modifier.size(36.dp)
+            // Vista previa de solo lectura; al tocarla se abre el mapa para elegir el punto
+            val point = Point.fromLngLat(longitude, latitude)
+            key(point) {
+                MapBox(
+                    modifier = Modifier.fillMaxSize(),
+                    center = point,
+                    zoom = 15.0,
+                    selectedPoint = point,
+                    interactive = false
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .clickable(onClick = onPickLocation)
             )
 
             Box(
@@ -704,7 +763,7 @@ fun LocationSection(
                     .background(Color.Black, CircleShape)
                     .padding(horizontal = 12.dp, vertical = 4.dp)
             ) {
-                Text("Arrastra para ajustar", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.tap_to_adjust), color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
             }
 
             Box(
@@ -714,7 +773,7 @@ fun LocationSection(
                     .background(Color.White.copy(alpha = 0.9f), CircleShape)
                     .padding(horizontal = 12.dp, vertical = 4.dp)
             ) {
-                Text("Lat: $latitude, Long: $longitude", color = Color.Black, fontSize = 10.sp)
+                Text(stringResource(R.string.lat_long, "%.5f".format(latitude), "%.5f".format(longitude)), color = Color.Black, fontSize = 10.sp)
             }
         }
 
@@ -786,7 +845,7 @@ fun PublishFooterSection(
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Publicar Mascota (Enviar a Moderación)", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.publish_pet), fontSize = 13.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -801,7 +860,7 @@ fun PublishFooterSection(
         }
 
         Text(
-            text = "Al hacer clic en publicar, certificas que no existe ánimo de lucro y aceptas las normas de bienestar animal de Patitas Conectadas.",
+            text = stringResource(R.string.publish_legal),
             fontSize = 10.sp,
             color = SecondaryText,
             textAlign = TextAlign.Center,
@@ -812,6 +871,7 @@ fun PublishFooterSection(
 
 @Composable
 private fun PhotoMockCard(
+    photo: String,
     isPrincipal: Boolean,
     onRemove: () -> Unit
 ) {
@@ -822,14 +882,24 @@ private fun PhotoMockCard(
             .background(if (isPrincipal) Color(0xFFCBD5E1) else LightBlueBg)
             .border(1.dp, LightBlueBorder, RoundedCornerShape(16.dp))
     ) {
-        Icon(
-            imageVector = Icons.Outlined.Pets,
-            contentDescription = null,
-            tint = PrimaryBlue,
-            modifier = Modifier
-                .size(36.dp)
-                .align(Alignment.Center)
-        )
+        // Las publicaciones ya existentes no traen foto de la galería: se muestra el ícono
+        if (photo.startsWith("content:")) {
+            AsyncImage(
+                model = photo,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+        } else {
+            Icon(
+                imageVector = Icons.Outlined.Pets,
+                contentDescription = null,
+                tint = PrimaryBlue,
+                modifier = Modifier
+                    .size(36.dp)
+                    .align(Alignment.Center)
+            )
+        }
 
         IconButton(
             onClick = onRemove,
@@ -841,7 +911,7 @@ private fun PhotoMockCard(
         ) {
             Icon(
                 imageVector = Icons.Outlined.Close,
-                contentDescription = "Eliminar foto",
+                contentDescription = stringResource(R.string.delete_photo),
                 tint = Color.White,
                 modifier = Modifier.size(12.dp)
             )
@@ -849,7 +919,7 @@ private fun PhotoMockCard(
 
         if (isPrincipal) {
             Text(
-                text = "Principal",
+                text = stringResource(R.string.main_photo),
                 fontSize = 9.sp,
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
@@ -881,8 +951,7 @@ private fun AddPhotoButton(onClick: () -> Unit) {
                 modifier = Modifier.size(24.dp)
             )
             Spacer(modifier = Modifier.height(4.dp))
-            Text("+ Foto", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = DarkText)
-            Text("Simulada", fontSize = 8.sp, color = SecondaryText)
+            Text(stringResource(R.string.add_photo_short), fontSize = 10.sp, fontWeight = FontWeight.Bold, color = DarkText)
         }
     }
 }

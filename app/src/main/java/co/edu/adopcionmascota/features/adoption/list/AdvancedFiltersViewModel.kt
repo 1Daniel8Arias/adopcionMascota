@@ -1,5 +1,16 @@
 package co.edu.adopcionmascota.features.adoption.list
 
+import co.edu.adopcionmascota.core.util.ResourceProvider
+import co.edu.adopcionmascota.R
+import co.edu.adopcionmascota.domain.usecase.preferences.SaveFilterUseCase
+import co.edu.adopcionmascota.domain.usecase.preferences.ObserveFilterUseCase
+import co.edu.adopcionmascota.domain.usecase.publication.ObserveReportsUseCase
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
+import androidx.lifecycle.viewModelScope
+import javax.inject.Inject
+import dagger.hilt.android.lifecycle.HiltViewModel
+import co.edu.adopcionmascota.domain.model.AdvancedFilter
 import androidx.lifecycle.ViewModel
 import co.edu.adopcionmascota.domain.model.PetType
 import co.edu.adopcionmascota.domain.model.Publication
@@ -37,20 +48,30 @@ data class AdvancedFiltersUiState(
         get() = publications.filter { filter.matches(it) }.take(2)
 }
 
-class AdvancedFiltersViewModel : ViewModel() {
+@HiltViewModel
+class AdvancedFiltersViewModel @Inject constructor(
+    private val observeReportsUseCase: ObserveReportsUseCase,
+    private val observeFilterUseCase: ObserveFilterUseCase,
+    private val saveFilterUseCase: SaveFilterUseCase,
+    private val resources: ResourceProvider
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AdvancedFiltersUiState())
     val uiState: StateFlow<AdvancedFiltersUiState> = _uiState.asStateFlow()
 
     init {
         // Se parte de los filtros que el feed ya tiene aplicados
-        val current = AdvancedFilterStore.filter.value
-        _uiState.value = AdvancedFiltersUiState(
-            types = current.types,
-            sex = current.sex,
-            maxDistanceKm = current.maxDistanceKm,
-            publications = samplePublications()
-        )
+        viewModelScope.launch {
+            val current = observeFilterUseCase().first()
+            _uiState.update {
+                it.copy(
+                    types = current.types,
+                    sex = current.sex,
+                    maxDistanceKm = current.maxDistanceKm,
+                    publications = observeReportsUseCase().value
+                )
+            }
+        }
     }
 
     fun onTypeToggle(type: PetType) = _uiState.update {
@@ -70,17 +91,17 @@ class AdvancedFiltersViewModel : ViewModel() {
 
     fun onReset() {
         _uiState.update {
-            AdvancedFiltersUiState(publications = it.publications, infoMessage = "Filtros restablecidos")
+            AdvancedFiltersUiState(publications = it.publications, infoMessage = resources.getString(R.string.filters_reset))
         }
     }
 
     // "Mostrar N Resultados": el feed aplica los filtros al volver
     fun onApply() {
-        AdvancedFilterStore.apply(_uiState.value.filter)
+        viewModelScope.launch { saveFilterUseCase(_uiState.value.filter) }
     }
 
     fun onSaveFavorite() = _uiState.update {
-        it.copy(infoMessage = "Búsqueda guardada como favorita")
+        it.copy(infoMessage = resources.getString(R.string.favorite_saved))
     }
 
     fun resetInfoMessage() = _uiState.update { it.copy(infoMessage = null) }

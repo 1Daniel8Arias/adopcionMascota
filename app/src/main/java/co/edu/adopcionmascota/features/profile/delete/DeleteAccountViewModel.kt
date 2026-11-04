@@ -1,5 +1,9 @@
 package co.edu.adopcionmascota.features.profile.delete
 
+import co.edu.adopcionmascota.R
+import javax.inject.Inject
+import dagger.hilt.android.lifecycle.HiltViewModel
+import co.edu.adopcionmascota.core.util.ResourceProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import co.edu.adopcionmascota.core.util.RequestResult
@@ -20,7 +24,10 @@ data class DeleteAccountUiState(
         get() = isConfirmed && deleteResult !is RequestResult.Loading
 }
 
-class DeleteAccountViewModel : ViewModel() {
+@HiltViewModel
+class DeleteAccountViewModel @Inject constructor(
+    private val resources: ResourceProvider
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DeleteAccountUiState())
     val uiState: StateFlow<DeleteAccountUiState> = _uiState.asStateFlow()
@@ -37,7 +44,7 @@ class DeleteAccountViewModel : ViewModel() {
             delay(1500) // Simula la petición al servidor
             UserProfileStore.clear()
             _uiState.update {
-                it.copy(deleteResult = RequestResult.Success("Cuenta eliminada correctamente"))
+                it.copy(deleteResult = RequestResult.Success(resources.getString(R.string.account_deleted_ok)))
             }
         }
     }

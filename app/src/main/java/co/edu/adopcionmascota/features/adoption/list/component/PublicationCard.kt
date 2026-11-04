@@ -1,5 +1,7 @@
 package co.edu.adopcionmascota.features.adoption.list.component
 
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -109,9 +111,9 @@ fun PublicationCard(
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
 
-                            AppTag("✓ Vacunado")
-                            AppTag("✓ Esterilizado")
-                            AppTag("Apto con niños")
+                            AppTag(stringResource(R.string.tag_vaccinated))
+                            AppTag(stringResource(R.string.tag_sterilized))
+                            AppTag(stringResource(R.string.tag_children))
 
                             var liked by remember {
                                 mutableStateOf(false)
@@ -133,7 +135,7 @@ fun PublicationCard(
                                                 Icons.Filled.Favorite
                                             else
                                                 Icons.Outlined.FavoriteBorder,
-                                        contentDescription = "Like",
+                                        contentDescription = stringResource(R.string.like),
                                         tint =
                                             if (liked)
                                                 Color.Red
@@ -157,12 +159,12 @@ fun PublicationCard(
                         ) {
 
                             Text(
-                                text = "◉ ${publication.likes} personas alertas en la zona",
+                                text = stringResource(R.string.people_alert, publication.likes),
                                 fontSize = 11.sp
                             )
 
                             Text(
-                                text = "□ 14 pistas",
+                                text = stringResource(R.string.clues),
                                 fontSize = 11.sp,
                                 color = AppSecondaryText
                             )
@@ -172,7 +174,7 @@ fun PublicationCard(
                     PetType.ENCONTRADO -> {
 
                         Text(
-                            text = "Encontrado desorientado. Se busca a sus dueños o adoptante responsable...",
+                            text = stringResource(R.string.found_card_text),
                             fontSize = 11.sp,
                             color = AppSecondaryText
                         )
@@ -238,13 +240,13 @@ private fun PublicationActionButton(
     val buttonText = when (publication.type) {
 
         PetType.ADOPCION ->
-            "Me interesa adoptar →"
+            stringResource(R.string.interested_adopt)
 
         PetType.PERDIDO ->
-            "He visto a ${publication.name}"
+            stringResource(R.string.seen_pet, publication.name)
 
        PetType.ENCONTRADO ->
-            "Ver detalles y fotos →"
+            stringResource(R.string.view_details)
 
     }
 

@@ -1,5 +1,9 @@
 package co.edu.adopcionmascota.features.password
 
+import javax.inject.Inject
+import dagger.hilt.android.lifecycle.HiltViewModel
+import co.edu.adopcionmascota.core.util.ResourceProvider
+import co.edu.adopcionmascota.R
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -21,7 +25,10 @@ data class PasswordUiState(
         get() = email.isNotBlank() && emailError == null
 }
 
-class PasswordViewModel : ViewModel() {
+@HiltViewModel
+class PasswordViewModel @Inject constructor(
+    private val resources: ResourceProvider
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PasswordUiState())
     val uiState: StateFlow<PasswordUiState> = _uiState.asStateFlow()
@@ -45,8 +52,8 @@ class PasswordViewModel : ViewModel() {
 
     private fun validateEmail(email: String): String? {
         return when {
-            email.isBlank() -> "El correo electrónico no puede estar vacío"
-            !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> "Ingresa un correo electrónico válido"
+            email.isBlank() -> resources.getString(R.string.error_recovery_email_empty)
+            !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> resources.getString(R.string.error_recovery_email_invalid)
             else -> null
         }
     }
@@ -67,9 +74,9 @@ class PasswordViewModel : ViewModel() {
             val emailExists = registeredEmails.any { it.equals(inputEmail, ignoreCase = true) }
 
             val result = if (emailExists) {
-                RequestResult.Success("¡Enlace enviado! Revisa tu bandeja de entrada.")
+                RequestResult.Success(resources.getString(R.string.recovery_sent))
             } else {
-                RequestResult.Failure("El correo no se encuentra registrado en nuestro sistema.")
+                RequestResult.Failure(resources.getString(R.string.recovery_not_found))
             }
 
             // 3. Se emite el resultado final hacia la UI[cite: 1, 3]

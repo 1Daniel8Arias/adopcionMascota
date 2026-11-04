@@ -1,12 +1,17 @@
 package co.edu.adopcionmascota.features.adoption.detail
 
+import co.edu.adopcionmascota.R
+import co.edu.adopcionmascota.core.util.ResourceProvider
+import co.edu.adopcionmascota.domain.usecase.publication.GetReportByIdUseCase
+import androidx.lifecycle.SavedStateHandle
+import javax.inject.Inject
+import dagger.hilt.android.lifecycle.HiltViewModel
+import co.edu.adopcionmascota.domain.model.Comment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import co.edu.adopcionmascota.core.util.RequestResult
 import co.edu.adopcionmascota.domain.model.PetType
 import co.edu.adopcionmascota.domain.model.Publication
-import co.edu.adopcionmascota.features.adoption.list.samplePublications
-import co.edu.adopcionmascota.features.comment.Comment
 import co.edu.adopcionmascota.features.comment.CommentStore
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,6 +40,8 @@ data class PublicationDetailUiState(
     val likes: Int = 0,
     val isLiked: Boolean = false,
     val comments: List<Comment> = emptyList(),
+    val primaryActionText: String = "",     // Texto del botón principal según el tipo
+    val statusText: String = "",
 
     // Solicitud de adopción / hogar de paso
     val pendingRequest: DetailRequest? = null,      // Diálogo de confirmación abierto
@@ -44,24 +51,6 @@ data class PublicationDetailUiState(
 ) {
     val commentsCount: Int
         get() = comments.size
-
-    // Texto del botón principal según el tipo de publicación
-    val primaryActionText: String
-        get() {
-            val name = publication?.name.orEmpty()
-            return when (publication?.type) {
-                PetType.PERDIDO -> "Lo he visto"
-                PetType.ENCONTRADO -> "Es mi mascota"
-                else -> "Adoptar a $name"
-            }
-        }
-
-    val statusText: String
-        get() = when (publication?.type) {
-            PetType.PERDIDO -> "Se busca"
-            PetType.ENCONTRADO -> "Busca a su familia"
-            else -> "Busca Hogar"
-        }
 }
 
 // Información quemada de las mascotas del feed
@@ -95,9 +84,15 @@ private val PET_DETAILS = mapOf(
     )
 )
 
-class PublicationDetailViewModel(
-    private val publicationId: String
+@HiltViewModel
+class PublicationDetailViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
+    private val getReportByIdUseCase: GetReportByIdUseCase,
+    private val resources: ResourceProvider
 ) : ViewModel() {
+
+    // Hilt no recibe parámetros propios: el id llega con los argumentos de la ruta
+    private val publicationId: String = checkNotNull(savedStateHandle["publicationId"])
 
     private val _uiState = MutableStateFlow(PublicationDetailUiState())
     val uiState: StateFlow<PublicationDetailUiState> = _uiState.asStateFlow()
@@ -115,16 +110,34 @@ class PublicationDetailViewModel(
         }
     }
 
-    // Por ahora la publicación sale de los datos quemados del feed
     private fun loadPublication() {
-        val publication = samplePublications().find { it.id == publicationId }
-        _uiState.update {
-            it.copy(
-                publication = publication,
-                info = PET_DETAILS[publicationId],
-                likes = publication?.likes?.toIntOrNull() ?: 0
-            )
+        viewModelScope.launch {
+            val publication = getReportByIdUseCase(publicationId)
+            _uiState.update {
+                it.copy(
+                    publication = publication,
+                    primaryActionText = primaryActionFor(publication),
+                    statusText = statusFor(publication),
+                    info = PET_DETAILS[publicationId],
+                    likes = publication?.likes?.toIntOrNull() ?: 0
+                )
+            }
         }
+    }
+
+    private fun primaryActionFor(publication: Publication?): String {
+        val name = publication?.name.orEmpty()
+        return when (publication?.type) {
+            PetType.PERDIDO -> resources.getString(R.string.detail_action_seen)
+            PetType.ENCONTRADO -> resources.getString(R.string.detail_action_mine)
+            else -> resources.getString(R.string.detail_action_adopt, name)
+        }
+    }
+
+    private fun statusFor(publication: Publication?): String = when (publication?.type) {
+        PetType.PERDIDO -> resources.getString(R.string.detail_status_wanted)
+        PetType.ENCONTRADO -> resources.getString(R.string.detail_status_family)
+        else -> resources.getString(R.string.detail_status_home)
     }
 
     fun onThanksClick(commentId: String) {
@@ -144,7 +157,7 @@ class PublicationDetailViewModel(
 
     fun onRequestClick(request: DetailRequest) {
         if (request in _uiState.value.sentRequests) {
-            _uiState.update { it.copy(infoMessage = "Ya enviaste esta solicitud") }
+            _uiState.update { it.copy(infoMessage = resources.getString(R.string.request_already_sent)) }
             return
         }
         _uiState.update { it.copy(pendingRequest = request) }
@@ -164,11 +177,11 @@ class PublicationDetailViewModel(
             val name = _uiState.value.publication?.name.orEmpty()
             val message = when (request) {
                 DetailRequest.ADOPTION -> when (_uiState.value.publication?.type) {
-                    PetType.PERDIDO -> "Avisamos al tutor de $name que lo viste"
-                    PetType.ENCONTRADO -> "Enviamos tu solicitud para reclamar a $name"
-                    else -> "Solicitud de adopción de $name enviada"
+                    PetType.PERDIDO -> resources.getString(R.string.request_lost_sent, name)
+                    PetType.ENCONTRADO -> resources.getString(R.string.request_found_sent, name)
+                    else -> resources.getString(R.string.request_adopt_sent, name)
                 }
-                DetailRequest.TEMPORARY_HOME -> "Te ofreciste como hogar de paso para $name"
+                DetailRequest.TEMPORARY_HOME -> resources.getString(R.string.request_foster_sent, name)
             }
             _uiState.update {
                 it.copy(

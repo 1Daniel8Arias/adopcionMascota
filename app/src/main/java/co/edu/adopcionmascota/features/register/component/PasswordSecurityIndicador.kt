@@ -1,5 +1,7 @@
 package co.edu.adopcionmascota.features.register.component
 
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -49,13 +51,13 @@ fun PasswordSecurityIndicator() {
         ) {
 
             Text(
-                text = "Seguridad",
+                text = stringResource(R.string.security),
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray
             )
 
             Text(
-                text = "Introduce tu clave",
+                text = stringResource(R.string.enter_password),
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray
             )

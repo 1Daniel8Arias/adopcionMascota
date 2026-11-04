@@ -1,5 +1,7 @@
 package co.edu.adopcionmascota.features.profile.component
 
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,6 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.outlined.DeleteForever
 import androidx.compose.material.icons.outlined.FolderShared
 import androidx.compose.material.icons.outlined.Notifications
@@ -39,7 +42,8 @@ fun AccountSection(
     onMyPublicationsClick: () -> Unit,
     onEditPersonalDataClick: () -> Unit,
     onAlertPreferencesClick: () -> Unit,
-    onDeleteAccountClick: () -> Unit
+    onDeleteAccountClick: () -> Unit,
+    onLogoutClick: () -> Unit
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -51,7 +55,7 @@ fun AccountSection(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = "GESTIÓN DE LA CUENTA",
+                text = stringResource(R.string.account_management),
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Medium,
                 color = DarkText
@@ -77,13 +81,13 @@ fun AccountSection(
                     Spacer(modifier = Modifier.width(14.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Mis Publicaciones",
+                            text = stringResource(R.string.my_publications),
                             color = Color.White,
                             fontSize = 17.sp,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "Ver todas ($myPublicationsCount casos: activos, en revisión y resueltos)",
+                            text = stringResource(R.string.my_publications_detail, myPublicationsCount),
                             color = Color.White.copy(alpha = 0.9f),
                             fontSize = 13.sp
                         )
@@ -98,14 +102,20 @@ fun AccountSection(
 
             AccountOption(
                 icon = Icons.Outlined.Person,
-                text = "Editar Datos Personales",
+                text = stringResource(R.string.edit_personal_data),
                 onClick = onEditPersonalDataClick
             )
 
             AccountOption(
                 icon = Icons.Outlined.Notifications,
-                text = "Preferencias de Alertas",
+                text = stringResource(R.string.alert_preferences),
                 onClick = onAlertPreferencesClick
+            )
+
+            AccountOption(
+                icon = Icons.AutoMirrored.Outlined.Logout,
+                text = stringResource(R.string.log_out),
+                onClick = onLogoutClick
             )
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -131,7 +141,7 @@ fun AccountSection(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Eliminar mi cuenta",
+                        text = stringResource(R.string.delete_my_account),
                         color = AppRed,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium

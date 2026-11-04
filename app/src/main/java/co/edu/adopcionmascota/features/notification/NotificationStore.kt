@@ -1,41 +1,19 @@
 package co.edu.adopcionmascota.features.notification
 
+import co.edu.adopcionmascota.domain.model.Notification
+import co.edu.adopcionmascota.domain.model.NotificationType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-// Tipos de notificación que aparecen en el Figma (página "notificacion")
-enum class NotificationType {
-    PUBLICATION_APPROVED,   // MODERACION_APROBADA
-    LEVEL_UP,               // NUEVO_LOGRO (nivel)
-    PUBLICATION_PAUSED,     // MODERACION_RECHAZADA
-    NEW_COMMENT,            // NUEVO_COMENTARIO
-    BADGE_EARNED            // NUEVO_LOGRO (insignia)
-}
-
-data class AppNotification(
-    val id: String,
-    val type: NotificationType,
-    val category: String,       // Ej: "APROBACIÓN ÉTICA"
-    val title: String,
-    val message: String,
-    val time: String,
-    val referenceId: String? = null,    // Ej: "ID: max_1"
-    val actionLabel: String? = null,    // Botón de acción rápida en la lista
-    val isRead: Boolean = false
-) {
-    val isAchievement: Boolean
-        get() = type == NotificationType.LEVEL_UP || type == NotificationType.BADGE_EARNED
-}
-
 // Por ahora las notificaciones viven en memoria; más adelante vendrán del repositorio / Firebase
 object NotificationStore {
 
     private val _notifications = MutableStateFlow(initialNotifications())
-    val notifications: StateFlow<List<AppNotification>> = _notifications.asStateFlow()
+    val notifications: StateFlow<List<Notification>> = _notifications.asStateFlow()
 
-    fun findById(id: String): AppNotification? =
+    fun findById(id: String): Notification? =
         _notifications.value.find { it.id == id }
 
     fun markAsRead(id: String) {
@@ -49,15 +27,15 @@ object NotificationStore {
     }
 
     // Se usa cuando la publicación pausada se reenvía a revisión
-    fun update(notification: AppNotification) {
+    fun update(notification: Notification) {
         _notifications.update { list ->
             list.map { if (it.id == notification.id) notification else it }
         }
     }
 
     // Datos quemados con las notificaciones del Figma
-    private fun initialNotifications(): List<AppNotification> = listOf(
-        AppNotification(
+    private fun initialNotifications(): List<Notification> = listOf(
+        Notification(
             id = "n1",
             type = NotificationType.PUBLICATION_APPROVED,
             category = "APROBACIÓN ÉTICA",
@@ -67,7 +45,7 @@ object NotificationStore {
             referenceId = "ID: max_1",
             actionLabel = "Ver Caso"
         ),
-        AppNotification(
+        Notification(
             id = "n2",
             type = NotificationType.LEVEL_UP,
             category = "COMUNIDAD & IMPACTO",
@@ -76,7 +54,7 @@ object NotificationStore {
             time = "Hace 1h",
             actionLabel = "Insignia Nivel Guardián (+50 pts)"
         ),
-        AppNotification(
+        Notification(
             id = "n3",
             type = NotificationType.PUBLICATION_PAUSED,
             category = "REVISIÓN ÉTICA",
@@ -86,7 +64,7 @@ object NotificationStore {
             referenceId = "ID: luna_2",
             actionLabel = "Actualizar Datos"
         ),
-        AppNotification(
+        Notification(
             id = "n4",
             type = NotificationType.NEW_COMMENT,
             category = "COMENTARIO EN CASO",
@@ -97,7 +75,7 @@ object NotificationStore {
             actionLabel = "Responder",
             isRead = true
         ),
-        AppNotification(
+        Notification(
             id = "n5",
             type = NotificationType.BADGE_EARNED,
             category = "LOGRO DE RESCATE",

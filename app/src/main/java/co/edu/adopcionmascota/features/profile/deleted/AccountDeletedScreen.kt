@@ -1,5 +1,7 @@
 package co.edu.adopcionmascota.features.profile.deleted
 
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
 import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -68,11 +70,12 @@ private val PaleBlue = Color(0xFFE3EFFF)
 // Pantalla "Mockup-Cuenta eliminada": despedida después de eliminar la cuenta
 @Composable
 fun AccountDeletedScreen(
-    onGoToHome: () -> Unit    // "Ir al Inicio / Modo Visitante", la X y el botón "atrás"
+    onGoToHome: () -> Unit    // stringResource(R.string.go_home_visitor), la X y el botón "atrás"
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
-    val activity = LocalContext.current as? Activity
+    val context = LocalContext.current
+    val activity = context as? Activity
 
     // Ya no hay sesión, así que "atrás" no debe volver al perfil
     BackHandler { onGoToHome() }
@@ -117,7 +120,7 @@ fun AccountDeletedScreen(
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = "Ir al Inicio / Modo Visitante", fontWeight = FontWeight.Bold)
+                    Text(text = stringResource(R.string.go_home_visitor), fontWeight = FontWeight.Bold)
                 }
 
                 Button(
@@ -138,7 +141,7 @@ fun AccountDeletedScreen(
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = "Cerrar la Aplicación", fontWeight = FontWeight.SemiBold)
+                    Text(text = stringResource(R.string.close_app), fontWeight = FontWeight.SemiBold)
                 }
             }
 
@@ -152,7 +155,7 @@ fun AccountDeletedScreen(
                 TextButton(
                     onClick = {
                         scope.launch {
-                            snackbarHostState.showSnackbar("El canal de soporte estará disponible próximamente")
+                            snackbarHostState.showSnackbar(context.getString(R.string.support_soon))
                         }
                     }
                 ) {
@@ -164,14 +167,14 @@ fun AccountDeletedScreen(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "¿Tuviste algún inconveniente? Deja un comentario a Soporte",
+                        text = stringResource(R.string.leave_comment),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = AppPrimary
                     )
                 }
                 Text(
-                    text = "Red Distrital de Protección y Bienestar Animal • Bogotá D.C.",
+                    text = stringResource(R.string.protection_network),
                     fontSize = 11.sp,
                     color = Color(0xFF76777C),
                     textAlign = TextAlign.Center
@@ -205,7 +208,7 @@ private fun DeletedTopBar(onCloseClick: () -> Unit) {
         }
         Spacer(modifier = Modifier.width(8.dp))
         Text(
-            text = "Patitas Conectadas",
+            text = stringResource(R.string.brand),
             modifier = Modifier.weight(1f),
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
@@ -217,7 +220,7 @@ private fun DeletedTopBar(onCloseClick: () -> Unit) {
         ) {
             Icon(
                 imageVector = Icons.Outlined.Close,
-                contentDescription = "Cerrar vista",
+                contentDescription = stringResource(R.string.close_view),
                 tint = SecondaryText
             )
         }
@@ -247,7 +250,7 @@ private fun FarewellHero() {
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "Cuenta eliminada con éxito",
+                    text = stringResource(R.string.account_deleted_success),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = AppPrimary
@@ -256,14 +259,14 @@ private fun FarewellHero() {
         }
 
         Text(
-            text = "Tu cuenta ha sido cerrada",
+            text = stringResource(R.string.account_closed),
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             color = DarkText
         )
 
         Text(
-            text = "Lamentamos verte partir. Queremos agradecerte profundamente por cada huella de ayuda, rescate y amor que compartiste con los animales vulnerables de Bogotá.",
+            text = stringResource(R.string.farewell),
             fontSize = 14.sp,
             color = SecondaryText,
             textAlign = TextAlign.Center
@@ -331,7 +334,7 @@ private fun CloseDetailsCard() {
                 }
                 Spacer(modifier = Modifier.width(10.dp))
                 Text(
-                    text = "Detalles del cierre y privacidad de datos",
+                    text = stringResource(R.string.closure_details),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     color = DarkText
@@ -340,19 +343,19 @@ private fun CloseDetailsCard() {
 
             DetailItem(
                 icon = Icons.Outlined.Lock,
-                text = "Datos personales y credenciales: Revocados de forma permanente de nuestra base activa."
+                text = stringResource(R.string.closure_personal)
             )
             DetailItem(
                 icon = Icons.Outlined.Campaign,
-                text = "Publicaciones de adopción: Casos activos transferidos a la veeduría comunitaria para asegurar el resguardo de las mascotas."
+                text = stringResource(R.string.closure_publications)
             )
             DetailItem(
                 icon = Icons.Outlined.Done,
-                text = "Mensajes y chats privados: Depurados e inaccesibles en los servidores centrales."
+                text = stringResource(R.string.closure_messages)
             )
             DetailItem(
                 icon = Icons.Outlined.NotificationsOff,
-                text = "Alertas y suscripciones: Notificaciones por correo electrónico y WhatsApp dadas de baja de inmediato."
+                text = stringResource(R.string.closure_alerts)
             )
         }
     }
@@ -414,7 +417,7 @@ private fun GracePeriodCard() {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = "Período de gracia de 14 días",
+                        text = stringResource(R.string.grace_period),
                         modifier = Modifier.weight(1f),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
@@ -425,7 +428,7 @@ private fun GracePeriodCard() {
                         color = Color(0xFF5565F2)
                     ) {
                         Text(
-                            text = "Ley Habeas Data",
+                            text = stringResource(R.string.habeas_data),
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
@@ -434,7 +437,7 @@ private fun GracePeriodCard() {
                     }
                 }
                 Text(
-                    text = "Si cambiaste de opinión o se trató de un error, puedes reactivar tu perfil iniciando sesión en los próximos 14 días con tus credenciales habituales. Pasada esa fecha, la eliminación será irreversible.",
+                    text = stringResource(R.string.grace_detail),
                     fontSize = 12.sp,
                     color = SecondaryText
                 )

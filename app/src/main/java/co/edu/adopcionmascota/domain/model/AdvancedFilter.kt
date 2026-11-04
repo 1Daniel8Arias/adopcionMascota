@@ -1,12 +1,6 @@
-package co.edu.adopcionmascota.features.adoption.list
+package co.edu.adopcionmascota.domain.model
 
-import co.edu.adopcionmascota.domain.model.PetType
-import co.edu.adopcionmascota.domain.model.Publication
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-
-// Filtros de la pantalla "Filtros y Búsqueda" que el feed aplica
+// Filtros del feed; se conservan entre sesiones con Data Store
 data class AdvancedFilter(
     val types: Set<PetType> = emptySet(),       // Vacío = todos los tipos
     val sex: String? = null,                    // "Macho", "Hembra" o null (cualquiera)
@@ -30,18 +24,4 @@ data class AdvancedFilter(
 fun Publication.distanceKm(): Double {
     val value = distancia.filter { it.isDigit() || it == '.' }.toDoubleOrNull() ?: return 0.0
     return if (distancia.trim().endsWith("km")) value else value / 1000
-}
-
-object AdvancedFilterStore {
-
-    private val _filter = MutableStateFlow(AdvancedFilter())
-    val filter: StateFlow<AdvancedFilter> = _filter.asStateFlow()
-
-    fun apply(filter: AdvancedFilter) {
-        _filter.value = filter
-    }
-
-    fun clear() {
-        _filter.value = AdvancedFilter()
-    }
 }

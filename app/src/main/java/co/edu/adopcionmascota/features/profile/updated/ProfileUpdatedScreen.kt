@@ -1,5 +1,7 @@
 package co.edu.adopcionmascota.features.profile.updated
 
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -63,9 +65,9 @@ import coil3.compose.AsyncImage
 // Pantalla "Mockup -Perfil editado": confirma que los cambios se guardaron
 @Composable
 fun ProfileUpdatedScreen(
-    onBackToProfile: () -> Unit,   // "Volver a mi Perfil" y la flecha de atrás
-    onGoToFeed: () -> Unit,        // "Ir al Feed Principal"
-    onEditAgain: () -> Unit,       // "¿Necesitas editar algo más?"
+    onBackToProfile: () -> Unit,   // stringResource(R.string.back_to_profile) y la flecha de atrás
+    onGoToFeed: () -> Unit,        // stringResource(R.string.go_to_feed)
+    onEditAgain: () -> Unit,       // stringResource(R.string.edit_more)
     viewModel: ProfileUpdatedViewModel = viewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -116,12 +118,12 @@ private fun UpdatedTopBar(onBackClick: () -> Unit) {
         IconButton(onClick = onBackClick) {
             Icon(
                 imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                contentDescription = "Volver",
+                contentDescription = stringResource(R.string.back),
                 tint = DarkText
             )
         }
         Text(
-            text = "Perfil Actualizado",
+            text = stringResource(R.string.profile_updated),
             modifier = Modifier.weight(1f),
             fontSize = 16.sp,
             fontWeight = FontWeight.SemiBold,
@@ -167,7 +169,7 @@ private fun SuccessHero() {
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "¡Cambios Guardados!",
+                    text = stringResource(R.string.changes_saved_title),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = AppPrimary
@@ -176,7 +178,7 @@ private fun SuccessHero() {
         }
 
         Text(
-            text = "¡Perfil Actualizado con Éxito!",
+            text = stringResource(R.string.profile_updated_success),
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             color = DarkText,
@@ -184,7 +186,7 @@ private fun SuccessHero() {
         )
 
         Text(
-            text = "Tus datos personales, preferencias de voluntariado y ajustes de contacto han sido sincronizados correctamente en la red distrital de Patitas Conectadas.",
+            text = stringResource(R.string.profile_synced),
             fontSize = 14.sp,
             color = SecondaryText,
             textAlign = TextAlign.Center
@@ -249,7 +251,7 @@ private fun ProfilePreviewCard(state: ProfileUpdatedUiState) {
             Row(verticalAlignment = Alignment.Top) {
                 AsyncImage(
                     model = state.photoUrl,
-                    contentDescription = "Foto de perfil",
+                    contentDescription = stringResource(R.string.profile_photo),
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .size(56.dp)
@@ -265,7 +267,7 @@ private fun ProfilePreviewCard(state: ProfileUpdatedUiState) {
                         color = DarkText
                     )
                     Pill(
-                        text = "Nivel 2 · Protector",
+                        text = stringResource(R.string.level_2_protector),
                         background = Color(0xFFD8EAFF),
                         textColor = Color(0xFF000865)
                     )
@@ -292,7 +294,7 @@ private fun ProfilePreviewCard(state: ProfileUpdatedUiState) {
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "Perfil Verificado",
+                            text = stringResource(R.string.profile_verified),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = DarkText
@@ -312,7 +314,7 @@ private fun ProfilePreviewCard(state: ProfileUpdatedUiState) {
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     Text(
-                        text = "MODIFICACIONES APLICADAS",
+                        text = stringResource(R.string.applied_changes),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = SecondaryText
@@ -321,7 +323,7 @@ private fun ProfilePreviewCard(state: ProfileUpdatedUiState) {
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        val changes = state.changes.ifEmpty { listOf("Datos revisados sin cambios") }
+                        val changes = state.changes.ifEmpty { listOf(stringResource(R.string.no_changes)) }
                         changes.forEach { change ->
                             ChangeChip(text = change)
                         }
@@ -361,13 +363,13 @@ private fun ReputationInfoCard(state: ProfileUpdatedUiState) {
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
                     Text(
-                        text = "Reputación Ciudadana",
+                        text = stringResource(R.string.citizen_reputation),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = DarkText
                     )
                     Text(
-                        text = "Mantener tus datos al día fortalece tu credibilidad y agiliza la coordinación en rescates y adopciones en tu localidad.",
+                        text = stringResource(R.string.reputation_keep),
                         fontSize = 12.sp,
                         color = SecondaryText
                     )
@@ -385,14 +387,14 @@ private fun ReputationInfoCard(state: ProfileUpdatedUiState) {
                 ) {
                     Row(modifier = Modifier.fillMaxWidth()) {
                         Text(
-                            text = "Nivel 2 · Protector",
+                            text = stringResource(R.string.level_2_protector),
                             modifier = Modifier.weight(1f),
                             fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = DarkText
                         )
                         Text(
-                            text = "${state.points} / ${state.nextLevelPoints} pts",
+                            text = stringResource(R.string.points_of_next, state.points, state.nextLevelPoints),
                             fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = AppPrimary
@@ -408,7 +410,7 @@ private fun ReputationInfoCard(state: ProfileUpdatedUiState) {
                         trackColor = Color(0xFFD8EAFF)
                     )
                     Text(
-                        text = "Faltan ${state.missingPoints} pts para alcanzar Guardián Local",
+                        text = stringResource(R.string.points_to_guardian, state.missingPoints),
                         fontSize = 11.sp,
                         color = SecondaryText
                     )
@@ -445,7 +447,7 @@ private fun AlertsInfoCard(localityName: String) {
             }
             Spacer(modifier = Modifier.width(12.dp))
             Text(
-                text = "Tus preferencias de alertas locales ya están activas para un radio de 3 km en $localityName.",
+                text = stringResource(R.string.alerts_active, localityName),
                 modifier = Modifier.weight(1f),
                 fontSize = 12.sp,
                 color = DarkText
@@ -490,7 +492,7 @@ private fun UpdatedActions(
                 modifier = Modifier.size(18.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text(text = "Volver a mi Perfil", fontWeight = FontWeight.SemiBold)
+            Text(text = stringResource(R.string.back_to_profile), fontWeight = FontWeight.SemiBold)
         }
 
         Button(
@@ -510,7 +512,7 @@ private fun UpdatedActions(
                 modifier = Modifier.size(18.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text(text = "Ir al Feed Principal", fontWeight = FontWeight.SemiBold)
+            Text(text = stringResource(R.string.go_to_feed), fontWeight = FontWeight.SemiBold)
         }
 
         TextButton(onClick = onEditAgain) {
@@ -522,7 +524,7 @@ private fun UpdatedActions(
             )
             Spacer(modifier = Modifier.width(6.dp))
             Text(
-                text = "¿Necesitas editar algo más?",
+                text = stringResource(R.string.edit_more),
                 color = SecondaryText,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.SemiBold

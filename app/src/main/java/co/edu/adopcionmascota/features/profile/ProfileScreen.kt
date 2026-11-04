@@ -1,5 +1,8 @@
 package co.edu.adopcionmascota.features.profile
 
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -41,9 +44,9 @@ fun ProfileScreen(
     onViewAllBadges: () -> Unit = {},
     onShareProfile: () -> Unit = {},
     onOpenSettings: () -> Unit = {},
-    onViewReputation: () -> Unit = {},    // Tarjeta de reputación → "Sistema de Reputación"
+    onViewReputation: () -> Unit = {},    // Tarjeta de reputación → stringResource(R.string.reputation_system)
     onDeleteAccount: () -> Unit = {},     // Abre la confirmación "Eliminar cuenta"
-    viewModel: ProfileViewModel = viewModel()
+    viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val state by viewModel.uiState.collectAsState()
@@ -114,7 +117,8 @@ fun ProfileScreen(
                     onMyPublicationsClick = onMyPublications,
                     onEditPersonalDataClick = onEditPersonalData,
                     onAlertPreferencesClick = onAlertPreferences,
-                    onDeleteAccountClick = onDeleteAccount
+                    onDeleteAccountClick = onDeleteAccount,
+                    onLogoutClick = viewModel::logout
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))

@@ -1,5 +1,7 @@
 package co.edu.adopcionmascota.features.moderator.panel
 
+import androidx.compose.ui.res.stringResource
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -57,7 +59,7 @@ import co.edu.adopcionmascota.domain.model.RejectionReason
 
 @Composable
 fun RejectPublicationRoute(
-    viewModel: RejectPublicationViewModel = viewModel()
+    viewModel: RejectPublicationViewModel = hiltViewModel()
 ) {
 
     val state by viewModel.uiState.collectAsState()
@@ -121,12 +123,12 @@ fun RejectPublicationBottomSheet(
             ) {
 
                 Text(
-                    text = "Motivo de infracción",
+                    text = stringResource(R.string.infraction_reason),
                     fontWeight = FontWeight.Bold
                 )
 
                 Text(
-                    text = "Normativa Bogotá 2025",
+                    text = stringResource(R.string.rules_2025),
                     color = Color(0xFF3F51B5),
                     fontSize = 12.sp
                 )
@@ -173,7 +175,7 @@ fun RejectPublicationBottomSheet(
 
                 Spacer(modifier = Modifier.width(8.dp))
 
-                Text("Confirmar Rechazo y Notificar")
+                Text(stringResource(R.string.confirm_rejection))
             }
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -211,13 +213,13 @@ private fun HeaderSection() {
         ) {
 
             Text(
-                text = "Rechazar Publicación",
+                text = stringResource(R.string.reject_publication),
                 fontWeight = FontWeight.Bold,
                 fontSize = 22.sp
             )
 
             Text(
-                text = "Indica a Carlos M. el motivo ético del rechazo para orientarlo o respaldar las medidas de la comunidad.",
+                text = stringResource(R.string.reject_detail),
                 color = Color.Gray,
                 fontSize = 13.sp
             )
@@ -259,7 +261,7 @@ private fun PublicationPreviewCard() {
             Column {
 
                 Text(
-                    "Venta encubierta",
+                    stringResource(R.string.covert_sale),
                     color = Color.Red,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold
@@ -277,7 +279,7 @@ private fun PublicationPreviewCard() {
                 )
 
                 Text(
-                    "Aporte exigido: \$500.000 COP",
+                    stringResource(R.string.fee_required),
                     color = Color.Red,
                     fontWeight = FontWeight.Bold
                 )

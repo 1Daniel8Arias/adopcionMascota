@@ -1,5 +1,9 @@
 package co.edu.adopcionmascota.features.register
 
+import co.edu.adopcionmascota.core.component.rememberGalleryPicker
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
@@ -61,9 +65,9 @@ import co.edu.adopcionmascota.features.register.component.TermsCheckbox
 @Composable
 fun RegisterScreen(
     onNavigateToBack: () -> Unit,
-    onRegisterSuccess: (String) -> Unit = {},     // Pantalla de confirmación con el nombre del usuario
+    onRegisterSuccess: (String, String) -> Unit = { _, _ -> },     // Confirmación con el nombre y el id del usuario
     onNavigateToLogin: () -> Unit = {},           // "¿Ya tienes una cuenta? Iniciar Sesión"
-    viewModel: RegisterViewModel = viewModel()
+    viewModel: RegisterViewModel = hiltViewModel()
 ) {
 
 
@@ -81,8 +85,9 @@ fun RegisterScreen(
             is RequestResult.Success -> {
                 // Como en el Figma, el registro exitoso lleva a la confirmación
                 val name = state.name.trim()
+                val userId = state.registeredUserId
                 viewModel.resetRegisterResult()
-                onRegisterSuccess(name)
+                onRegisterSuccess(name, userId)
             }
 
             is RequestResult.Failure -> {
@@ -146,7 +151,10 @@ fun RegisterScreen(
                 // FOTO
                 // -----------------------------------------------------
 
-                ProfilePhotoSection()
+                ProfilePhotoSection(
+                    photoUri = state.photoUri,
+                    onAddPhotoClick = rememberGalleryPicker { viewModel.onPhotoSelected(it.toString()) }
+                )
 
                 Spacer(modifier = Modifier.height(22.dp))
 
@@ -162,12 +170,12 @@ fun RegisterScreen(
                 // NOMBRE
                 // -----------------------------------------------------
 
-                RegisterFieldLabel("Nombre y apellido completo")
+                RegisterFieldLabel(stringResource(R.string.register_name_label))
 
                 RegisterTextField(
                     value = state.name,
                     onValueChange = viewModel::onNameChange,
-                    placeholder = "Ej. Camila Morales Restrepo",
+                    placeholder = stringResource(R.string.register_name_hint),
                     icon = Icons.Default.Person,
                     keyboardType = KeyboardType.Text,
                     error = state.nameError
@@ -179,12 +187,12 @@ fun RegisterScreen(
                 // CORREO
                 // -----------------------------------------------------
 
-                RegisterFieldLabel("Correo electrónico")
+                RegisterFieldLabel(stringResource(R.string.email_label))
 
                 RegisterTextField(
                     value = state.email,
                     onValueChange = viewModel::onEmailChange,
-                    placeholder = "nombre@ejemplo.com",
+                    placeholder = stringResource(R.string.register_email_hint),
                     icon = Icons.Default.Email,
                     keyboardType = KeyboardType.Email,
                     error = state.emailError
@@ -196,7 +204,7 @@ fun RegisterScreen(
                 // TELÉFONO
                 // -----------------------------------------------------
 
-                RegisterFieldLabel("Teléfono / WhatsApp de contacto")
+                RegisterFieldLabel(stringResource(R.string.register_phone_label))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -247,7 +255,7 @@ fun RegisterScreen(
                 }
 
                 Text(
-                    text = "Vital para coordinar rescates y entregas responsables",
+                    text = stringResource(R.string.register_phone_help),
                     style = MaterialTheme.typography.bodySmall,
                     color = Color(0xFF303030),
                     modifier = Modifier.padding(
@@ -262,7 +270,7 @@ fun RegisterScreen(
                 // LOCALIDAD
                 // -----------------------------------------------------
 
-                RegisterFieldLabel("Localidad en Bogotá")
+                RegisterFieldLabel(stringResource(R.string.register_city_label))
 
                 LocationDropdown(
                     value = state.city,
@@ -275,12 +283,12 @@ fun RegisterScreen(
                 // -----------------------------------------------------
                 // Direccion
                 // -----------------------------------------------------
-                RegisterFieldLabel("Direccion")
+                RegisterFieldLabel(stringResource(R.string.register_address_label))
 
                 RegisterTextField(
                     value = state.address,
                     onValueChange = viewModel::onAddressChange,
-                    placeholder = "Ej Carrera-Manzana-Calle",
+                    placeholder = stringResource(R.string.register_address_hint),
                     icon = Icons.Default.AccountBalance,
                     keyboardType = KeyboardType.Text,
                     error = state.addressError
@@ -292,12 +300,12 @@ fun RegisterScreen(
                 // CONTRASEÑA
                 // -----------------------------------------------------
 
-                RegisterFieldLabel("Contraseña")
+                RegisterFieldLabel(stringResource(R.string.password_label))
 
                 PasswordField(
                     value = state.password,
                     onValueChange = viewModel::onPasswordChange,
-                    placeholder = "Mínimo 6 caracteres",
+                    placeholder = stringResource(R.string.register_password_hint),
                     error = state.passwordError
                 )
 
@@ -309,12 +317,12 @@ fun RegisterScreen(
                 // CONFIRMAR CONTRASEÑA
                 // -----------------------------------------------------
 
-                RegisterFieldLabel("Confirmar contraseña")
+                RegisterFieldLabel(stringResource(R.string.confirm_password_label))
 
                 PasswordField(
                     value = state.confirmPassword,
                     onValueChange = viewModel::onConfirmPasswordChange,
-                    placeholder = "Repite tu contraseña",
+                    placeholder = stringResource(R.string.confirm_password_hint),
                     error = state.confirmPasswordError
                 )
 
@@ -367,10 +375,10 @@ fun RegisterScreen(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     if (state.registerResult is RequestResult.Loading) {
-                        Text(text = "Creando cuenta...")
+                        Text(text = stringResource(R.string.creating_account))
 
                     } else {
-                        Text(text = "Crear mi Cuenta")
+                        Text(text = stringResource(R.string.create_my_account))
                     }
                     Spacer(modifier = Modifier.height(26.dp))
                 }
@@ -387,7 +395,7 @@ fun RegisterScreen(
                     ) {
 
                         Text(
-                            text = "¿Ya tienes una cuenta?",
+                            text = stringResource(R.string.have_account),
                             color = Color(0xFF333333)
                         )
 
@@ -395,7 +403,7 @@ fun RegisterScreen(
                             onClick = onNavigateToLogin
                         ) {
                             Text(
-                                text = "Iniciar Sesión",
+                                text = stringResource(R.string.sign_in),
                                 color = Color(0xFF172BE5),
                                 fontWeight = FontWeight.Medium
                             )
@@ -413,32 +421,32 @@ fun RegisterScreen(
 
         if (state.showExitDialog) {
             ConfirmAlertDialog(
-                title = "¿Está seguro de salir?",
-                message = "Si sale ahora, se perderán los datos que ha ingresado.",
+                title = stringResource(R.string.register_exit_title),
+                message = stringResource(R.string.register_exit_message),
                 onConfirm = {
                     viewModel.onConfirmExit() // Limpiar el formulario y ocultar el diálogo
                     onNavigateToBack() // Navegar hacia atrás
                 },
                 onDismiss = viewModel::onDismissExitDialog,
-                confirmText = "Salir"
+                confirmText = stringResource(R.string.exit)
             )
         }
 
         if (state.showHelpDialog) {
             ConfirmAlertDialog(
-                title = "Ayuda con el registro",
-                message = "Completa todos los campos obligatorios, usa una contraseña segura y acepta los términos. Tu cuenta empieza en el Nivel 1: Amigo Animal.",
+                title = stringResource(R.string.register_help_title),
+                message = stringResource(R.string.register_help_message),
                 onConfirm = viewModel::onDismissHelpDialog,
                 onDismiss = viewModel::onDismissHelpDialog,
-                confirmText = "Entendido",
-                dismissText = "Cerrar"
+                confirmText = stringResource(R.string.understood),
+                dismissText = stringResource(R.string.close)
             )
         }
 
         if (state.showConfirmDialog) {
             ConfirmAlertDialog(
-                title = "¿Está seguro de enviar los datos?",
-                message = "Está a punto de crear una cuenta con el email ${state.email}.",
+                title = stringResource(R.string.register_send_title),
+                message = stringResource(R.string.register_send_message, state.email),
                 onConfirm = viewModel::onConfirmRegister,
                 onDismiss = viewModel::onDismissConfirmDialog
             )
