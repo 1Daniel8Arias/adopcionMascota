@@ -2,14 +2,17 @@ package co.edu.adopcionmascota.data.repository.remote
 
 import co.edu.adopcionmascota.data.local.dao.UserDao
 import co.edu.adopcionmascota.data.local.mapper.toDomain
-import co.edu.adopcionmascota.data.remote.dto.Collections
-import co.edu.adopcionmascota.data.remote.dto.UserDto
+import co.edu.adopcionmascota.data.remote.Collections
+import co.edu.adopcionmascota.data.remote.user.UserDto
 import co.edu.adopcionmascota.domain.exception.EmailAlreadyInUseException
+import co.edu.adopcionmascota.domain.exception.EmailNotVerifiedException
+import co.edu.adopcionmascota.domain.exception.InvalidResetCodeException
 import co.edu.adopcionmascota.domain.exception.UserNotFoundException
 import co.edu.adopcionmascota.domain.model.User
 import co.edu.adopcionmascota.domain.repository.ImageRepository
 import co.edu.adopcionmascota.domain.repository.UserRepository
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthActionCodeException
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
@@ -49,6 +52,8 @@ class UserRepositoryImpl @Inject constructor(
             val dto = UserDto.fromDomain(user.copy(id = newUser.uid, profilePictureUrl = photo))
             collection.document(newUser.uid).set(dto.toMap()).await()
             userDao.insertAll(listOf(dto.toEntity()))
+            // Guía 20, actividad 1: se envía el correo de verificación al registrarse
+            runCatching { newUser.sendEmailVerification().await() }
         } catch (e: Exception) {
             // Si el perfil no se pudo guardar se borra la cuenta para no dejarla a medias
             withContext(NonCancellable) { runCatching { newUser.delete().await() } }
@@ -102,9 +107,34 @@ class UserRepositoryImpl @Inject constructor(
             auth.signOut()
             return null
         }
+        // Guía 20, actividad 1: no se puede iniciar sesión sin verificar el correo.
+        // Las cuentas de prueba (dominio .test, sin buzón real) tienen skipEmailVerification
+        val firebaseUser = response.user!!
+        runCatching { firebaseUser.reload().await() }
+        if (!firebaseUser.isEmailVerified && snapshot.getBoolean(SKIP_VERIFICATION) != true) {
+            runCatching { firebaseUser.sendEmailVerification().await() }
+            auth.signOut()
+            throw EmailNotVerifiedException()
+        }
         val dto = UserDto.fromSnapshot(snapshot)
         userDao.insertAll(listOf(dto.toEntity()))
         return dto.toDomain()
+    }
+
+    override suspend fun isEmailVerified(): Boolean {
+        val user = auth.currentUser ?: return false
+        runCatching { user.reload().await() }
+        if (user.isEmailVerified) return true
+        val profile = runCatching { collection.document(user.uid).get().await() }.getOrNull()
+        return profile?.getBoolean(SKIP_VERIFICATION) == true
+    }
+
+    override suspend fun confirmPasswordReset(code: String, newPassword: String) {
+        try {
+            auth.confirmPasswordReset(code, newPassword).await()
+        } catch (e: FirebaseAuthActionCodeException) {
+            throw InvalidResetCodeException()
+        }
     }
 
     // Solo se consulta la caché: antes del login no hay permiso para leer Firestore,
@@ -129,5 +159,10 @@ class UserRepositoryImpl @Inject constructor(
             // Solo ocurre si la protección contra enumeración de correos está desactivada
             throw UserNotFoundException()
         }
+    }
+
+    companion object {
+        // Campo del perfil que solo escribe el seeder de desarrollo (cuentas de prueba .test)
+        const val SKIP_VERIFICATION = "skipEmailVerification"
     }
 }

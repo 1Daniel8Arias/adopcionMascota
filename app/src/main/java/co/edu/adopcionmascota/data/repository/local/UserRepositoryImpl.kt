@@ -47,6 +47,13 @@ class UserRepositoryImpl @Inject constructor(
         // Room no maneja sesiones: la sesión vive en DataStore
     }
 
+    override suspend fun confirmPasswordReset(code: String, newPassword: String) {
+        // Sin backend no hay códigos de recuperación
+        throw co.edu.adopcionmascota.domain.exception.InvalidResetCodeException()
+    }
+
+    override suspend fun isEmailVerified(): Boolean = true
+
     override suspend fun sendPasswordReset(email: String) {
         // Sin backend no se puede enviar el correo; solo se valida que la cuenta exista
         if (userDao.findByEmail(email) == null) throw co.edu.adopcionmascota.domain.exception.UserNotFoundException()

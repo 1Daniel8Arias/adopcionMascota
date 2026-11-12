@@ -221,7 +221,7 @@ fun ButtonLogin(
     ) {
         if (isLoading) {
             Text(
-                text = stringResource(R.string.signing_in),
+                text = stringResource(R.string.login_loading),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )

@@ -1,5 +1,6 @@
 package co.edu.adopcionmascota.features.register
 
+import androidx.compose.material3.AlertDialog
 import androidx.compose.ui.res.stringResource
 import co.edu.adopcionmascota.R
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -52,9 +53,20 @@ import co.edu.adopcionmascota.core.theme.SecondaryText
 // Pantalla "comfirmacion" del Figma: bienvenida después de crear la cuenta
 @Composable
 fun RegisterSuccessScreen(
+    onGoToLogin: () -> Unit = {},
     viewModel: RegisterSuccessViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
+
+    // Guía 20, actividad 1: la cuenta queda pendiente hasta que se verifique el correo
+    if (state.verificationPending) {
+        AlertDialog(
+            onDismissRequest = onGoToLogin,
+            title = { Text(stringResource(R.string.verify_email_title)) },
+            text = { Text(stringResource(R.string.verify_email_message)) },
+            confirmButton = { TextButton(onClick = onGoToLogin) { Text(stringResource(R.string.go_to_login)) } }
+        )
+    }
 
     // La cuenta ya está creada: "atrás" no vuelve al formulario
     BackHandler { viewModel.startSession() }

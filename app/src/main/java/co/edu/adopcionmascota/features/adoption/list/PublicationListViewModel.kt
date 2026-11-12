@@ -81,7 +81,7 @@ class PublicationListViewModel @Inject constructor(
 
     // "Me encanta" se guarda en Room y aparece en "Mis favoritos"
     fun onLikeClick(publicationId: String) {
-        viewModelScope.launch { toggleFavoriteUseCase(publicationId) }
+        viewModelScope.launch { runCatching { toggleFavoriteUseCase(publicationId) } }
     }
 
     fun onSearchChange(text: String) {

@@ -19,4 +19,8 @@ interface UserRepository {
     suspend fun logout()
     // Envía el correo para restablecer la contraseña
     suspend fun sendPasswordReset(email: String)
+    // Cambia la contraseña con el código (oobCode) del enlace del correo
+    suspend fun confirmPasswordReset(code: String, newPassword: String)
+    // false si el usuario autenticado aún no confirmó su correo (guía 20, actividad 1)
+    suspend fun isEmailVerified(): Boolean
 }

@@ -2,7 +2,7 @@ package co.edu.adopcionmascota.data.repository.remote
 
 import co.edu.adopcionmascota.data.local.dao.FavoriteDao
 import co.edu.adopcionmascota.data.local.entity.FavoriteEntity
-import co.edu.adopcionmascota.data.remote.dto.Collections
+import co.edu.adopcionmascota.data.remote.Collections
 import co.edu.adopcionmascota.domain.repository.FavoriteRepository
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.Flow

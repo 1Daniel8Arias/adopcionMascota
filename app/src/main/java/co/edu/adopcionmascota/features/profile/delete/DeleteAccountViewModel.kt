@@ -42,10 +42,11 @@ class DeleteAccountViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(deleteResult = RequestResult.Loading) }
             // El usuario se borra de Room; la sesión se cierra en la pantalla de despedida
-            deleteAccountUseCase()
-            _uiState.update {
-                it.copy(deleteResult = RequestResult.Success(resources.getString(R.string.account_deleted_ok)))
-            }
+            val result = runCatching { deleteAccountUseCase() }.fold(
+                onSuccess = { RequestResult.Success(resources.getString(R.string.account_deleted_ok)) },
+                onFailure = { RequestResult.Failure(resources.getString(R.string.network_error)) }
+            )
+            _uiState.update { it.copy(deleteResult = result) }
         }
     }
 

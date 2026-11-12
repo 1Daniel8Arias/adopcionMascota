@@ -990,4 +990,20 @@
     <string name="note_other_pets_review">Has other pets: check how they get along</string>
     <string name="note_no_other_pets">No other pets at home</string>
     <string name="answers_summary">Home: %1$s · Experience: %2$s · Time: %3$s · Other pets: %4$s</string>
+    <!-- Firebase Authentication (guide 20) -->
+    <string name="login_loading">Signing in…</string>
+    <string name="login_error">We could not sign you in. Check your connection and try again.</string>
+    <string name="login_email_not_verified">Verify your email before signing in. We just sent you the link again.</string>
+    <string name="register_error_email_in_use">An account with that email already exists</string>
+    <string name="register_error_generic">We could not create your account. Check your connection and try again.</string>
+    <string name="verify_email_title">Verify your email</string>
+    <string name="verify_email_message">We sent you a verification link. Open it from your inbox and then sign in.</string>
+    <string name="go_to_login">Go to sign in</string>
+    <string name="reset_password_title">New password</string>
+    <string name="reset_password_subtitle">Choose a new password for your Patitas Conectadas account.</string>
+    <string name="reset_password_new">New password</string>
+    <string name="reset_password_confirm">Confirm the new password</string>
+    <string name="reset_password_button">Save new password</string>
+    <string name="reset_password_success">Your password was changed. You can now sign in.</string>
+    <string name="reset_password_invalid_code">This recovery link is no longer valid. Request a new one.</string>
 </resources>

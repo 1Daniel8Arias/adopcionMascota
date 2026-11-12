@@ -38,6 +38,6 @@ class FavoritesViewModel @Inject constructor(
 
     // Quitar el corazón la saca de la lista
     fun onLikeClick(publicationId: String) {
-        viewModelScope.launch { toggleFavoriteUseCase(publicationId) }
+        viewModelScope.launch { runCatching { toggleFavoriteUseCase(publicationId) } }
     }
 }

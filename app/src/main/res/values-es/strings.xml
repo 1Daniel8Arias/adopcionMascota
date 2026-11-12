@@ -990,4 +990,20 @@
     <string name="note_other_pets_review">Tiene otras mascotas: revisar la convivencia</string>
     <string name="note_no_other_pets">No tiene otras mascotas en casa</string>
     <string name="answers_summary">Vivienda: %1$s · Experiencia: %2$s · Tiempo: %3$s · Otras mascotas: %4$s</string>
+    <!-- Firebase Authentication (guía 20) -->
+    <string name="login_loading">Iniciando sesión…</string>
+    <string name="login_error">No pudimos iniciar sesión. Revisa tu conexión e inténtalo de nuevo.</string>
+    <string name="login_email_not_verified">Verifica tu correo antes de iniciar sesión. Te enviamos de nuevo el enlace.</string>
+    <string name="register_error_email_in_use">Ya existe una cuenta con ese correo</string>
+    <string name="register_error_generic">No pudimos crear tu cuenta. Revisa tu conexión e inténtalo de nuevo.</string>
+    <string name="verify_email_title">Verifica tu correo</string>
+    <string name="verify_email_message">Te enviamos un enlace de verificación. Ábrelo desde tu bandeja de entrada y luego inicia sesión.</string>
+    <string name="go_to_login">Ir a iniciar sesión</string>
+    <string name="reset_password_title">Nueva contraseña</string>
+    <string name="reset_password_subtitle">Elige una nueva contraseña para tu cuenta de Patitas Conectadas.</string>
+    <string name="reset_password_new">Nueva contraseña</string>
+    <string name="reset_password_confirm">Confirma la nueva contraseña</string>
+    <string name="reset_password_button">Guardar nueva contraseña</string>
+    <string name="reset_password_success">Tu contraseña se cambió. Ya puedes iniciar sesión.</string>
+    <string name="reset_password_invalid_code">Este enlace de recuperación ya no es válido. Solicita uno nuevo.</string>
 </resources>

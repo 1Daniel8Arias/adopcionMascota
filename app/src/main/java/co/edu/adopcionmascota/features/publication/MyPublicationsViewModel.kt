@@ -117,8 +117,10 @@ class MyPublicationsViewModel @Inject constructor(
 
     fun onMarkResolved(id: String) {
         viewModelScope.launch {
-            changePublicationStatusUseCase(id, PublicationStatus.RESOLVED)
-            _uiState.update { it.copy(infoMessage = resources.getString(R.string.case_resolved)) }
+            val ok = runCatching { changePublicationStatusUseCase(id, PublicationStatus.RESOLVED) }.isSuccess
+            _uiState.update {
+                it.copy(infoMessage = resources.getString(if (ok) R.string.case_resolved else R.string.network_error))
+            }
         }
     }
 
@@ -131,7 +133,10 @@ class MyPublicationsViewModel @Inject constructor(
     fun onConfirmCancelRequest() {
         val publication = _uiState.value.publicationToCancel ?: return
         viewModelScope.launch {
-            changePublicationStatusUseCase(publication.id, PublicationStatus.DELETED)
+            if (runCatching { changePublicationStatusUseCase(publication.id, PublicationStatus.DELETED) }.isFailure) {
+                _uiState.update { it.copy(publicationToCancel = null, infoMessage = resources.getString(R.string.network_error)) }
+                return@launch
+            }
             _uiState.update {
                 it.copy(
                     publicationToCancel = null,

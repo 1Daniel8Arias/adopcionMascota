@@ -20,6 +20,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:launchMode="singleTop"
             android:label="@string/app_name"
             android:theme="@style/Theme.AdopcionMascota"
             android:windowSoftInputMode="adjustResize">
@@ -27,6 +28,16 @@
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <!-- Enlace del correo de recuperación de contraseña de Firebase (guía 20, actividad 2) -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="adopcion-mascota-c14a2.firebaseapp.com"
+                    android:pathPrefix="/__/auth/action" />
             </intent-filter>
         </activity>
     </application>

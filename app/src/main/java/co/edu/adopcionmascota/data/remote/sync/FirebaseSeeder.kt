@@ -3,11 +3,12 @@ package co.edu.adopcionmascota.data.remote.sync
 import android.content.Context
 import android.util.Log
 import co.edu.adopcionmascota.data.local.database.SeedData
-import co.edu.adopcionmascota.data.remote.dto.Collections
-import co.edu.adopcionmascota.data.remote.dto.CommentDto
-import co.edu.adopcionmascota.data.remote.dto.NotificationDto
-import co.edu.adopcionmascota.data.remote.dto.PublicationDto
-import co.edu.adopcionmascota.data.remote.dto.UserDto
+import co.edu.adopcionmascota.data.remote.Collections
+import co.edu.adopcionmascota.data.remote.comment.CommentDto
+import co.edu.adopcionmascota.data.remote.notification.NotificationDto
+import co.edu.adopcionmascota.data.remote.publication.PublicationDto
+import co.edu.adopcionmascota.data.remote.user.UserDto
+import co.edu.adopcionmascota.data.repository.remote.UserRepositoryImpl
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
@@ -62,6 +63,8 @@ class FirebaseSeeder @Inject constructor(
             if (!doc.get().await().exists()) {
                 doc.set(UserDto.fromDomain(user.copy(id = uid)).toMap(), SetOptions.merge()).await()
             }
+            // Los correos .test no tienen buzón: estas cuentas no exigen verificar el correo
+            doc.set(mapOf(UserRepositoryImpl.SKIP_VERIFICATION to true), SetOptions.merge()).await()
         }
 
         // 2. Publicaciones, comentarios y notificaciones de ejemplo (una sola vez)
@@ -90,6 +93,6 @@ class FirebaseSeeder @Inject constructor(
     private companion object {
         const val TAG = "FirebaseSeeder"
         const val APP_NAME = "seeder"
-        const val KEY_DONE = "seed_v1_done"
+        const val KEY_DONE = "seed_v2_done"
     }
 }

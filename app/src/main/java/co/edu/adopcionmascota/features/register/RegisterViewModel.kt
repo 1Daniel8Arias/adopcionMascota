@@ -5,6 +5,7 @@ import co.edu.adopcionmascota.domain.usecase.user.RegisterUserUseCase
 import co.edu.adopcionmascota.domain.model.User
 import java.util.UUID
 import javax.inject.Inject
+import co.edu.adopcionmascota.domain.exception.EmailAlreadyInUseException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
@@ -227,17 +228,24 @@ class RegisterViewModel @Inject constructor(
                 phoneNumber = state.phone,
                 profilePictureUrl = state.photoUri
             )
-            try {
-                val userId = registerUserUseCase(user)
-                _uiState.update {
-                    it.copy(registeredUserId = userId, registerResult = RequestResult.Success(resources.getString(R.string.register_success)))
-                }
-            } catch (e: IllegalArgumentException) {
-                _uiState.update { it.copy(registerResult = RequestResult.Failure(resources.getString(R.string.register_duplicate))) }
-            } catch (e: Exception) {
-                // Errores de red o de Firebase: la app no se cierra, se muestra el mensaje
-                _uiState.update { it.copy(registerResult = RequestResult.Failure(resources.getString(R.string.network_error))) }
-            }
+            runCatching { registerUserUseCase(user) }
+                .fold(
+                    onSuccess = { userId ->
+                        _uiState.update {
+                            it.copy(registeredUserId = userId, registerResult = RequestResult.Success(resources.getString(R.string.register_success)))
+                        }
+                    },
+                    onFailure = { error ->
+                        // El correo repetido tiene su propio mensaje; cualquier otro error
+                        // (por ejemplo, falta de conexión) muestra un mensaje genérico
+                        val message = if (error is EmailAlreadyInUseException) {
+                            resources.getString(R.string.register_error_email_in_use)
+                        } else {
+                            resources.getString(R.string.register_error_generic)
+                        }
+                        _uiState.update { it.copy(registerResult = RequestResult.Failure(message)) }
+                    }
+                )
         }
     }
     private fun validateName(name: String): String?{

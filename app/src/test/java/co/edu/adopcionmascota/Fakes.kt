@@ -49,6 +49,11 @@ class FakeUserRepository : UserRepository {
     val users = MutableStateFlow<List<User>>(emptyList())
     override suspend fun save(user: User): String { users.update { it + user }; return user.id }
     override suspend fun logout() {}
+    var verified = true
+    override suspend fun isEmailVerified(): Boolean = verified
+    override suspend fun confirmPasswordReset(code: String, newPassword: String) {
+        if (code != "valid") throw co.edu.adopcionmascota.domain.exception.InvalidResetCodeException()
+    }
     override suspend fun sendPasswordReset(email: String) {
         if (users.value.none { it.email == email }) throw co.edu.adopcionmascota.domain.exception.UserNotFoundException()
     }

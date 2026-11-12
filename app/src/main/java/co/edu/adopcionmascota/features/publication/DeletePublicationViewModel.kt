@@ -65,14 +65,18 @@ class DeletePublicationViewModel @Inject constructor(
     // Opciones recomendadas antes de borrar
     fun onMarkAdopted() {
         viewModelScope.launch {
-            changePublicationStatusUseCase(publicationId, PublicationStatus.RESOLVED)
-            _uiState.update { it.copy(leaveScreen = true) }
+            runCatching { changePublicationStatusUseCase(publicationId, PublicationStatus.RESOLVED) }
+                .onSuccess { _uiState.update { it.copy(leaveScreen = true) } }
+                .onFailure { _uiState.update { it.copy(infoMessage = resources.getString(R.string.network_error)) } }
         }
     }
 
     fun onPause() {
         viewModelScope.launch {
-            changePublicationStatusUseCase(publicationId, PublicationStatus.PAUSED)
+            if (runCatching { changePublicationStatusUseCase(publicationId, PublicationStatus.PAUSED) }.isFailure) {
+                _uiState.update { it.copy(infoMessage = resources.getString(R.string.network_error)) }
+                return@launch
+            }
             _uiState.update {
                 it.copy(
                     publication = getReportByIdUseCase(publicationId),
@@ -91,10 +95,11 @@ class DeletePublicationViewModel @Inject constructor(
 
         viewModelScope.launch {
             _uiState.update { it.copy(deleteResult = RequestResult.Loading) }
-            changePublicationStatusUseCase(publicationId, PublicationStatus.DELETED)
-            _uiState.update {
-                it.copy(deleteResult = RequestResult.Success(resources.getString(R.string.publication_deleted_vm)))
-            }
+            val result = runCatching { changePublicationStatusUseCase(publicationId, PublicationStatus.DELETED) }.fold(
+                onSuccess = { RequestResult.Success(resources.getString(R.string.publication_deleted_vm)) },
+                onFailure = { RequestResult.Failure(resources.getString(R.string.network_error)) }
+            )
+            _uiState.update { it.copy(deleteResult = result) }
         }
     }
 }

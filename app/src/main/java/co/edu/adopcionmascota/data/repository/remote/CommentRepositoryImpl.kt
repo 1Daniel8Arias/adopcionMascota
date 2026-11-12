@@ -2,8 +2,8 @@ package co.edu.adopcionmascota.data.repository.remote
 
 import co.edu.adopcionmascota.data.local.dao.CommentDao
 import co.edu.adopcionmascota.data.local.mapper.toDomain
-import co.edu.adopcionmascota.data.remote.dto.Collections
-import co.edu.adopcionmascota.data.remote.dto.CommentDto
+import co.edu.adopcionmascota.data.remote.Collections
+import co.edu.adopcionmascota.data.remote.comment.CommentDto
 import co.edu.adopcionmascota.domain.model.Comment
 import co.edu.adopcionmascota.domain.repository.CommentRepository
 import com.google.firebase.auth.FirebaseAuth

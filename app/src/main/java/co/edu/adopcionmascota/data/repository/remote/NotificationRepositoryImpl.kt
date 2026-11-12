@@ -2,8 +2,8 @@ package co.edu.adopcionmascota.data.repository.remote
 
 import co.edu.adopcionmascota.data.local.dao.NotificationDao
 import co.edu.adopcionmascota.data.local.mapper.toDomain
-import co.edu.adopcionmascota.data.remote.dto.Collections
-import co.edu.adopcionmascota.data.remote.dto.NotificationDto
+import co.edu.adopcionmascota.data.remote.Collections
+import co.edu.adopcionmascota.data.remote.notification.NotificationDto
 import co.edu.adopcionmascota.domain.model.Notification
 import co.edu.adopcionmascota.domain.repository.NotificationRepository
 import com.google.firebase.auth.FirebaseAuth

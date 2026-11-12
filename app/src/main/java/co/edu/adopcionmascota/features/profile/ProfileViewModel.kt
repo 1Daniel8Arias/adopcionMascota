@@ -149,7 +149,7 @@ class ProfileViewModel @Inject constructor(
     fun logout() {
         // Al borrarse la sesión, AppNavigation muestra automáticamente AuthNavigation
         viewModelScope.launch {
-            logoutUseCase()
+            runCatching { logoutUseCase() }
         }
     }
 }

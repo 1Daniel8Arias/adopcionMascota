@@ -40,7 +40,7 @@ class ModeratorProfileViewModel @Inject constructor(
 
     fun logout() {
         viewModelScope.launch {
-            logotUseCase()
+            runCatching { logotUseCase() }
         }
     }
 }

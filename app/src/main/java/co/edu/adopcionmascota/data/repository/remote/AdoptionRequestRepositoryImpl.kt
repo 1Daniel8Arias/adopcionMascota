@@ -2,8 +2,8 @@ package co.edu.adopcionmascota.data.repository.remote
 
 import co.edu.adopcionmascota.data.local.dao.AdoptionRequestDao
 import co.edu.adopcionmascota.data.local.mapper.toDomain
-import co.edu.adopcionmascota.data.remote.dto.AdoptionRequestDto
-import co.edu.adopcionmascota.data.remote.dto.Collections
+import co.edu.adopcionmascota.data.remote.request.AdoptionRequestDto
+import co.edu.adopcionmascota.data.remote.Collections
 import co.edu.adopcionmascota.domain.model.AdoptionRequest
 import co.edu.adopcionmascota.domain.model.AdoptionRequestStatus
 import co.edu.adopcionmascota.domain.repository.AdoptionRequestRepository

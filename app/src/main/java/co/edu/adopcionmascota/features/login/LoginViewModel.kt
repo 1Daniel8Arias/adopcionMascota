@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.update
 import co.edu.adopcionmascota.domain.usecase.auth.LoginUserUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
+import co.edu.adopcionmascota.domain.exception.EmailNotVerifiedException
 import kotlinx.coroutines.launch
 
 
@@ -95,17 +96,25 @@ class LoginViewModel @Inject constructor(
             // La solicitud pasa al estado de carga
             _uiState.update { it.copy(loginResult = RequestResult.Loading) }
 
-            // Ahora el login va contra Firebase: un error de red no debe cerrar la app (guía 19)
+            // El caso de uso autentica y, si tiene éxito, guarda la sesión (guías 19 y 20)
             val result = runCatching { loginUserUseCase(currentState.email.trim(), currentState.password) }
-            val user = result.getOrNull()
-            // Se publica el resultado final de la solicitud
-            _uiState.update { it.copy(
-                loginResult = when {
-                    user != null -> RequestResult.Success(resources.getString(R.string.login_success))
-                    result.isFailure -> RequestResult.Failure(resources.getString(R.string.network_error))
-                    else -> RequestResult.Failure(resources.getString(R.string.login_failure))
-                }
-            ) }
+                .fold(
+                    onSuccess = { user ->
+                        // Sin excepción no significa credenciales válidas: hay que revisar el usuario
+                        if (user != null) {
+                            RequestResult.Success(resources.getString(R.string.login_success))
+                        } else {
+                            RequestResult.Failure(resources.getString(R.string.login_failure))
+                        }
+                    },
+                    onFailure = { error ->
+                        RequestResult.Failure(
+                            if (error is EmailNotVerifiedException) resources.getString(R.string.login_email_not_verified)
+                            else resources.getString(R.string.login_error)
+                        )
+                    }
+                )
+            _uiState.update { it.copy(loginResult = result) }
         }
     }
 

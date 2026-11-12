@@ -52,6 +52,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import co.edu.adopcionmascota.domain.model.UserRole
 import co.edu.adopcionmascota.features.request.AdoptionRequestsScreen
+import co.edu.adopcionmascota.features.password.ResetPasswordScreen
 import co.edu.adopcionmascota.features.request.application.AdoptionApplicationScreen
 import co.edu.adopcionmascota.features.statistics.StatisticsScreen
 import co.edu.adopcionmascota.features.favorites.FavoritesScreen
@@ -59,12 +60,19 @@ import co.edu.adopcionmascota.features.favorites.FavoritesScreen
 
 @Composable
 fun AppNavigation(
+    resetPasswordCode: String? = null,
+    onResetPasswordHandled: () -> Unit = {},
     sessionViewModel: SessionViewModel = hiltViewModel()
 ) {
     // Observa el estado de la sesión guardada en Data Store
     val sessionState by sessionViewModel.sessionState.collectAsStateWithLifecycle()
 
     Surface(modifier = Modifier.fillMaxSize()) {
+        // El enlace de recuperación abierto desde el correo tiene prioridad (guía 20, actividad 2)
+        if (resetPasswordCode != null) {
+            ResetPasswordScreen(oobCode = resetPasswordCode, onFinished = onResetPasswordHandled)
+            return@Surface
+        }
         when (val state = sessionState) {
             is SessionState.Loading -> {
                 // Indicador de carga mientras se lee la sesión guardada
@@ -135,7 +143,12 @@ private fun AuthNavigation() {
 
         // Sus botones abren la sesión del usuario nuevo y AppNavigation cambia de grafo
         composable<MainRoutes.RegisterSuccess> {
-            RegisterSuccessScreen()
+            RegisterSuccessScreen(
+                // Correo sin verificar: se vuelve al login (guía 20, actividad 1)
+                onGoToLogin = {
+                    navController.navigate(MainRoutes.Login) { popUpTo(MainRoutes.Home) }
+                }
+            )
         }
 
         composable<MainRoutes.PasswordScreen> {

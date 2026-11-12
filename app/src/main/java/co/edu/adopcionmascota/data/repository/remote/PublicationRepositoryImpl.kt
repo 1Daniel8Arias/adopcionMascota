@@ -2,8 +2,8 @@ package co.edu.adopcionmascota.data.repository.remote
 
 import co.edu.adopcionmascota.data.local.dao.PublicationDao
 import co.edu.adopcionmascota.data.local.mapper.toDomain
-import co.edu.adopcionmascota.data.remote.dto.Collections
-import co.edu.adopcionmascota.data.remote.dto.PublicationDto
+import co.edu.adopcionmascota.data.remote.Collections
+import co.edu.adopcionmascota.data.remote.publication.PublicationDto
 import co.edu.adopcionmascota.domain.model.Publication
 import co.edu.adopcionmascota.domain.model.PublicationStatus
 import co.edu.adopcionmascota.domain.repository.ImageRepository

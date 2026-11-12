@@ -92,13 +92,13 @@ class NotificationsViewModel @Inject constructor(
             _uiState.update { it.copy(infoMessage = resources.getString(R.string.no_pending_notifications)) }
             return
         }
-        viewModelScope.launch { markAllNotificationsAsReadUseCase() }
+        viewModelScope.launch { runCatching { markAllNotificationsAsReadUseCase() } }
         _uiState.update { it.copy(infoMessage = resources.getString(R.string.all_marked_read)) }
     }
 
     // Abrir una notificación la marca como leída
     fun onNotificationOpened(id: String) {
-        viewModelScope.launch { markNotificationAsReadUseCase(id) }
+        viewModelScope.launch { runCatching { markNotificationAsReadUseCase(id) } }
     }
 
     fun resetInfoMessage() {

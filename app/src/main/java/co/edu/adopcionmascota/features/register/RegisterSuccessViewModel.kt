@@ -12,12 +12,14 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
 data class RegisterSuccessUiState(
     val name: String = "",
     val points: Int = 0,
     val levelName: String = "",
-    val enabledFeatures: String = ""
+    val enabledFeatures: String = "",
+    val verificationPending: Boolean = false   // Se envió el correo de verificación (guía 20)
 ) {
     // "¡Bienvenida a la Manada, Camila!" usa solo el primer nombre
     val firstName: String
@@ -44,6 +46,9 @@ class RegisterSuccessViewModel @Inject constructor(
 
     // Al guardarse la sesión, AppNavigation pasa sola a la navegación principal
     fun startSession() {
-        viewModelScope.launch { startSessionUseCase(userId) }
+        viewModelScope.launch {
+            val started = runCatching { startSessionUseCase(userId) }.getOrDefault(false)
+            if (!started) _uiState.update { it.copy(verificationPending = true) }
+        }
     }
 }

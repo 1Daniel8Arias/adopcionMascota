@@ -11,8 +11,13 @@ el correo de recuperación de contraseña no llega a ninguna bandeja real.
 | Valentina Gómez  | valentina@patitas.test   | Valentina123   | USER                   |
 | Andrés Martínez  | andres@patitas.test      | Andres123      | MODERATOR              |
 
+Las cuentas nuevas deben **verificar su correo** antes de iniciar sesión (guía 20,
+actividad 1). Como los correos `.test` no tienen buzón, el seeder marca estas tres
+cuentas con `skipEmailVerification: true` en `users/{uid}` (solo para desarrollo).
+
 Para probar la recuperación de contraseña de verdad, registra una cuenta con un correo
-propio y usa "¿Olvidaste tu contraseña?".
+propio y usa "¿Olvidaste tu contraseña?". Al tocar el enlace del correo en el teléfono,
+Android pregunta con qué abrirlo: elige Patitas Conectadas y se abre ResetPasswordScreen.
 
 Si el seeder falla (Authentication o Firestore sin activar, o reglas que lo impiden),
 el error queda en Logcat con la etiqueta `FirebaseSeeder` y se reintenta en el siguiente
