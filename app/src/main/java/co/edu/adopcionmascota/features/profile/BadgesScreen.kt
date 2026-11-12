@@ -46,7 +46,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import co.edu.adopcionmascota.core.component.AppTag
 import co.edu.adopcionmascota.core.component.ConfirmAlertDialog
 import co.edu.adopcionmascota.core.theme.AppPrimary
@@ -62,7 +62,7 @@ private val Gold = Color(0xFFB54708)
 fun BadgesScreen(
     onNavigateBack: () -> Unit,             // stringResource(R.string.back_to_profile)
     onViewLevels: () -> Unit,               // stringResource(R.string.view_levels)
-    viewModel: BadgesViewModel = viewModel()
+    viewModel: BadgesViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
 

@@ -7,6 +7,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import androidx.lifecycle.viewModelScope
+import co.edu.adopcionmascota.domain.usecase.user.ObserveCurrentUserUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 data class ReputationLevel(
     val number: Int,
@@ -23,9 +28,9 @@ data class ReputationLevel(
 data class PointAction(val text: String, val points: Int)
 
 data class ReputationUiState(
-    val userName: String = "Camila Morales",
-    val location: String = "Usaquén, Bogotá D.C.",
-    val points: Int = 340,                  // Mismos puntos que muestra el perfil
+    val userName: String = "",
+    val location: String = "",
+    val points: Int = 0,                    // Mismos puntos que muestra el perfil (Room)
     val levels: List<ReputationLevel> = emptyList(),
     val actions: List<PointAction> = emptyList(),
     val grantedBadges: Int = 0,
@@ -55,7 +60,10 @@ data class ReputationUiState(
     }
 }
 
-class ReputationViewModel : ViewModel() {
+@HiltViewModel
+class ReputationViewModel @Inject constructor(
+    observeCurrentUserUseCase: ObserveCurrentUserUseCase
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(
         ReputationUiState(
@@ -92,6 +100,17 @@ class ReputationViewModel : ViewModel() {
         )
     )
     val uiState: StateFlow<ReputationUiState> = _uiState.asStateFlow()
+
+    init {
+        // Los puntos se ganan al publicar casos aprobados, comentar y concretar adopciones
+        viewModelScope.launch {
+            observeCurrentUserUseCase().collect { user ->
+                if (user != null) {
+                    _uiState.update { it.copy(userName = user.name, location = user.city, points = user.points) }
+                }
+            }
+        }
+    }
 
     // Tocar un nivel muestra u oculta sus beneficios
     fun onLevelClick(number: Int) = _uiState.update {

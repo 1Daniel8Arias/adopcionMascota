@@ -55,6 +55,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
+import co.edu.adopcionmascota.core.util.rememberImageModel
+import co.edu.adopcionmascota.domain.model.PublicationStatus
+import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -89,62 +96,39 @@ private val StatusOptions = listOf(
     R.string.moderation_tab_reported
 )
 
-// El valor interno sigue en español porque el filtro lo compara; solo se traduce lo que se ve
+// Filtros rápidos de la cola de moderación
 private val FilterOptions = listOf(
-    "Todas" to R.string.all,
-    "Posible venta" to R.string.moderation_possible_sale,
-    "Adopción" to R.string.adoption,
-    "Urgente" to R.string.moderation_urgent
+    ModerationFilter.ALL to R.string.all,
+    ModerationFilter.POSSIBLE_SALE to R.string.moderation_possible_sale,
+    ModerationFilter.ADOPTION to R.string.adoption,
+    ModerationFilter.URGENT to R.string.moderation_urgent
 )
 
 @Composable
 fun ModerationScreen(
-    onNavigationClick: (AppDestination) -> Unit = {}
+    onNavigationClick: (AppDestination) -> Unit = {},
+    onInspect: (String) -> Unit = {},
+    onStatistics: () -> Unit = {},
+    viewModel: ModerationDashboardViewModel = hiltViewModel()
 ) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    var selectedTab by remember {
-        mutableIntStateOf(0)
-    }
-
-    var selectedFilter by remember {
-        mutableStateOf("Todas")
-    }
-
-    // Lista de publicaciones
-    val publications = remember {
-        fakePublications()
-    }
-
-    // Filtrar publicaciones según el filtro seleccionado
-    val filteredPublications = remember(
-        publications,
-        selectedFilter
-    ) {
-        when (selectedFilter) {
-            "Con alertas" -> publications.filter {
-                it.ethicsAlert
-            }
-
-            "Sin alertas" -> publications.filter {
-                !it.ethicsAlert
-            }
-
-            "Vacunas incompletas" -> publications.filter {
-                !it.vaccinesComplete
-            }
-
-            "Sin esterilizar" -> publications.filter {
-                !it.sterilized
-            }
-
-            else -> publications
+    LaunchedEffect(state.infoMessage) {
+        state.infoMessage?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.onEvent(ModerationEvent.ClearMessage)
         }
     }
 
     Scaffold(
         containerColor = ScreenBackground,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            ModerationTopBar()
+            ModerationTopBar(
+                pendingCount = state.pendingCount,
+                onNotifications = { onNavigationClick(AppDestination.ALERTS) }
+            )
         },
         bottomBar = {
             AppBottomBar(
@@ -187,30 +171,48 @@ fun ModerationScreen(
             // Pestañas de estado
             item {
                 StatusTabs(
-                    selectedTab = selectedTab,
+                    selectedTab = state.tab.ordinal,
+                    counts = listOf(state.pendingCount, state.approvedCount, state.rejectedCount),
                     onTabSelected = {
-                        selectedTab = it
+                        viewModel.onEvent(ModerationEvent.ChangeTab(ModerationTab.entries[it]))
                     }
                 )
             }
 
-            // Métricas
+            // Métricas calculadas con los datos de Room
             item {
-                DashboardMetrics()
+                DashboardMetrics(
+                    pending = state.pendingCount,
+                    approvedToday = state.approvedToday,
+                    averageMinutes = state.averageReviewMinutes,
+                    alerts = state.alertsCount
+                )
+            }
+
+            // Acceso a la pantalla de estadísticas
+            item {
+                OutlinedButton(
+                    onClick = onStatistics,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Default.BarChart, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(R.string.statistics_title))
+                }
             }
 
             // Filtros
             item {
                 FilterSection(
-                    selectedFilter = selectedFilter,
+                    selectedFilter = state.selectedFilter,
                     onFilterSelected = {
-                        selectedFilter = it
+                        viewModel.onEvent(ModerationEvent.ChangeFilter(it))
                     }
                 )
             }
 
             // Tarjetas dinámicas
-            if (filteredPublications.isEmpty()) {
+            if (state.publications.isEmpty()) {
 
                 item {
                     Text(
@@ -225,38 +227,44 @@ fun ModerationScreen(
             } else {
 
                 items(
-                    items = filteredPublications,
+                    items = state.publications,
                     key = { publication -> publication.id }
                 ) { publication ->
 
                     AdoptionCard(
                         publication = publication,
-
-                        onReject = { selectedPublication ->
-                            // TODO: conectar con el ViewModel
-                            // para rechazar la publicación.
+                        onReject = { selected ->
+                            viewModel.onEvent(ModerationEvent.OpenReject(selected))
                         },
-
-                        onInspect = { selectedPublication ->
-                            // TODO: navegar al detalle
-                            // usando selectedPublication.id.
+                        onInspect = { selected ->
+                            onInspect(selected.id)
                         },
-
-                        onApprove = { selectedPublication ->
-                            // TODO: conectar con el ViewModel
-                            // para aprobar la publicación.
+                        onApprove = { selected ->
+                            viewModel.onEvent(ModerationEvent.ApprovePublication(selected.id))
                         }
                     )
                 }
             }
         }
     }
+
+    // Hoja para elegir el motivo del rechazo
+    state.publicationToReject?.let { publication ->
+        RejectPublicationBottomSheet(
+            publication = publication,
+            onDismiss = { viewModel.onEvent(ModerationEvent.DismissReject) },
+            onConfirm = { reason ->
+                reason?.let { viewModel.onEvent(ModerationEvent.ConfirmReject(it.title)) }
+            }
+        )
+    }
 }
 
 
 @Composable
 fun ModerationTopBar(
-    pendingCount: Int = 8
+    pendingCount: Int = 0,
+    onNotifications: () -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -303,7 +311,7 @@ fun ModerationTopBar(
                 }
             }
 
-            IconButton(onClick = { }) {
+            IconButton(onClick = onNotifications) {
                 Icon(
                     imageVector = Icons.Default.Notifications,
                     contentDescription = stringResource(R.string.notifications)
@@ -372,6 +380,7 @@ fun ModerationTopBar(
 @Composable
 fun StatusTabs(
     selectedTab: Int,
+    counts: List<Int>,
     onTabSelected: (Int) -> Unit
 ) {
     LazyRow(
@@ -379,7 +388,7 @@ fun StatusTabs(
     ) {
         items(StatusOptions.size) { index ->
             ModerationTab(
-                text = stringResource(StatusOptions[index]),
+                text = stringResource(StatusOptions[index], counts[index]),
                 selected = selectedTab == index,
                 icon = when (index) {
                     0 -> Icons.Outlined.Inventory2
@@ -431,7 +440,12 @@ fun ModerationTab(
 }
 
 @Composable
-fun DashboardMetrics() {
+fun DashboardMetrics(
+    pending: Int,
+    approvedToday: Int,
+    averageMinutes: Int,
+    alerts: Int
+) {
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
@@ -439,14 +453,14 @@ fun DashboardMetrics() {
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             MetricCard(
-                value = "8",
+                value = pending.toString(),
                 title = stringResource(R.string.to_review),
                 icon = Icons.Default.Inbox,
                 modifier = Modifier.weight(1f)
             )
 
             MetricCard(
-                value = "14",
+                value = approvedToday.toString(),
                 title = stringResource(R.string.approved_today),
                 icon = Icons.Default.ThumbUp,
                 modifier = Modifier.weight(1f)
@@ -457,14 +471,14 @@ fun DashboardMetrics() {
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             MetricCard(
-                value = "12 min",
+                value = "$averageMinutes min",
                 title = stringResource(R.string.average_time_lower),
                 icon = Icons.Default.Timer,
                 modifier = Modifier.weight(1f)
             )
 
             MetricCard(
-                value = "0",
+                value = alerts.toString(),
                 title = stringResource(R.string.critical_reports),
                 icon = Icons.Default.Security,
                 modifier = Modifier.weight(1f)
@@ -517,8 +531,8 @@ fun MetricCard(
 
 @Composable
 fun FilterSection(
-    selectedFilter: String,
-    onFilterSelected: (String) -> Unit
+    selectedFilter: ModerationFilter,
+    onFilterSelected: (ModerationFilter) -> Unit
 ) {
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -606,7 +620,7 @@ fun AdoptionCard(
                 }
 
                 Text(
-                    text = "#${publication.id}",
+                    text = "#${publication.id.take(6)}",
                     color = MutedText,
                     fontSize = 12.sp
                 )
@@ -644,7 +658,7 @@ fun AdoptionCard(
             // Coil reduce la imagen al tamaño de pantalla; con painterResource las fotos
             // grandes (imagen_rocky.jpg) cierran la app por superar el límite de memoria
             AsyncImage(
-                model = publication.imageUrl,
+                model = rememberImageModel(publication.image),
                 contentDescription = null,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -685,6 +699,16 @@ fun AdoptionCard(
                 )
             }
 
+            // Motivo del rechazo (pestaña Rechazadas)
+            publication.rejectionReason?.let { reason ->
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = stringResource(R.string.rejection_reason_label, reason),
+                    color = Color(0xFFB91C1C),
+                    fontSize = 13.sp
+                )
+            }
+
             // Alerta ética: solo aparece si existe una alerta
             if (publication.ethicsAlert) {
                 Spacer(Modifier.height(8.dp))
@@ -708,8 +732,8 @@ fun AdoptionCard(
 
             Spacer(Modifier.height(16.dp))
 
-            // Acciones de moderación
-            Row(
+            // Acciones de moderación (solo para las pendientes)
+            if (publication.status == PublicationStatus.PENDING) Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -758,6 +782,6 @@ fun AdoptionCard(
 @Composable
 private fun ModerationScreenPreview() {
     MaterialTheme {
-        ModerationScreen()
+        DashboardMetrics(pending = 3, approvedToday = 2, averageMinutes = 15, alerts = 1)
     }
 }

@@ -10,7 +10,15 @@ import co.edu.adopcionmascota.domain.model.ContributionType
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import co.edu.adopcionmascota.core.util.RequestResult
-import kotlinx.coroutines.delay
+import co.edu.adopcionmascota.domain.usecase.comment.AddCommentUseCase
+import co.edu.adopcionmascota.domain.usecase.comment.ClearCommentDraftUseCase
+import co.edu.adopcionmascota.domain.usecase.comment.ObserveCommentDraftUseCase
+import co.edu.adopcionmascota.domain.usecase.comment.ObserveCommentsUseCase
+import co.edu.adopcionmascota.domain.usecase.comment.SaveCommentDraftUseCase
+import co.edu.adopcionmascota.domain.usecase.comment.ToggleThanksUseCase
+import co.edu.adopcionmascota.domain.usecase.publication.GetReportByIdUseCase
+import co.edu.adopcionmascota.domain.usecase.user.GetCurrentUserUseCase
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,7 +33,7 @@ const val COMMENT_MIN_LENGTH = 10
 const val COMMENT_POINTS = 5
 
 data class CreateCommentUiState(
-    // Resumen del caso (por ahora quemado, igual que el detalle de la publicación)
+    // Resumen del caso (se carga de Room)
     val petName: String = "",
     val petDescription: String = "",
     val petLocation: String = "",
@@ -66,6 +74,14 @@ data class CreateCommentUiState(
 @HiltViewModel
 class CreateCommentViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
+    private val getReportByIdUseCase: GetReportByIdUseCase,
+    private val getCurrentUserUseCase: GetCurrentUserUseCase,
+    private val observeCommentsUseCase: ObserveCommentsUseCase,
+    private val addCommentUseCase: AddCommentUseCase,
+    private val toggleThanksUseCase: ToggleThanksUseCase,
+    private val observeCommentDraftUseCase: ObserveCommentDraftUseCase,
+    private val saveCommentDraftUseCase: SaveCommentDraftUseCase,
+    private val clearCommentDraftUseCase: ClearCommentDraftUseCase,
     private val resources: ResourceProvider
 ) : ViewModel() {
 
@@ -80,24 +96,31 @@ class CreateCommentViewModel @Inject constructor(
         observeComments()
     }
 
+    // El caso, el autor (usuario de la sesión) y el borrador vienen de Room y Data Store
     private fun loadCase() {
-        val draft = CommentStore.draftFor(publicationId)
-        _uiState.value = CreateCommentUiState(
-            petName = "Max",
-            petDescription = "Golden Mestizo · 3 meses",
-            petLocation = "Armenia, Quindío · Caso #$publicationId",
-            authorName = "Camila Morales",
-            authorLevel = "Voluntaria Nivel 2 · Protector",
-            text = draft,
-            isDraftSaved = draft.isNotBlank()
-        )
+        viewModelScope.launch {
+            val publication = getReportByIdUseCase(publicationId)
+            val user = getCurrentUserUseCase()
+            val draft = observeCommentDraftUseCase(publicationId).first()
+            _uiState.update {
+                it.copy(
+                    petName = publication?.name.orEmpty(),
+                    petDescription = listOf(publication?.breed, publication?.age)
+                        .filter { part -> !part.isNullOrBlank() }.joinToString(" · "),
+                    petLocation = resources.getString(R.string.case_location, publication?.location.orEmpty(), publicationId.take(8)),
+                    authorName = user?.name.orEmpty(),
+                    authorLevel = user?.let { u -> resources.getString(R.string.level_tag, u.level.number) + " · " + u.level.displayName }.orEmpty(),
+                    text = draft,
+                    isDraftSaved = draft.isNotBlank()
+                )
+            }
+        }
     }
 
     // La lista de aportes recientes se actualiza al publicar o agradecer
     private fun observeComments() {
         viewModelScope.launch {
-            CommentStore.comments.collect { all ->
-                val comments = all.filter { it.publicationId == publicationId }
+            observeCommentsUseCase(publicationId).collect { comments ->
                 _uiState.update {
                     it.copy(
                         recentComments = comments.take(2),
@@ -117,7 +140,7 @@ class CreateCommentViewModel @Inject constructor(
     fun onTextChange(newText: String) {
         // No se aceptan más caracteres que el máximo permitido
         if (newText.length > COMMENT_MAX_LENGTH) return
-        CommentStore.saveDraft(publicationId, newText)
+        viewModelScope.launch { saveCommentDraftUseCase(publicationId, newText) }
         _uiState.update {
             it.copy(
                 text = newText,
@@ -163,7 +186,7 @@ class CreateCommentViewModel @Inject constructor(
     }
 
     fun onThanksClick(commentId: String) {
-        CommentStore.toggleThanks(commentId)
+        viewModelScope.launch { toggleThanksUseCase(commentId) }
     }
 
     // ---------- Publicar ----------
@@ -179,19 +202,14 @@ class CreateCommentViewModel @Inject constructor(
 
         viewModelScope.launch {
             _uiState.update { it.copy(publishResult = RequestResult.Loading) }
-            delay(1200) // Simula el envío al servidor
-
-            val comment = Comment(
-                id = "c${System.currentTimeMillis()}",
-                publicationId = publicationId,
-                author = state.authorName,
-                authorTag = "Nivel 2",
-                time = resources.getString(R.string.now),
-                text = state.text.trim(),
-                type = state.type
-            )
-            CommentStore.add(comment)
-            CommentStore.clearDraft(publicationId)
+            // El caso de uso guarda el comentario, suma puntos y notifica al autor de la publicación
+            val comment = try {
+                addCommentUseCase(publicationId, state.text, state.type)
+            } catch (e: Exception) {
+                _uiState.update { it.copy(publishResult = RequestResult.Failure(e.message.orEmpty())) }
+                return@launch
+            }
+            clearCommentDraftUseCase(publicationId)
 
             _uiState.update {
                 it.copy(
@@ -214,7 +232,7 @@ class CreateCommentViewModel @Inject constructor(
     }
 
     fun onConfirmDiscard() {
-        CommentStore.clearDraft(publicationId)
+        viewModelScope.launch { clearCommentDraftUseCase(publicationId) }
         _uiState.update { it.copy(showDiscardDialog = false, text = "", isDraftSaved = false) }
     }
 

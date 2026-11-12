@@ -1,26 +1,37 @@
 package co.edu.adopcionmascota.features.adoption.detail
 
-import co.edu.adopcionmascota.R
-import co.edu.adopcionmascota.core.util.ResourceProvider
-import co.edu.adopcionmascota.domain.usecase.publication.GetReportByIdUseCase
 import androidx.lifecycle.SavedStateHandle
-import javax.inject.Inject
-import dagger.hilt.android.lifecycle.HiltViewModel
-import co.edu.adopcionmascota.domain.model.Comment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import co.edu.adopcionmascota.R
 import co.edu.adopcionmascota.core.util.RequestResult
+import co.edu.adopcionmascota.core.util.ResourceProvider
+import co.edu.adopcionmascota.domain.model.AdoptionRequestStatus
+import co.edu.adopcionmascota.domain.model.AdoptionRequestType
+import co.edu.adopcionmascota.domain.model.Comment
 import co.edu.adopcionmascota.domain.model.PetType
 import co.edu.adopcionmascota.domain.model.Publication
-import co.edu.adopcionmascota.features.comment.CommentStore
-import kotlinx.coroutines.delay
+import co.edu.adopcionmascota.domain.model.User
+import co.edu.adopcionmascota.domain.model.UserRole
+import co.edu.adopcionmascota.domain.usecase.comment.ObserveCommentsUseCase
+import co.edu.adopcionmascota.domain.usecase.comment.ToggleThanksUseCase
+import co.edu.adopcionmascota.domain.usecase.publication.ObservePublicationUseCase
+import co.edu.adopcionmascota.domain.usecase.request.ObserveMyRequestsUseCase
+import co.edu.adopcionmascota.domain.usecase.request.SendAdoptionRequestUseCase
+import co.edu.adopcionmascota.domain.usecase.user.GetUserByIdUseCase
+import co.edu.adopcionmascota.domain.usecase.user.ObserveCurrentUserUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
+import co.edu.adopcionmascota.domain.usecase.favorite.ObserveFavoriteIdsUseCase
+import co.edu.adopcionmascota.domain.usecase.favorite.ToggleFavoriteUseCase
 
-// Datos de la ficha que no están en la publicación del feed (quemados por mascota)
+// Datos de la ficha que se muestran en las tarjetas; se construyen con la publicación y su autor
 data class PetDetailInfo(
     val breed: String,
     val size: String,
@@ -42,6 +53,7 @@ data class PublicationDetailUiState(
     val comments: List<Comment> = emptyList(),
     val primaryActionText: String = "",     // Texto del botón principal según el tipo
     val statusText: String = "",
+    val canSendRequests: Boolean = false,   // El autor y el moderador no envían solicitudes
 
     // Solicitud de adopción / hogar de paso
     val pendingRequest: DetailRequest? = null,      // Diálogo de confirmación abierto
@@ -53,41 +65,18 @@ data class PublicationDetailUiState(
         get() = comments.size
 }
 
-// Información quemada de las mascotas del feed
-private val PET_DETAILS = mapOf(
-    "1" to PetDetailInfo(
-        breed = "Golden Mestizo",
-        size = "Tamaño Mediano",
-        healthTags = listOf("Vacunación al día", "Esterilizado", "Desparasitado", "Chip ID", "Apto para gatos"),
-        history = "Max fue rescatado de una quebrada cerca de La Calera. Es juguetón, se lleva bien con niños y otros perros y ya está listo para un hogar definitivo.",
-        publisherName = "Fundación Rescate",
-        publisherLevel = "Nivel 3 · Guardián",
-        publisherPhone = "573001234567"
-    ),
-    "2" to PetDetailInfo(
-        breed = "Siamesa mestiza",
-        size = "Tamaño Pequeño",
-        healthTags = listOf("Vacunada", "Esterilizada", "Collar rojo"),
-        history = "Luna salió de casa en Circasia y no ha regresado. Es tranquila y cariñosa; si la ves, no la persigas y avisa por la app.",
-        publisherName = "Camila Morales",
-        publisherLevel = "Nivel 2 · Protectora",
-        publisherPhone = "573101234567"
-    ),
-    "3" to PetDetailInfo(
-        breed = "Mestizo",
-        size = "Tamaño Grande",
-        healthTags = listOf("Desparasitado", "Valoración veterinaria pendiente"),
-        history = "Rocky fue encontrado en Armenia cerca del parque principal. Está a salvo en un hogar de paso mientras aparece su familia.",
-        publisherName = "Refugio Colitas Felices",
-        publisherLevel = "Nivel 3 · Guardián",
-        publisherPhone = "573209876543"
-    )
-)
-
 @HiltViewModel
 class PublicationDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val getReportByIdUseCase: GetReportByIdUseCase,
+    observePublicationUseCase: ObservePublicationUseCase,
+    observeCommentsUseCase: ObserveCommentsUseCase,
+    observeCurrentUserUseCase: ObserveCurrentUserUseCase,
+    observeMyRequestsUseCase: ObserveMyRequestsUseCase,
+    private val getUserByIdUseCase: GetUserByIdUseCase,
+    private val toggleThanksUseCase: ToggleThanksUseCase,
+    private val sendAdoptionRequestUseCase: SendAdoptionRequestUseCase,
+    observeFavoriteIdsUseCase: ObserveFavoriteIdsUseCase,
+    private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
     private val resources: ResourceProvider
 ) : ViewModel() {
 
@@ -98,31 +87,67 @@ class PublicationDetailViewModel @Inject constructor(
     val uiState: StateFlow<PublicationDetailUiState> = _uiState.asStateFlow()
 
     init {
-        loadPublication()
+        // La publicación, el usuario actual y su autor vienen de Room
+        viewModelScope.launch {
+            combine(observePublicationUseCase(publicationId), observeCurrentUserUseCase()) { publication, user ->
+                publication to user
+            }.collect { (publication, user) ->
+                val owner = publication?.let { getUserByIdUseCase(it.ownerId) }
+                _uiState.update {
+                    it.copy(
+                        publication = publication,
+                        info = publication?.let { p -> buildInfo(p, owner) },
+                        likes = publication?.likes ?: 0,
+                        primaryActionText = primaryActionFor(publication),
+                        statusText = statusFor(publication),
+                        canSendRequests = publication != null && user != null &&
+                                user.role == UserRole.USER && user.id != publication.ownerId
+                    )
+                }
+            }
+        }
+
+        // "Me encanta" del usuario guardado en Room
+        viewModelScope.launch {
+            observeFavoriteIdsUseCase().collect { ids ->
+                _uiState.update { it.copy(isLiked = publicationId in ids) }
+            }
+        }
 
         // Al publicar un comentario nuevo, el detalle se actualiza solo
         viewModelScope.launch {
-            CommentStore.comments.collect { all ->
-                _uiState.update { state ->
-                    state.copy(comments = all.filter { it.publicationId == publicationId })
-                }
+            observeCommentsUseCase(publicationId).collect { comments ->
+                _uiState.update { it.copy(comments = comments) }
+            }
+        }
+
+        // Las solicitudes ya enviadas siguen marcadas aunque se cierre la app
+        viewModelScope.launch {
+            observeMyRequestsUseCase(publicationId).collect { requests ->
+                val sent = requests.filter { it.status == AdoptionRequestStatus.PENDING }.map {
+                    if (it.type == AdoptionRequestType.ADOPTION) DetailRequest.ADOPTION else DetailRequest.TEMPORARY_HOME
+                }.toSet()
+                _uiState.update { it.copy(sentRequests = sent) }
             }
         }
     }
 
-    private fun loadPublication() {
-        viewModelScope.launch {
-            val publication = getReportByIdUseCase(publicationId)
-            _uiState.update {
-                it.copy(
-                    publication = publication,
-                    primaryActionText = primaryActionFor(publication),
-                    statusText = statusFor(publication),
-                    info = PET_DETAILS[publicationId],
-                    likes = publication?.likes?.toIntOrNull() ?: 0
-                )
-            }
+    private fun buildInfo(publication: Publication, owner: User?): PetDetailInfo {
+        val tags = buildList {
+            if (publication.isVaccinated) add(resources.getString(R.string.vaccinated))
+            if (publication.isSterilized) add(resources.getString(R.string.sterilized))
+            if (publication.isDewormed) add(resources.getString(R.string.dewormed))
+            if (publication.hasMicrochip) add(resources.getString(R.string.microchip))
         }
+        return PetDetailInfo(
+            breed = publication.breed.ifBlank { publication.species },
+            size = publication.size,
+            healthTags = tags,
+            history = publication.description,
+            publisherName = owner?.name.orEmpty(),
+            publisherLevel = owner?.let { resources.getString(R.string.level_tag, it.level.number) + " · " + it.level.displayName }.orEmpty(),
+            publisherPhone = owner?.phoneNumber?.filter { it.isDigit() }.orEmpty()
+        )
     }
 
     private fun primaryActionFor(publication: Publication?): String {
@@ -130,6 +155,7 @@ class PublicationDetailViewModel @Inject constructor(
         return when (publication?.type) {
             PetType.PERDIDO -> resources.getString(R.string.detail_action_seen)
             PetType.ENCONTRADO -> resources.getString(R.string.detail_action_mine)
+            PetType.VETERINARIA -> resources.getString(R.string.detail_action_vet)
             else -> resources.getString(R.string.detail_action_adopt, name)
         }
     }
@@ -137,20 +163,17 @@ class PublicationDetailViewModel @Inject constructor(
     private fun statusFor(publication: Publication?): String = when (publication?.type) {
         PetType.PERDIDO -> resources.getString(R.string.detail_status_wanted)
         PetType.ENCONTRADO -> resources.getString(R.string.detail_status_family)
+        PetType.VETERINARIA -> resources.getString(R.string.detail_status_vet)
         else -> resources.getString(R.string.detail_status_home)
     }
 
     fun onThanksClick(commentId: String) {
-        CommentStore.toggleThanks(commentId)
+        viewModelScope.launch { toggleThanksUseCase(commentId) }
     }
 
+    // El contador y el corazón se actualizan solos desde Room
     fun onLikeClick() {
-        _uiState.update {
-            it.copy(
-                isLiked = !it.isLiked,
-                likes = it.likes + if (it.isLiked) -1 else 1
-            )
-        }
+        viewModelScope.launch { toggleFavoriteUseCase(publicationId) }
     }
 
     // ---------- Solicitudes ----------
@@ -167,27 +190,28 @@ class PublicationDetailViewModel @Inject constructor(
         _uiState.update { it.copy(pendingRequest = null) }
     }
 
+    // La solicitud se guarda en Room y el autor recibe una notificación
     fun onConfirmRequest() {
         val request = _uiState.value.pendingRequest ?: return
         _uiState.update { it.copy(pendingRequest = null) }
 
         viewModelScope.launch {
             _uiState.update { it.copy(requestResult = RequestResult.Loading) }
-            delay(1200) // Simula el envío al publicador
-            val name = _uiState.value.publication?.name.orEmpty()
-            val message = when (request) {
-                DetailRequest.ADOPTION -> when (_uiState.value.publication?.type) {
-                    PetType.PERDIDO -> resources.getString(R.string.request_lost_sent, name)
-                    PetType.ENCONTRADO -> resources.getString(R.string.request_found_sent, name)
-                    else -> resources.getString(R.string.request_adopt_sent, name)
+            try {
+                val type = if (request == DetailRequest.ADOPTION) AdoptionRequestType.ADOPTION else AdoptionRequestType.TEMPORARY_HOME
+                sendAdoptionRequestUseCase(publicationId, type)
+                val name = _uiState.value.publication?.name.orEmpty()
+                val message = when (request) {
+                    DetailRequest.ADOPTION -> when (_uiState.value.publication?.type) {
+                        PetType.PERDIDO -> resources.getString(R.string.request_lost_sent, name)
+                        PetType.ENCONTRADO -> resources.getString(R.string.request_found_sent, name)
+                        else -> resources.getString(R.string.request_adopt_sent, name)
+                    }
+                    DetailRequest.TEMPORARY_HOME -> resources.getString(R.string.request_foster_sent, name)
                 }
-                DetailRequest.TEMPORARY_HOME -> resources.getString(R.string.request_foster_sent, name)
-            }
-            _uiState.update {
-                it.copy(
-                    sentRequests = it.sentRequests + request,
-                    requestResult = RequestResult.Success(message)
-                )
+                _uiState.update { it.copy(requestResult = RequestResult.Success(message)) }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(requestResult = RequestResult.Failure(e.message.orEmpty())) }
             }
         }
     }

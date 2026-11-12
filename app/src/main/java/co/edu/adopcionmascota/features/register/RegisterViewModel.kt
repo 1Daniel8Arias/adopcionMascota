@@ -228,12 +228,15 @@ class RegisterViewModel @Inject constructor(
                 profilePictureUrl = state.photoUri
             )
             try {
-                registerUserUseCase(user)
+                val userId = registerUserUseCase(user)
                 _uiState.update {
-                    it.copy(registeredUserId = user.id, registerResult = RequestResult.Success(resources.getString(R.string.register_success)))
+                    it.copy(registeredUserId = userId, registerResult = RequestResult.Success(resources.getString(R.string.register_success)))
                 }
             } catch (e: IllegalArgumentException) {
                 _uiState.update { it.copy(registerResult = RequestResult.Failure(resources.getString(R.string.register_duplicate))) }
+            } catch (e: Exception) {
+                // Errores de red o de Firebase: la app no se cierra, se muestra el mensaje
+                _uiState.update { it.copy(registerResult = RequestResult.Failure(resources.getString(R.string.network_error))) }
             }
         }
     }

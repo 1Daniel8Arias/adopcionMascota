@@ -27,6 +27,13 @@ hiltNavigationCompose = "1.4.0"
 ksp = "2.3.6" # Desde KSP 2.3.0 la versión ya no va atada a la versión de Kotlin
 dataStore = "1.2.1"
 mapbox = "11.22.0"
+room = "2.8.4"
+coroutinesTest = "1.10.2"
+googleGmsGoogleServices = "4.6.0"
+firebaseBom = "35.2.0"
+coroutinesPlayServices = "1.10.2"
+retrofit = "3.0.0"
+okhttpLogging = "5.5.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -64,7 +71,19 @@ hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hil
 data-store = { module = "androidx.datastore:datastore-preferences", version.ref="dataStore" }
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycleRuntimeKtx" }
 mapbox-android = { module = "com.mapbox.maps:android-ndk27", version.ref = "mapbox" }
+androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
+androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
+androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutinesTest" }
 mapbox-compose = { module = "com.mapbox.extension:maps-compose-ndk27", version.ref = "mapbox" }
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
+firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore" }
+firebase-auth = { group = "com.google.firebase", name = "firebase-auth" }
+firebase-storage = { group = "com.google.firebase", name = "firebase-storage" }
+kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "coroutinesPlayServices" }
+retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
+okhttp-logging = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "okhttpLogging" }
 
 
 
@@ -74,3 +93,4 @@ kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "ko
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 hilt-android = { id="com.google.dagger.hilt.android", version.ref="hiltAndroid"}
 devtools-ksp = { id="com.google.devtools.ksp", version.ref="ksp" }
+google-gms-google-services = { id = "com.google.gms.google-services", version.ref = "googleGmsGoogleServices" }

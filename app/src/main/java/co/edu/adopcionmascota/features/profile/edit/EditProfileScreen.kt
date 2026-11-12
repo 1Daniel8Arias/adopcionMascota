@@ -88,7 +88,7 @@ import coil3.compose.AsyncImage
 @Composable
 fun EditProfileScreen(
     onNavigateBack: () -> Unit,           // Volver al perfil
-    onProfileSaved: () -> Unit,           // Ir a "Perfil editado" después de guardar
+    onProfileSaved: (List<String>) -> Unit,   // Ir a "Perfil editado" con la lista de cambios
     onNavigateToPassword: () -> Unit,     // Ir a stringResource(R.string.change_password_security)
     onAccountDeactivated: () -> Unit,     // Salir de la sesión después de desactivar la cuenta
     viewModel: EditProfileViewModel = hiltViewModel()
@@ -108,7 +108,7 @@ fun EditProfileScreen(
         when (val result = state.saveResult) {
             is RequestResult.Success -> {
                 viewModel.resetSaveResult()
-                onProfileSaved()
+                onProfileSaved(state.changes)
             }
 
             is RequestResult.Failure -> {

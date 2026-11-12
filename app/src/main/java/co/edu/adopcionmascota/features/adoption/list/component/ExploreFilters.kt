@@ -19,6 +19,7 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.AddLocationAlt
 import androidx.compose.material.icons.filled.Details
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.MedicalServices
 import androidx.compose.material.icons.filled.VolunteerActivism
 import androidx.compose.material3.Icon
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -28,7 +29,8 @@ enum class ExploreFilter {
     TODAS,
     ADOPCION,
     PERDIDO,
-    ENCONTRADO
+    ENCONTRADO,
+    VETERINARIA
 }
 @Composable
 fun ExploreFilters(
@@ -110,6 +112,22 @@ fun ExploreFilters(
                 Icon(
                     imageVector = Icons.Default.Home,
                     contentDescription =stringResource(R.string.found)
+                )
+            }
+        )
+
+        FilterChip(
+            selected = selectedFilter == ExploreFilter.VETERINARIA,
+            onClick = {
+                onFilterSelected(ExploreFilter.VETERINARIA)
+            },
+            label = {
+                Text(stringResource(R.string.option_vet))
+            },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.MedicalServices,
+                    contentDescription = stringResource(R.string.option_vet)
                 )
             }
         )

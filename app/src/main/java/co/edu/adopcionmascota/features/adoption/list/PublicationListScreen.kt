@@ -178,6 +178,10 @@ fun PublicationListScreen(
 
                         publication = publication,
 
+                        isLiked = publication.id in state.favoriteIds,
+
+                        onLikeClick = { viewModel.onLikeClick(publication.id) },
+
                         onActionClick = {
                             onPublicationClick(publication)
                         },

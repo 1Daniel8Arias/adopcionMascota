@@ -33,8 +33,9 @@ data object PasswordScreen: MainRoutes()
     @Serializable
     data object EditProfile: MainRoutes()
 
+    // Lleva la lista de cambios que se hicieron en "Editar Perfil"
     @Serializable
-    data object ProfileUpdated: MainRoutes()
+    data class ProfileUpdated(val changes: List<String> = emptyList()): MainRoutes()
 
     @Serializable
     data object DeleteAccount: MainRoutes()
@@ -74,6 +75,19 @@ data object PasswordScreen: MainRoutes()
 
     @Serializable
     data object Reputation: MainRoutes()
+
+    @Serializable
+    data object Statistics: MainRoutes()
+
+    @Serializable
+    data object AdoptionRequests: MainRoutes()
+
+    @Serializable
+    data object Favorites: MainRoutes()
+
+    // Solicitud formal de adopción con carta redactada por IA
+    @Serializable
+    data class AdoptionApplication(val publicationId: String): MainRoutes()
 
 }
 

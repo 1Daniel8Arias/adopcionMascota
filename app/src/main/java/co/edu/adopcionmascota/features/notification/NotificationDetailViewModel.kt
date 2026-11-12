@@ -1,32 +1,39 @@
 package co.edu.adopcionmascota.features.notification
 
-import co.edu.adopcionmascota.R
 import androidx.lifecycle.SavedStateHandle
-import javax.inject.Inject
-import dagger.hilt.android.lifecycle.HiltViewModel
-import co.edu.adopcionmascota.core.util.ResourceProvider
-import co.edu.adopcionmascota.domain.model.Notification
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import co.edu.adopcionmascota.R
 import co.edu.adopcionmascota.core.util.RequestResult
-import kotlinx.coroutines.delay
+import co.edu.adopcionmascota.core.util.ResourceProvider
+import co.edu.adopcionmascota.domain.model.Comment
+import co.edu.adopcionmascota.domain.model.ContributionType
+import co.edu.adopcionmascota.domain.model.Notification
+import co.edu.adopcionmascota.domain.model.Publication
+import co.edu.adopcionmascota.domain.usecase.comment.AddCommentUseCase
+import co.edu.adopcionmascota.domain.usecase.comment.ObserveCommentsUseCase
+import co.edu.adopcionmascota.domain.usecase.notification.GetNotificationByIdUseCase
+import co.edu.adopcionmascota.domain.usecase.notification.MarkNotificationAsReadUseCase
+import co.edu.adopcionmascota.domain.usecase.notification.UpdateNotificationUseCase
+import co.edu.adopcionmascota.domain.usecase.publication.GetReportByIdUseCase
+import co.edu.adopcionmascota.domain.usecase.publication.UpdatePublicationUseCase
+import co.edu.adopcionmascota.domain.usecase.user.GetCurrentUserUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-
-data class ReplyUi(
-    val author: String,
-    val time: String,
-    val text: String
-)
+import javax.inject.Inject
 
 data class NotificationDetailUiState(
     val notification: Notification? = null,
+    val publication: Publication? = null,       // Publicación relacionada (Room)
+    val comments: List<Comment> = emptyList(),  // Aportes del caso (nuevo comentario)
+    val userName: String = "",
     val infoMessage: String? = null,
 
-    // ---------- Publicación pausada: formulario de corrección ----------
+    // ---------- Publicación rechazada: formulario de corrección ----------
     val lotNumber: String = "",
     val applicationDay: String = "",
     val applicationMonth: String = "",
@@ -40,19 +47,8 @@ data class NotificationDetailUiState(
     val resubmitResult: RequestResult? = null,
     val isResubmitted: Boolean = false,
 
-    // ---------- Nuevo comentario: respuesta del gestor ----------
-    val replyText: String = "",
-    val replies: List<ReplyUi> = listOf(
-        ReplyUi(
-            author = "Camila (Hogar de Paso)",
-            time = "Hace 12 min",
-            text = "¡Doc, qué bendición! Max terminó ayer sus antibióticos y este alimento le caerá de maravilla."
-        )
-    ),
-    val showAllReplies: Boolean = false,
-    val isDonationAccepted: Boolean = false,
-    val commentLikes: Int = 14,
-    val isCommentLiked: Boolean = false
+    // ---------- Nuevo comentario: respuesta del autor ----------
+    val replyText: String = ""
 ) {
     val isCorrectionFormValid: Boolean
         get() = lotNumber.isNotBlank() && applicationDay.isNotBlank() &&
@@ -62,33 +58,45 @@ data class NotificationDetailUiState(
 
     val isResubmitting: Boolean
         get() = resubmitResult is RequestResult.Loading
-
-    val visibleReplies: List<ReplyUi>
-        get() = if (showAllReplies) replies else replies.takeLast(1)
 }
-
-// Sugerencias rápidas para responder al veterinario
-val REPLY_SUGGESTIONS = listOf(
-    "¡Muchísimas gracias Dr. Vega! ¿A qué hora podemos pasar por la clínica en Usaquén?",
-    "Mañana en la tarde nos queda perfecto.",
-    "¿Llevamos a Max para la valoración?"
-)
 
 @HiltViewModel
 class NotificationDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
+    private val getNotificationByIdUseCase: GetNotificationByIdUseCase,
+    private val markNotificationAsReadUseCase: MarkNotificationAsReadUseCase,
+    private val updateNotificationUseCase: UpdateNotificationUseCase,
+    private val getReportByIdUseCase: GetReportByIdUseCase,
+    private val updatePublicationUseCase: UpdatePublicationUseCase,
+    private val observeCommentsUseCase: ObserveCommentsUseCase,
+    private val addCommentUseCase: AddCommentUseCase,
+    private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val resources: ResourceProvider
 ) : ViewModel() {
 
     private val notificationId: String = checkNotNull(savedStateHandle["notificationId"])
 
-
     private val _uiState = MutableStateFlow(NotificationDetailUiState())
     val uiState: StateFlow<NotificationDetailUiState> = _uiState.asStateFlow()
 
     init {
-        NotificationStore.markAsRead(notificationId)
-        _uiState.update { it.copy(notification = NotificationStore.findById(notificationId)) }
+        viewModelScope.launch {
+            markNotificationAsReadUseCase(notificationId)
+            val notification = getNotificationByIdUseCase(notificationId)
+            val publication = notification?.publicationId?.let { getReportByIdUseCase(it) }
+            _uiState.update {
+                it.copy(
+                    notification = notification,
+                    publication = publication,
+                    userName = getCurrentUserUseCase()?.name.orEmpty()
+                )
+            }
+            publication?.let { p ->
+                observeCommentsUseCase(p.id).collect { comments ->
+                    _uiState.update { it.copy(comments = comments) }
+                }
+            }
+        }
     }
 
     fun showInfo(message: String) {
@@ -99,7 +107,7 @@ class NotificationDetailViewModel @Inject constructor(
         _uiState.update { it.copy(infoMessage = null) }
     }
 
-    // ---------- Publicación pausada ----------
+    // ---------- Publicación rechazada ----------
 
     fun onLotNumberChange(value: String) {
         _uiState.update {
@@ -149,23 +157,25 @@ class NotificationDetailViewModel @Inject constructor(
         _uiState.update { it.copy(showGuidelinesDialog = false) }
     }
 
+    // Reenviar a revisión: la publicación vuelve a la cola del moderador (PENDING)
     fun resubmitForReview() {
         if (!_uiState.value.isCorrectionFormValid || _uiState.value.isResubmitting) return
 
         viewModelScope.launch {
             _uiState.update { it.copy(resubmitResult = RequestResult.Loading) }
-            delay(1500) // Simula el envío al comité ético
 
-            // La notificación queda marcada como "en revisión" también en la lista
+            _uiState.value.publication?.let { publication ->
+                updatePublicationUseCase(publication)
+                _uiState.update { it.copy(publication = getReportByIdUseCase(publication.id)) }
+            }
+
             _uiState.value.notification?.let { notification ->
                 val updated = notification.copy(
-                    category = "REVISIÓN ÉTICA",
-                    title = "Publicación en revisión prioritaria",
-                    message = "Enviaste los datos corregidos del carnet. El comité ético responderá en unos 45 minutos.",
-                    time = resources.getString(R.string.now),
-                    actionLabel = "Ver estado"
+                    title = resources.getString(R.string.correction_sent),
+                    message = resources.getString(R.string.committee_review),
+                    actionLabel = resources.getString(R.string.in_review)
                 )
-                NotificationStore.update(updated)
+                updateNotificationUseCase(updated)
                 _uiState.update { it.copy(notification = updated) }
             }
 
@@ -188,46 +198,21 @@ class NotificationDetailViewModel @Inject constructor(
         if (value.length <= 300) _uiState.update { it.copy(replyText = value) }
     }
 
-    fun onSuggestionClick(suggestion: String) {
-        _uiState.update { it.copy(replyText = suggestion) }
-    }
-
+    // La respuesta se publica como un aporte más del caso
     fun sendReply() {
         val text = _uiState.value.replyText.trim()
-        if (text.isEmpty()) {
+        val publicationId = _uiState.value.publication?.id
+        if (text.isEmpty() || publicationId == null) {
             showInfo(resources.getString(R.string.write_reply_first))
             return
         }
-        _uiState.update {
-            it.copy(
-                replies = it.replies + ReplyUi(author = "Tú (Gestora de Max)", time = resources.getString(R.string.now), text = text),
-                replyText = "",
-                showAllReplies = true,
-                infoMessage = resources.getString(R.string.reply_published)
-            )
-        }
-    }
-
-    fun onToggleAllReplies() {
-        _uiState.update { it.copy(showAllReplies = !it.showAllReplies) }
-    }
-
-    fun onAcceptDonation() {
-        if (_uiState.value.isDonationAccepted) return
-        _uiState.update {
-            it.copy(
-                isDonationAccepted = true,
-                infoMessage = resources.getString(R.string.donation_accepted_message)
-            )
-        }
-    }
-
-    fun onToggleLike() {
-        _uiState.update {
-            it.copy(
-                isCommentLiked = !it.isCommentLiked,
-                commentLikes = it.commentLikes + if (it.isCommentLiked) -1 else 1
-            )
+        viewModelScope.launch {
+            try {
+                addCommentUseCase(publicationId, text, ContributionType.SUPPORT)
+                _uiState.update { it.copy(replyText = "", infoMessage = resources.getString(R.string.reply_published)) }
+            } catch (e: Exception) {
+                showInfo(e.message.orEmpty())
+            }
         }
     }
 

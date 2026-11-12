@@ -6,16 +6,13 @@ import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import co.edu.adopcionmascota.core.util.RequestResult
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import androidx.lifecycle.viewModelScope
 import co.edu.adopcionmascota.domain.usecase.auth.LoginUserUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
@@ -98,19 +95,17 @@ class LoginViewModel @Inject constructor(
             // La solicitud pasa al estado de carga
             _uiState.update { it.copy(loginResult = RequestResult.Loading) }
 
-            delay(1500) // Simula el tiempo que tardaría una consulta real
-
-            val user = loginUserUseCase(currentState.email,currentState.password)
-
+            // Ahora el login va contra Firebase: un error de red no debe cerrar la app (guía 19)
+            val result = runCatching { loginUserUseCase(currentState.email.trim(), currentState.password) }
+            val user = result.getOrNull()
             // Se publica el resultado final de la solicitud
             _uiState.update { it.copy(
-                loginResult = if(user !=null){
-                RequestResult.Success(resources.getString(R.string.login_success))
-            }else {
-                    RequestResult.Failure(resources.getString(R.string.login_failure))
+                loginResult = when {
+                    user != null -> RequestResult.Success(resources.getString(R.string.login_success))
+                    result.isFailure -> RequestResult.Failure(resources.getString(R.string.network_error))
+                    else -> RequestResult.Failure(resources.getString(R.string.login_failure))
                 }
-            )
-            }
+            ) }
         }
     }
 

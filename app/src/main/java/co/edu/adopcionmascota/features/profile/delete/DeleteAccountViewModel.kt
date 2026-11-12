@@ -7,8 +7,7 @@ import co.edu.adopcionmascota.core.util.ResourceProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import co.edu.adopcionmascota.core.util.RequestResult
-import co.edu.adopcionmascota.features.profile.UserProfileStore
-import kotlinx.coroutines.delay
+import co.edu.adopcionmascota.domain.usecase.user.DeleteAccountUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -26,6 +25,7 @@ data class DeleteAccountUiState(
 
 @HiltViewModel
 class DeleteAccountViewModel @Inject constructor(
+    private val deleteAccountUseCase: DeleteAccountUseCase,
     private val resources: ResourceProvider
 ) : ViewModel() {
 
@@ -41,8 +41,8 @@ class DeleteAccountViewModel @Inject constructor(
 
         viewModelScope.launch {
             _uiState.update { it.copy(deleteResult = RequestResult.Loading) }
-            delay(1500) // Simula la petición al servidor
-            UserProfileStore.clear()
+            // El usuario se borra de Room; la sesión se cierra en la pantalla de despedida
+            deleteAccountUseCase()
             _uiState.update {
                 it.copy(deleteResult = RequestResult.Success(resources.getString(R.string.account_deleted_ok)))
             }

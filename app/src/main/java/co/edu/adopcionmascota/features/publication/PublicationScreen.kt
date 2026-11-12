@@ -3,6 +3,7 @@ package co.edu.adopcionmascota.features.publication
 import co.edu.adopcionmascota.core.component.rememberGalleryPicker
 import androidx.compose.ui.layout.ContentScale
 import coil3.compose.AsyncImage
+import co.edu.adopcionmascota.core.util.rememberImageModel
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.compose.ui.res.stringResource
 import co.edu.adopcionmascota.R
@@ -15,7 +16,6 @@ import co.edu.adopcionmascota.domain.model.Location
 import com.mapbox.geojson.Point
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -48,6 +48,7 @@ import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Pets
 import androidx.compose.material.icons.outlined.Place
+import androidx.compose.material.icons.outlined.MedicalServices
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.automirrored.outlined.Send
 import androidx.compose.material.icons.outlined.VerifiedUser
@@ -340,20 +341,24 @@ fun CategorySelectorSection(
             Text(stringResource(R.string.category_required), fontWeight = FontWeight.Bold, fontSize = 14.sp, color = DarkText)
             Text(stringResource(R.string.required), fontSize = 11.sp, color = SecondaryText)
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            val categories = listOf(
-                Triple("Adopción", Icons.Outlined.Favorite, Modifier.weight(1f)),
-                Triple("Perdido", Icons.Outlined.Search, Modifier.weight(1f)),
-                Triple("Encontrado", Icons.Outlined.Place, Modifier.weight(1f))
-            )
-            categories.forEach { (category, icon, modifier) ->
-                CategoryChip(
-                    text = publicationOptionLabel(category),
-                    icon = icon,
-                    isSelected = selectedCategory == category,
-                    onClick = { onCategorySelected(category) },
-                    modifier = modifier
-                )
+        // Cuatro categorías en dos filas; "Veterinaria" es la necesidad adicional del proyecto
+        val categories = listOf(
+            "Adopción" to Icons.Outlined.Favorite,
+            "Perdido" to Icons.Outlined.Search,
+            "Encontrado" to Icons.Outlined.Place,
+            "Veterinaria" to Icons.Outlined.MedicalServices
+        )
+        categories.chunked(2).forEach { row ->
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                row.forEach { (category, icon) ->
+                    CategoryChip(
+                        text = publicationOptionLabel(category),
+                        icon = icon,
+                        isSelected = selectedCategory == category,
+                        onClick = { onCategorySelected(category) },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
         }
     }
@@ -365,6 +370,7 @@ private fun publicationOptionLabel(value: String): String = when (value) {
     "Adopción" -> stringResource(R.string.adoption)
     "Perdido" -> stringResource(R.string.option_lost)
     "Encontrado" -> stringResource(R.string.type_found)
+    "Veterinaria" -> stringResource(R.string.option_vet)
     "Perro" -> stringResource(R.string.option_dog)
     "Gato" -> stringResource(R.string.option_cat)
     "Conejo" -> stringResource(R.string.option_rabbit)
@@ -882,10 +888,10 @@ private fun PhotoMockCard(
             .background(if (isPrincipal) Color(0xFFCBD5E1) else LightBlueBg)
             .border(1.dp, LightBlueBorder, RoundedCornerShape(16.dp))
     ) {
-        // Las publicaciones ya existentes no traen foto de la galería: se muestra el ícono
-        if (photo.startsWith("content:")) {
+        // Foto elegida en la galería (file:// copiado a la app) o recurso de los datos de ejemplo
+        if (photo.isNotBlank()) {
             AsyncImage(
-                model = photo,
+                model = rememberImageModel(photo),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()

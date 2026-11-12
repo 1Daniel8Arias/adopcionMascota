@@ -14,6 +14,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import co.edu.adopcionmascota.domain.usecase.notification.MarkAllNotificationsAsReadUseCase
+import co.edu.adopcionmascota.domain.usecase.notification.MarkNotificationAsReadUseCase
+import co.edu.adopcionmascota.domain.usecase.notification.ObserveMyNotificationsUseCase
+import co.edu.adopcionmascota.domain.usecase.user.ObserveCurrentUserUseCase
 
 // Filtros del Centro de Notificaciones
 enum class NotificationFilter(@StringRes val label: Int) {
@@ -24,8 +28,8 @@ enum class NotificationFilter(@StringRes val label: Int) {
 }
 
 data class NotificationsUiState(
-    val userName: String = "Camila Morales",
-    val userLocation: String = "Bogotá D.C.",
+    val userName: String = "",
+    val userLocation: String = "",
     val notifications: List<Notification> = emptyList(),
     val filter: NotificationFilter = NotificationFilter.ALL,
     val infoMessage: String? = null
@@ -55,6 +59,10 @@ data class NotificationsUiState(
 
 @HiltViewModel
 class NotificationsViewModel @Inject constructor(
+    observeMyNotificationsUseCase: ObserveMyNotificationsUseCase,
+    observeCurrentUserUseCase: ObserveCurrentUserUseCase,
+    private val markNotificationAsReadUseCase: MarkNotificationAsReadUseCase,
+    private val markAllNotificationsAsReadUseCase: MarkAllNotificationsAsReadUseCase,
     private val resources: ResourceProvider
 ) : ViewModel() {
 
@@ -62,10 +70,15 @@ class NotificationsViewModel @Inject constructor(
     val uiState: StateFlow<NotificationsUiState> = _uiState.asStateFlow()
 
     init {
-        // Al leer una notificación en el detalle, la lista se actualiza sola
+        // Notificaciones del usuario de la sesión guardadas en Room; se actualizan solas
         viewModelScope.launch {
-            NotificationStore.notifications.collect { list ->
+            observeMyNotificationsUseCase().collect { list ->
                 _uiState.update { it.copy(notifications = list) }
+            }
+        }
+        viewModelScope.launch {
+            observeCurrentUserUseCase().collect { user ->
+                _uiState.update { it.copy(userName = user?.name.orEmpty(), userLocation = user?.city.orEmpty()) }
             }
         }
     }
@@ -79,13 +92,13 @@ class NotificationsViewModel @Inject constructor(
             _uiState.update { it.copy(infoMessage = resources.getString(R.string.no_pending_notifications)) }
             return
         }
-        NotificationStore.markAllAsRead()
+        viewModelScope.launch { markAllNotificationsAsReadUseCase() }
         _uiState.update { it.copy(infoMessage = resources.getString(R.string.all_marked_read)) }
     }
 
     // Abrir una notificación la marca como leída
     fun onNotificationOpened(id: String) {
-        NotificationStore.markAsRead(id)
+        viewModelScope.launch { markNotificationAsReadUseCase(id) }
     }
 
     fun resetInfoMessage() {

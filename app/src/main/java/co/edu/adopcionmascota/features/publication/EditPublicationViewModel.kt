@@ -1,24 +1,24 @@
 package co.edu.adopcionmascota.features.publication
 
-import co.edu.adopcionmascota.R
 import androidx.lifecycle.SavedStateHandle
-import javax.inject.Inject
-import dagger.hilt.android.lifecycle.HiltViewModel
-import co.edu.adopcionmascota.core.util.ResourceProvider
-import co.edu.adopcionmascota.domain.model.MyPublication
-import co.edu.adopcionmascota.domain.model.MyPublicationStatus
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import co.edu.adopcionmascota.R
 import co.edu.adopcionmascota.core.util.RequestResult
-import kotlinx.coroutines.delay
+import co.edu.adopcionmascota.core.util.ResourceProvider
+import co.edu.adopcionmascota.domain.model.Publication
+import co.edu.adopcionmascota.domain.usecase.publication.GetReportByIdUseCase
+import co.edu.adopcionmascota.domain.usecase.publication.UpdatePublicationUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 data class EditPublicationUiState(
-    val original: MyPublication? = null,
+    val original: Publication? = null,
     val category: String = "Adopción",
     val title: String = "",
     val species: String = "Perro",
@@ -29,7 +29,7 @@ data class EditPublicationUiState(
     val isSterilized: Boolean = false,
     val hasMicrochip: Boolean = false,
     val history: String = "",
-    val photos: List<String> = listOf("principal_photo_mock"),
+    val photos: List<String> = emptyList(),
     val saveResult: RequestResult? = null,
     val infoMessage: String? = null
 ) {
@@ -43,30 +43,34 @@ data class EditPublicationUiState(
 @HiltViewModel
 class EditPublicationViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
+    private val getReportByIdUseCase: GetReportByIdUseCase,
+    private val updatePublicationUseCase: UpdatePublicationUseCase,
     private val resources: ResourceProvider
 ) : ViewModel() {
 
     private val publicationId: String = checkNotNull(savedStateHandle["publicationId"])
 
-
     private val _uiState = MutableStateFlow(EditPublicationUiState())
     val uiState: StateFlow<EditPublicationUiState> = _uiState.asStateFlow()
 
     init {
-        MyPublicationsStore.findById(publicationId)?.let { publication ->
-            _uiState.value = EditPublicationUiState(
-                original = publication,
-                category = publication.category,
-                title = publication.name,
-                species = publication.species,
-                breed = publication.breed,
-                size = publication.size,
-                isVaccinated = publication.isVaccinated,
-                isDewormed = publication.isDewormed,
-                isSterilized = publication.isSterilized,
-                hasMicrochip = publication.hasMicrochip,
-                history = publication.description
-            )
+        viewModelScope.launch {
+            getReportByIdUseCase(publicationId)?.let { publication ->
+                _uiState.value = EditPublicationUiState(
+                    original = publication,
+                    category = typeToCategory(publication.type),
+                    title = publication.name,
+                    species = publication.species,
+                    breed = publication.breed,
+                    size = publication.size,
+                    isVaccinated = publication.isVaccinated,
+                    isDewormed = publication.isDewormed,
+                    isSterilized = publication.isSterilized,
+                    hasMicrochip = publication.hasMicrochip,
+                    history = publication.description,
+                    photos = listOf(publication.image)
+                )
+            }
         }
     }
 
@@ -95,6 +99,7 @@ class EditPublicationViewModel @Inject constructor(
 
     fun resetInfoMessage() = _uiState.update { it.copy(infoMessage = null) }
 
+    // Si la publicación estaba rechazada, el caso de uso la devuelve a revisión
     fun saveChanges() {
         val state = _uiState.value
         val original = state.original ?: return
@@ -102,30 +107,26 @@ class EditPublicationViewModel @Inject constructor(
 
         viewModelScope.launch {
             _uiState.update { it.copy(saveResult = RequestResult.Loading) }
-            delay(1500) // Simula el envío a revalidación
-
-            // Una publicación con observaciones vuelve a revisión al corregirla
-            val newStatus = if (original.status == MyPublicationStatus.OBSERVATION) {
-                MyPublicationStatus.IN_REVIEW
-            } else original.status
-
-            MyPublicationsStore.update(
-                original.copy(
-                    name = state.title.trim(),
-                    category = state.category,
-                    species = state.species,
-                    breed = state.breed.trim(),
-                    size = state.size,
-                    isVaccinated = state.isVaccinated,
-                    isDewormed = state.isDewormed,
-                    isSterilized = state.isSterilized,
-                    hasMicrochip = state.hasMicrochip,
-                    description = state.history.trim(),
-                    status = newStatus,
-                    moderatorNote = if (newStatus == MyPublicationStatus.IN_REVIEW) null else original.moderatorNote
+            try {
+                updatePublicationUseCase(
+                    original.copy(
+                        name = state.title.trim(),
+                        type = categoryToType(state.category),
+                        species = state.species,
+                        breed = state.breed.trim(),
+                        size = state.size,
+                        isVaccinated = state.isVaccinated,
+                        isDewormed = state.isDewormed,
+                        isSterilized = state.isSterilized,
+                        hasMicrochip = state.hasMicrochip,
+                        description = state.history.trim(),
+                        image = state.photos.first()
+                    )
                 )
-            )
-            _uiState.update { it.copy(saveResult = RequestResult.Success(resources.getString(R.string.publication_edited_vm))) }
+                _uiState.update { it.copy(saveResult = RequestResult.Success(resources.getString(R.string.publication_edited_vm))) }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(saveResult = RequestResult.Failure(e.message.orEmpty())) }
+            }
         }
     }
 }

@@ -2,66 +2,45 @@ package co.edu.adopcionmascota.features.moderator
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import co.edu.adopcionmascota.domain.model.Publication
-import co.edu.adopcionmascota.domain.model.PublicationStatus
+import co.edu.adopcionmascota.domain.model.Statistics
 import co.edu.adopcionmascota.domain.model.User
 import co.edu.adopcionmascota.domain.usecase.auth.LogoutUseCase
-import co.edu.adopcionmascota.domain.usecase.publication.ObserveReportsUseCase
-import co.edu.adopcionmascota.domain.usecase.user.GetCurrentUserUseCase
+import co.edu.adopcionmascota.domain.usecase.statistics.ObserveStatisticsUseCase
+import co.edu.adopcionmascota.domain.usecase.user.ObserveCurrentUserUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import jakarta.inject.Inject
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-
+import javax.inject.Inject
 
 data class ProfileUiState(
-    val user: User?=null,
-    val myPublications: List<Publication> = emptyList(),
-    val allPublications: List<Publication> = emptyList(),
+    val user: User? = null,
+    val statistics: Statistics = Statistics(),
     val poinst: Int = 0
-
 )
 
 @HiltViewModel
 class ModeratorProfileViewModel @Inject constructor(
-    private val getCurrentUserUseCase: GetCurrentUserUseCase,
-    observerReportUseCase: ObserveReportsUseCase,
+    observeCurrentUserUseCase: ObserveCurrentUserUseCase,
+    observeStatisticsUseCase: ObserveStatisticsUseCase,
     private val logotUseCase: LogoutUseCase,
-    ) : ViewModel(){
+) : ViewModel() {
 
-    private val user = MutableStateFlow<User?>(null)
-
-    // El estado se recalcula cada vez que cambia el usuario o la lista de reportes
-    val uiState: StateFlow<ProfileUiState> = combine(user, observerReportUseCase()) { user, publications ->
-       val myPublications = publications.filter { it.status != PublicationStatus.DELETED }
-
-        ProfileUiState(
-            user = user,
-            myPublications = myPublications,
-            allPublications = publications ,
-
+    // El estado se recalcula cada vez que cambia el usuario o cualquier dato de Room
+    val uiState: StateFlow<ProfileUiState> =
+        combine(observeCurrentUserUseCase(), observeStatisticsUseCase()) { user, statistics ->
+            ProfileUiState(user = user, statistics = statistics, poinst = user?.points ?: 0)
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = ProfileUiState()
         )
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = ProfileUiState()
-    )
 
-    init {
-        viewModelScope.launch {
-            user.value = getCurrentUserUseCase()
-        }
-    }
-
-    fun logout(){
+    fun logout() {
         viewModelScope.launch {
             logotUseCase()
         }
     }
-
-    }
-
+}

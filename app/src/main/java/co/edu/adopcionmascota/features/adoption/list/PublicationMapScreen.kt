@@ -62,6 +62,10 @@ import co.edu.adopcionmascota.core.theme.DarkText
 import co.edu.adopcionmascota.core.theme.SecondaryText
 import co.edu.adopcionmascota.domain.model.PetType
 import coil3.compose.AsyncImage
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import co.edu.adopcionmascota.core.util.rememberImageModel
+import co.edu.adopcionmascota.core.util.relativeTime
 
 // Pantalla "Feed Principal - Vista Mapa": mapa de Mapbox con un marcador por cada mascota
 @Composable
@@ -138,6 +142,7 @@ fun PublicationMapScreen(
                     MapChip(stringResource(R.string.map_adoption, state.countFor(PetType.ADOPCION)), state.typeFilter == PetType.ADOPCION) { viewModel.onTypeFilterChange(PetType.ADOPCION) }
                     MapChip(stringResource(R.string.map_lost, state.countFor(PetType.PERDIDO)), state.typeFilter == PetType.PERDIDO) { viewModel.onTypeFilterChange(PetType.PERDIDO) }
                     MapChip(stringResource(R.string.map_found, state.countFor(PetType.ENCONTRADO)), state.typeFilter == PetType.ENCONTRADO) { viewModel.onTypeFilterChange(PetType.ENCONTRADO) }
+                    MapChip(stringResource(R.string.map_vet, state.countFor(PetType.VETERINARIA)), state.typeFilter == PetType.VETERINARIA) { viewModel.onTypeFilterChange(PetType.VETERINARIA) }
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     MapActionButton(text = stringResource(R.string.list), icon = Icons.AutoMirrored.Outlined.ViewList, onClick = onNavigateBack)
@@ -156,9 +161,11 @@ fun PublicationMapScreen(
                     type = selected.type,
                     subtitle = stringResource(R.string.pet_subtitle, selected.gender, selected.age),
                     description = selected.description,
-                    meta = stringResource(R.string.map_meta, selected.time, selected.distancia, selected.location),
+                    meta = stringResource(R.string.map_meta, relativeTime(selected.createdAt), selected.distancia, selected.location),
                     sightings = state.sightings[selected.id] ?: 0,
                     image = selected.image,
+                    isLiked = selected.id in state.favoriteIds,
+                    onLike = { viewModel.onLikeClick(selected.id) },
                     onClose = viewModel::onCloseCard,
                     onShare = {
                         val intent = Intent(Intent.ACTION_SEND).apply {
@@ -193,6 +200,7 @@ private fun PetType.markerColor(): Color = when (this) {
     PetType.ADOPCION -> AppPrimary
     PetType.PERDIDO -> AppRed
     PetType.ENCONTRADO -> Color(0xFF067647)
+    PetType.VETERINARIA -> Color(0xFF7A5AF8)
 }
 
 @Composable
@@ -200,6 +208,7 @@ private fun PetType.label(): String = when (this) {
     PetType.ADOPCION -> stringResource(R.string.type_adoption)
     PetType.PERDIDO -> stringResource(R.string.type_lost)
     PetType.ENCONTRADO -> stringResource(R.string.type_found)
+    PetType.VETERINARIA -> stringResource(R.string.type_vet)
 }
 
 @Composable
@@ -246,7 +255,9 @@ private fun SelectedPetCard(
     description: String,
     meta: String,
     sightings: Int,
-    image: Int,
+    image: String,
+    isLiked: Boolean,
+    onLike: () -> Unit,
     onClose: () -> Unit,
     onShare: () -> Unit,
     onSeen: () -> Unit,
@@ -265,13 +276,21 @@ private fun SelectedPetCard(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 AppTag(text = type.label(), backgroundColor = type.markerColor().copy(alpha = 0.12f), textColor = type.markerColor())
                 Spacer(modifier = Modifier.weight(1f))
+                IconButton(onClick = onLike, modifier = Modifier.size(28.dp)) {
+                    Icon(
+                        imageVector = if (isLiked) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                        contentDescription = stringResource(R.string.like),
+                        tint = if (isLiked) Color.Red else SecondaryText
+                    )
+                }
+                Spacer(modifier = Modifier.width(8.dp))
                 IconButton(onClick = onClose, modifier = Modifier.size(28.dp)) {
                     Icon(Icons.Outlined.Close, contentDescription = stringResource(R.string.close), tint = SecondaryText)
                 }
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 AsyncImage(
-                    model = image,
+                    model = rememberImageModel(image),
                     contentDescription = name,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier

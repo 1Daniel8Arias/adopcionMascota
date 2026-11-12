@@ -3,7 +3,8 @@ package co.edu.adopcionmascota.features.publication
 import androidx.compose.ui.res.stringResource
 import co.edu.adopcionmascota.R
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import co.edu.adopcionmascota.domain.model.MyPublicationStatus
+import co.edu.adopcionmascota.domain.model.PublicationStatus
+import co.edu.adopcionmascota.core.util.rememberImageModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -127,7 +128,7 @@ fun DeletePublicationScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         AsyncImage(
-                            model = publication.imageUri ?: publication.image,
+                            model = rememberImageModel(publication.image),
                             contentDescription = publication.name,
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
@@ -141,7 +142,7 @@ fun DeletePublicationScreen(
                             Text(text = publication.location, fontSize = 12.sp, color = SecondaryText)
                             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                 AppTag(text = stringResource(publication.status.label))
-                                AppTag(text = stringResource(R.string.followers_count, publication.followers))
+                                AppTag(text = stringResource(R.string.followers_count, publication.likes))
                             }
                         }
                     }
@@ -155,7 +156,7 @@ fun DeletePublicationScreen(
                         Column {
                             Text(text = stringResource(R.string.permanent_action), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Danger)
                             Text(
-                                text = stringResource(R.string.delete_pub_detail, publication.name, publication.followers),
+                                text = stringResource(R.string.delete_pub_detail, publication.name, publication.likes),
                                 fontSize = 12.sp,
                                 color = DarkText
                             )
@@ -200,10 +201,10 @@ fun DeletePublicationScreen(
                         }
                         OutlinedButton(
                             onClick = viewModel::onPause,
-                            enabled = publication.status != MyPublicationStatus.PAUSED,
+                            enabled = publication.status != PublicationStatus.PAUSED,
                             shape = CircleShape
                         ) {
-                            Text(text = if (publication.status == MyPublicationStatus.PAUSED) stringResource(R.string.paused) else stringResource(R.string.pause))
+                            Text(text = if (publication.status == PublicationStatus.PAUSED) stringResource(R.string.paused) else stringResource(R.string.pause))
                         }
                     }
                 }
@@ -249,7 +250,7 @@ fun DeletePublicationScreen(
                         colors = CheckboxDefaults.colors(checkedColor = Danger)
                     )
                     Text(
-                        text = stringResource(R.string.delete_understand, publication.followers, publication.name),
+                        text = stringResource(R.string.delete_understand, publication.likes, publication.name),
                         fontSize = 12.sp,
                         color = DarkText
                     )
@@ -296,11 +297,10 @@ fun DeletePublicationScreen(
         }
 
         if (state.deleteResult is RequestResult.Success) {
-            val deleted = MyPublicationsStore.lastDeleted
             PublicationSuccessSheet(
                 title = stringResource(R.string.publication_deleted),
-                message = stringResource(R.string.publication_deleted_detail, deleted?.first?.name.orEmpty()),
-                detail = stringResource(R.string.deletion_reason_detail, deleted?.second.orEmpty()),
+                message = stringResource(R.string.publication_deleted_detail, state.publication?.name.orEmpty()),
+                detail = stringResource(R.string.deletion_reason_detail, state.reason?.let { stringResource(it.title) }.orEmpty()),
                 primaryText = stringResource(R.string.back_to_my_publications),
                 onPrimaryClick = onNavigateToMyPublications
             )

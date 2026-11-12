@@ -4,14 +4,15 @@ import javax.inject.Inject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import co.edu.adopcionmascota.core.util.ResourceProvider
 import co.edu.adopcionmascota.domain.model.Location
-import co.edu.adopcionmascota.domain.model.MyPublication
-import co.edu.adopcionmascota.domain.model.MyPublicationStatus
+import co.edu.adopcionmascota.domain.model.Publication
+import co.edu.adopcionmascota.domain.model.PublicationStatus
+import co.edu.adopcionmascota.domain.usecase.publication.CreateReportUseCase
+import java.util.UUID
 
 import co.edu.adopcionmascota.R
 import co.edu.adopcionmascota.core.util.RequestResult
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,8 +31,8 @@ data class PublicationUiState(
     val isSterilized: Boolean = true,
     val hasMicrochip: Boolean = false,
     val history: String = "",
-    val address: String = "Calle 140 # 11-45, Usaquén",
-    val cityRegion: String = "Bogotá D.C., Cundinamarca, Colombia",
+    val address: String = "Armenia, Quindío",
+    val cityRegion: String = "Quindío, Colombia",
     val latitude: Double = 4.5389,
     val longitude: Double = -75.6725,
     val publicationResult: RequestResult? = null,
@@ -46,6 +47,7 @@ data class PublicationUiState(
 }
 @HiltViewModel
 class PublicationViewModel @Inject constructor(
+    private val createReportUseCase: CreateReportUseCase,
     private val resources: ResourceProvider
 ) : ViewModel() {
 
@@ -100,24 +102,22 @@ class PublicationViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(publicationResult = RequestResult.Loading) }
             try {
-                delay(2000) // Simulación de petición de red
-                // La nueva publicación aparece en "Mis Publicaciones" como "En Revisión Ética"
+                // Se guarda en Room "En revisión": aparece en "Mis Publicaciones"
+                // y en la cola del moderador, pero no en el feed hasta que la aprueben
                 val state = _uiState.value
-                MyPublicationsStore.add(
-                    MyPublication(
-                        id = "m${System.currentTimeMillis()}",
-                        feedId = null,
+                createReportUseCase(
+                    Publication(
+                        id = UUID.randomUUID().toString(),
                         name = state.title.trim(),
-                        category = state.category,
+                        type = categoryToType(state.category),
                         species = state.species,
                         breed = state.breed.trim(),
                         size = state.size,
                         description = state.history.trim(),
                         location = state.address,
                         coordinates = Location(state.latitude, state.longitude),
-                        image = R.drawable.icono,
-                        imageUri = state.photos.firstOrNull(),
-                        status = MyPublicationStatus.IN_REVIEW,
+                        image = state.photos.firstOrNull() ?: "icono",
+                        status = PublicationStatus.PENDING,
                         isVaccinated = state.isVaccinated,
                         isDewormed = state.isDewormed,
                         isSterilized = state.isSterilized,

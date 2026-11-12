@@ -4,7 +4,7 @@ import co.edu.adopcionmascota.core.util.ResourceProvider
 import co.edu.adopcionmascota.R
 import co.edu.adopcionmascota.domain.usecase.preferences.SaveFilterUseCase
 import co.edu.adopcionmascota.domain.usecase.preferences.ObserveFilterUseCase
-import co.edu.adopcionmascota.domain.usecase.publication.ObserveReportsUseCase
+import co.edu.adopcionmascota.domain.usecase.publication.ObserveFeedUseCase
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.first
 import androidx.lifecycle.viewModelScope
@@ -50,7 +50,7 @@ data class AdvancedFiltersUiState(
 
 @HiltViewModel
 class AdvancedFiltersViewModel @Inject constructor(
-    private val observeReportsUseCase: ObserveReportsUseCase,
+    private val observeFeedUseCase: ObserveFeedUseCase,
     private val observeFilterUseCase: ObserveFilterUseCase,
     private val saveFilterUseCase: SaveFilterUseCase,
     private val resources: ResourceProvider
@@ -68,7 +68,7 @@ class AdvancedFiltersViewModel @Inject constructor(
                     types = current.types,
                     sex = current.sex,
                     maxDistanceKm = current.maxDistanceKm,
-                    publications = observeReportsUseCase().value
+                    publications = observeFeedUseCase().first()
                 )
             }
         }

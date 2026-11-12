@@ -49,7 +49,7 @@ fun AppBottomBar(
         )
 
         // Cada rol ve solo su opción: el moderador revisa y el usuario publica
-        if (LocalUserRole.current == UserRole.ADMIN) {
+        if (LocalUserRole.current == UserRole.MODERATOR) {
             NavigationBarItem(
                 selected = currentDestination == AppDestination.MODERATE,
                 onClick = {

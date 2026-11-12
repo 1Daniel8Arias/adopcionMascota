@@ -54,45 +54,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import co.edu.adopcionmascota.R
+import co.edu.adopcionmascota.core.util.rememberImageModel
+import coil3.compose.AsyncImage
 import co.edu.adopcionmascota.domain.model.RejectionReason
-
-
-@Composable
-fun RejectPublicationRoute(
-    viewModel: RejectPublicationViewModel = hiltViewModel()
-) {
-
-    val state by viewModel.uiState.collectAsState()
-
-    RejectPublicationBottomSheet(
-        selectedReason = state.selectedReason,
-
-        onReasonSelected = { reason ->
-            viewModel.onEvent(
-                RejectPublicationEvent.SelectReason(reason)
-            )
-        },
-
-        onConfirm = {
-            viewModel.onEvent(
-                RejectPublicationEvent.ConfirmRejection
-            )
-        },
-        onDismiss = {}
-    )
-}
-
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RejectPublicationBottomSheet(
+    publication: ModerationPublicationUi,
     onDismiss: () -> Unit,
-    onConfirm: (RejectionReason?) -> Unit,
-    selectedReason: RejectionReason?,
-    onReasonSelected: (RejectionReason) -> Unit,
-
-    ) {
+    onConfirm: (RejectionReason?) -> Unit
+) {
 
     var selectedReason by remember {
         mutableStateOf<RejectionReason?>(reasons.first())
@@ -109,11 +82,11 @@ fun RejectPublicationBottomSheet(
                 .padding(horizontal = 16.dp)
         ) {
 
-            HeaderSection()
+            HeaderSection(authorName = publication.userName, onClose = onDismiss)
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            PublicationPreviewCard()
+            PublicationPreviewCard(publication = publication)
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -183,7 +156,7 @@ fun RejectPublicationBottomSheet(
     }
 }
 @Composable
-private fun HeaderSection() {
+private fun HeaderSection(authorName: String, onClose: () -> Unit) {
 
     Row(
         verticalAlignment = Alignment.Top
@@ -219,13 +192,13 @@ private fun HeaderSection() {
             )
 
             Text(
-                text = stringResource(R.string.reject_detail),
+                text = stringResource(R.string.reject_detail, authorName),
                 color = Color.Gray,
                 fontSize = 13.sp
             )
         }
 
-        IconButton(onClick = {}) {
+        IconButton(onClick = onClose) {
 
             Icon(
                 imageVector = Icons.Default.Close,
@@ -235,7 +208,7 @@ private fun HeaderSection() {
     }
 }
 @Composable
-private fun PublicationPreviewCard() {
+private fun PublicationPreviewCard(publication: ModerationPublicationUi) {
 
     Card(
         colors = CardDefaults.cardColors(
@@ -247,8 +220,8 @@ private fun PublicationPreviewCard() {
             modifier = Modifier.padding(10.dp)
         ) {
 
-            Image(
-                painter = painterResource(R.drawable.imagen_max),
+            AsyncImage(
+                model = rememberImageModel(publication.image),
                 contentDescription = null,
                 modifier = Modifier
                     .size(60.dp)
@@ -260,28 +233,30 @@ private fun PublicationPreviewCard() {
 
             Column {
 
-                Text(
-                    stringResource(R.string.covert_sale),
-                    color = Color.Red,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                if (publication.ethicsAlert) {
+                    Text(
+                        stringResource(R.string.covert_sale),
+                        color = Color.Red,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
 
                 Text(
-                    "Chapinero",
+                    publication.city,
                     color = Color.Gray,
                     fontSize = 11.sp
                 )
 
                 Text(
-                    "Bulldog Francés con pedigrí",
+                    publication.title,
                     fontWeight = FontWeight.SemiBold
                 )
 
                 Text(
-                    stringResource(R.string.fee_required),
-                    color = Color.Red,
-                    fontWeight = FontWeight.Bold
+                    publication.userName,
+                    color = Color.Gray,
+                    fontSize = 12.sp
                 )
             }
         }
@@ -342,17 +317,32 @@ private fun ReasonItem(
         }
     }
 }
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-private fun ModeratorScreenPreview() {
 
-    MaterialTheme {
-
-        RejectPublicationBottomSheet(
-            onDismiss = {},
-            onConfirm = {},
-            selectedReason = reasons.first(),
-            onReasonSelected = {}
-        )
-    }
-}
+// Motivos de rechazo definidos en el protocolo de moderación
+val reasons = listOf(
+    RejectionReason(
+        1,
+        "Venta de animales o aporte económico lucrativo",
+        "Cobros en adopción no avalados ni justificados documentalmente."
+    ),
+RejectionReason(
+2,
+"Soporte veterinario o carnet ilegible o falso",
+"Carné de vacunas adulterado, sin firma profesional o no verificable."
+),
+RejectionReason(
+3,
+"Fotos de internet o no auténticas",
+"Imágenes de bancos públicos o criaderos sin comprobación real del animal."
+),
+RejectionReason(
+4,
+"Datos de contacto o localidad sospechosa",
+"Números ficticios o desviación sistemática a canales inseguros."
+),
+RejectionReason(
+5,
+"Otra infracción de bienestar animal",
+"Indicios de maltrato, destete precoz (< 2 meses)."
+)
+)

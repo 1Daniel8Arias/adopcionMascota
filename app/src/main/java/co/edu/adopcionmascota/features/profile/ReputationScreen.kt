@@ -44,7 +44,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import co.edu.adopcionmascota.core.component.AppTag
 import co.edu.adopcionmascota.core.theme.AppPrimary
 import co.edu.adopcionmascota.core.theme.Background
@@ -59,7 +59,7 @@ private val Green = Color(0xFF067647)
 fun ReputationScreen(
     onNavigateBack: () -> Unit,             // stringResource(R.string.back_to_profile)
     onViewBadges: () -> Unit,               // "Ver Vitrina de Insignias"
-    viewModel: ReputationViewModel = viewModel()
+    viewModel: ReputationViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
 

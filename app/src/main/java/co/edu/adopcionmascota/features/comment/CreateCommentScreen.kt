@@ -77,6 +77,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import co.edu.adopcionmascota.R
+import co.edu.adopcionmascota.core.util.relativeTime
+import co.edu.adopcionmascota.features.notification.initialsOf
 import co.edu.adopcionmascota.core.component.AppTag
 import co.edu.adopcionmascota.core.component.ConfirmAlertDialog
 import co.edu.adopcionmascota.core.theme.AppPrimary
@@ -387,7 +389,7 @@ private fun CommentForm(
         ) {
             // Identidad del usuario activo
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Avatar(initials = "CM", background = Color(0xFFDFE0FF), size = 40)
+                Avatar(initials = initialsOf(state.authorName), background = Color(0xFFDFE0FF), size = 40)
                 Spacer(modifier = Modifier.width(10.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(text = state.authorName, fontSize = 14.sp, color = DarkText)
@@ -696,7 +698,7 @@ fun CommentCard(
                         )
                     }
                     Text(
-                        text = stringResource(R.string.comment_meta, comment.time, stringResource(comment.type.label)),
+                        text = stringResource(R.string.comment_meta, relativeTime(comment.createdAt), stringResource(comment.type.label)),
                         fontSize = 11.sp,
                         color = Color(0xFF76777C)
                     )

@@ -2,6 +2,8 @@ package co.edu.adopcionmascota.features.moderator
 
 import androidx.compose.ui.res.stringResource
 import co.edu.adopcionmascota.R
+import co.edu.adopcionmascota.domain.model.PublicationStatus
+import co.edu.adopcionmascota.domain.model.Statistics
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -119,7 +121,7 @@ fun ModeratorScreen(
     val state by profileViewModel.uiState.collectAsState()
 
     val user = state.user ?: return
-    val isAdmin = user.role == UserRole.ADMIN
+    val isAdmin = user.role == UserRole.MODERATOR
 
     val levelIndex = levels.indexOfLast {
         state.poinst >= it.minPoints
@@ -132,6 +134,7 @@ fun ModeratorScreen(
         roleLabel = if (isAdmin) stringResource(R.string.moderator) else level.name,
         roleIcon = if (isAdmin) Icons.Filled.Gavel else level.icon,
         isAdmin = isAdmin,
+        statistics = state.statistics,
         onNavigationClick = onNavigationClick,
         onEditCredentials = onEditCredentials,
         onEthicalSettings = onEthicalSettings,
@@ -151,6 +154,7 @@ private fun ModeratorScreenContent(
     roleLabel: String,
     roleIcon: ImageVector,
     isAdmin: Boolean,
+    statistics: Statistics = Statistics(),
     onNavigationClick: (AppDestination) -> Unit = {},
     onEditCredentials: () -> Unit = {},
     onEthicalSettings: () -> Unit = {},
@@ -224,7 +228,7 @@ private fun ModeratorScreenContent(
                     ) {
                         MetricCard(
                             title = stringResource(R.string.audited_cases),
-                            value = "1,248",
+                            value = (statistics.countFor(PublicationStatus.VERIFIED) + statistics.countFor(PublicationStatus.REJECTED) + statistics.countFor(PublicationStatus.RESOLVED)).toString(),
                             description = stringResource(R.string.this_week),
                             icon = {
                                 Icon(
@@ -238,7 +242,7 @@ private fun ModeratorScreenContent(
 
                         MetricCard(
                             title = stringResource(R.string.approved),
-                            value = "1,089",
+                            value = (statistics.countFor(PublicationStatus.VERIFIED) + statistics.countFor(PublicationStatus.RESOLVED)).toString(),
                             description = stringResource(R.string.approval_rate),
                             icon = {
                                 Icon(
@@ -256,7 +260,7 @@ private fun ModeratorScreenContent(
                     ) {
                         MetricCard(
                             title = stringResource(R.string.remedies),
-                            value = "159",
+                            value = statistics.countFor(PublicationStatus.REJECTED).toString(),
                             description = stringResource(R.string.remedies_detail),
                             icon = {
                                 Icon(
@@ -270,7 +274,7 @@ private fun ModeratorScreenContent(
 
                         MetricCard(
                             title = stringResource(R.string.average_time),
-                            value = "18 min",
+                            value = "${statistics.averageReviewMinutes} min",
                             description = stringResource(R.string.target_time),
                             icon = {
                                 Icon(

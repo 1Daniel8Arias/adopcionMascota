@@ -1,6 +1,8 @@
 package co.edu.adopcionmascota.features.password
 
 import javax.inject.Inject
+import co.edu.adopcionmascota.domain.exception.UserNotFoundException
+import co.edu.adopcionmascota.domain.usecase.auth.SendPasswordResetUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import co.edu.adopcionmascota.core.util.ResourceProvider
 import co.edu.adopcionmascota.R
@@ -8,7 +10,6 @@ import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import co.edu.adopcionmascota.core.util.RequestResult
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,17 +28,13 @@ data class PasswordUiState(
 
 @HiltViewModel
 class PasswordViewModel @Inject constructor(
+    private val sendPasswordResetUseCase: SendPasswordResetUseCase,
     private val resources: ResourceProvider
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PasswordUiState())
     val uiState: StateFlow<PasswordUiState> = _uiState.asStateFlow()
 
-    private val registeredEmails = listOf(
-        "daniel@email.com",
-        "camila.morales@ejemplo.com",
-        "usuario@bogota.gov.co"
-    )
 
 
     fun onEmailChange(newEmail: String) {
@@ -65,20 +62,15 @@ class PasswordViewModel @Inject constructor(
             // 1. Cambia el estado a Carga (Loading)
             _uiState.update { it.copy(recoveryResult = RequestResult.Loading) }
 
-            // 2. Simula el tiempo que tarda la consulta a la base de datos o servidor
-            delay(1500)
-
-            val inputEmail = _uiState.value.email.trim()
-
-
-            val emailExists = registeredEmails.any { it.equals(inputEmail, ignoreCase = true) }
-
-            val result = if (emailExists) {
+            // 2. Firebase Authentication envía el correo real de recuperación
+            val result = try {
+                sendPasswordResetUseCase(_uiState.value.email)
                 RequestResult.Success(resources.getString(R.string.recovery_sent))
-            } else {
+            } catch (e: UserNotFoundException) {
                 RequestResult.Failure(resources.getString(R.string.recovery_not_found))
+            } catch (e: Exception) {
+                RequestResult.Failure(resources.getString(R.string.network_error))
             }
-
             // 3. Se emite el resultado final hacia la UI[cite: 1, 3]
             _uiState.update { it.copy(recoveryResult = result) }
         }

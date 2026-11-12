@@ -4,11 +4,12 @@ package co.edu.adopcionmascota.domain.model
 data class Comment(
     val id: String,
     val publicationId: String,
+    val authorId: String,
     val author: String,
     val authorTag: String,          // Ej: "Vet Verificado", "Hogar Temporal", "Nivel 2"
-    val time: String,
     val text: String,
     val type: ContributionType,
+    val createdAt: Long = System.currentTimeMillis(),
     val thanks: Int = 0,
     val thankedByMe: Boolean = false
 ) {

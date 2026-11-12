@@ -62,6 +62,7 @@ fun NotificationDetailScreen(
     onViewPublication: (String) -> Unit,            // stringResource(R.string.view_case)
     onNavigateToFeed: () -> Unit,                   // "Ver en Feed Público"
     onNavigateToProfile: () -> Unit,                // Vitrina de insignias / perfil completo
+    onViewRequests: () -> Unit = {},                // Solicitudes de adopción recibidas
     viewModel: NotificationDetailViewModel = hiltViewModel()
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -118,17 +119,21 @@ fun NotificationDetailScreen(
             DetailTopBar(onBackClick = onNavigateBack)
 
             when (state.notification?.type) {
-                NotificationType.PUBLICATION_APPROVED -> ApprovedPublicationContent(
-                    onManageRequests = {
-                        viewModel.showInfo(context.getString(R.string.inquiries_soon))
-                    },
-                    onViewInFeed = onNavigateToFeed,
-                    onShare = {
-                        share(context.getString(R.string.share_max))
-                    }
+                // Notificaciones generadas por la app con datos reales de Room
+                NotificationType.PUBLICATION_APPROVED,
+                NotificationType.NEW_COMMENT,
+                NotificationType.ADOPTION_REQUEST,
+                NotificationType.REQUEST_ANSWERED -> CaseNotificationContent(
+                    state = state,
+                    onViewCase = onViewPublication,
+                    onViewFeed = onNavigateToFeed,
+                    onViewRequests = onViewRequests,
+                    onReplyChange = viewModel::onReplyChange,
+                    onSendReply = viewModel::sendReply
                 )
 
                 NotificationType.LEVEL_UP -> LevelUpContent(
+                    userName = state.userName,
                     onViewBadges = onNavigateToProfile,
                     onShare = {
                         share(context.getString(R.string.share_level_up))
@@ -146,20 +151,6 @@ fun NotificationDetailScreen(
                     onEthicsConfirmedChange = viewModel::onEthicsConfirmedChange,
                     onResubmit = viewModel::resubmitForReview,
                     onGuidelinesClick = viewModel::onGuidelinesClick
-                )
-
-                NotificationType.NEW_COMMENT -> NewCommentContent(
-                    state = state,
-                    onViewCase = { onViewPublication("1") },
-                    onAcceptDonation = viewModel::onAcceptDonation,
-                    onWhatsAppClick = {
-                        viewModel.showInfo(context.getString(R.string.whatsapp_soon))
-                    },
-                    onToggleLike = viewModel::onToggleLike,
-                    onToggleAllReplies = viewModel::onToggleAllReplies,
-                    onReplyChange = viewModel::onReplyChange,
-                    onSuggestionClick = viewModel::onSuggestionClick,
-                    onSendReply = viewModel::sendReply
                 )
 
                 NotificationType.BADGE_EARNED -> BadgeEarnedContent(

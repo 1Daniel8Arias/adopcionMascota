@@ -54,7 +54,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import co.edu.adopcionmascota.core.theme.AppPrimary
 import co.edu.adopcionmascota.core.theme.Background
 import co.edu.adopcionmascota.core.theme.DarkText
@@ -68,7 +68,7 @@ fun ProfileUpdatedScreen(
     onBackToProfile: () -> Unit,   // stringResource(R.string.back_to_profile) y la flecha de atrás
     onGoToFeed: () -> Unit,        // stringResource(R.string.go_to_feed)
     onEditAgain: () -> Unit,       // stringResource(R.string.edit_more)
-    viewModel: ProfileUpdatedViewModel = viewModel()
+    viewModel: ProfileUpdatedViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
 

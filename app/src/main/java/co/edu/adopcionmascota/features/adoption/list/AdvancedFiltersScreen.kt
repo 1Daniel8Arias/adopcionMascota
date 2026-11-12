@@ -56,6 +56,7 @@ import co.edu.adopcionmascota.core.theme.LightBlueBg
 import co.edu.adopcionmascota.core.theme.SecondaryText
 import co.edu.adopcionmascota.domain.model.PetType
 import coil3.compose.AsyncImage
+import co.edu.adopcionmascota.core.util.rememberImageModel
 
 // Pantalla "filtro" (Filtros y Búsqueda)
 @OptIn(ExperimentalLayoutApi::class)
@@ -145,6 +146,7 @@ fun AdvancedFiltersScreen(
                     SelectChip(stringResource(R.string.filter_type_adoption), PetType.ADOPCION in state.types) { viewModel.onTypeToggle(PetType.ADOPCION) }
                     SelectChip(stringResource(R.string.filter_type_lost), PetType.PERDIDO in state.types) { viewModel.onTypeToggle(PetType.PERDIDO) }
                     SelectChip(stringResource(R.string.filter_type_found), PetType.ENCONTRADO in state.types) { viewModel.onTypeToggle(PetType.ENCONTRADO) }
+                    SelectChip(stringResource(R.string.filter_type_vet), PetType.VETERINARIA in state.types) { viewModel.onTypeToggle(PetType.VETERINARIA) }
                 }
             }
 
@@ -214,7 +216,7 @@ fun AdvancedFiltersScreen(
                         ) {
                             Column(modifier = Modifier.padding(10.dp)) {
                                 AsyncImage(
-                                    model = publication.image,
+                                    model = rememberImageModel(publication.image),
                                     contentDescription = publication.name,
                                     contentScale = ContentScale.Crop,
                                     modifier = Modifier

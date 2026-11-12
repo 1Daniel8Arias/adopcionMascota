@@ -55,6 +55,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import co.edu.adopcionmascota.R
+import co.edu.adopcionmascota.domain.model.PetType
 import co.edu.adopcionmascota.core.component.AppTag
 import co.edu.adopcionmascota.core.component.AppTopBar
 import co.edu.adopcionmascota.core.component.ConfirmAlertDialog
@@ -64,6 +65,8 @@ import co.edu.adopcionmascota.core.component.MapBox
 import com.mapbox.geojson.Point
 import co.edu.adopcionmascota.features.comment.CommentCard
 import coil3.compose.AsyncImage
+import co.edu.adopcionmascota.core.util.rememberImageModel
+import androidx.compose.foundation.layout.navigationBarsPadding
 
 @Composable
 fun PublicationDetailScreen(
@@ -72,6 +75,7 @@ fun PublicationDetailScreen(
     onNavigateToComment: () -> Unit = {},     // Abre "Crear comentario"
     onNotificationClick: () -> Unit = {},     // Campana de la barra superior
     onProfileClick: () -> Unit = {},          // Avatar de la barra superior
+    onStartAdoptionApplication: () -> Unit = {}, // Solicitud formal de adopción (cuestionario + carta con IA)
     viewModel: PublicationDetailViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -131,14 +135,21 @@ fun PublicationDetailScreen(
             }
         },
         bottomBar = {
-            if (state.publication != null) {
+            if (state.publication != null && state.canSendRequests) {
                 PublicationBottomBar(
                     primaryText = state.primaryActionText,
                     temporaryHomeSent = DetailRequest.TEMPORARY_HOME in state.sentRequests,
                     primarySent = DetailRequest.ADOPTION in state.sentRequests,
                     isSending = state.requestResult is RequestResult.Loading,
                     onTemporaryHomeClick = { viewModel.onRequestClick(DetailRequest.TEMPORARY_HOME) },
-                    onPrimaryClick = { viewModel.onRequestClick(DetailRequest.ADOPTION) }
+                    onPrimaryClick = {
+                        // En adopción se abre la solicitud formal; en los demás casos, la confirmación
+                        if (state.publication?.type == PetType.ADOPCION && DetailRequest.ADOPTION !in state.sentRequests) {
+                            onStartAdoptionApplication()
+                        } else {
+                            viewModel.onRequestClick(DetailRequest.ADOPTION)
+                        }
+                    }
                 )
             }
         }
@@ -174,7 +185,7 @@ fun PublicationDetailScreen(
                     Box {
 
                         AsyncImage(
-                            model = publication.image,
+                            model = rememberImageModel(publication.image),
                             contentDescription = publication.name,
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -517,6 +528,7 @@ fun PublicationBottomBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .navigationBarsPadding()
             .padding(12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {

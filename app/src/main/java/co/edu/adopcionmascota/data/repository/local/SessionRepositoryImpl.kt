@@ -39,7 +39,8 @@ class SessionRepositoryImpl @Inject constructor(
             // Retorna un objeto UserSession con los datos obtenidos si existen
             UserSession(
                 userId = userId,
-                role = UserRole.valueOf(roleStr)
+                role = UserRole.entries.find { it.name == roleStr }
+                    ?: if (roleStr == "ADMIN") UserRole.MODERATOR else UserRole.USER
             )
         }
 

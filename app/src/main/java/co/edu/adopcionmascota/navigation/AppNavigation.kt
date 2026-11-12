@@ -51,6 +51,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import co.edu.adopcionmascota.domain.model.UserRole
+import co.edu.adopcionmascota.features.request.AdoptionRequestsScreen
+import co.edu.adopcionmascota.features.request.application.AdoptionApplicationScreen
+import co.edu.adopcionmascota.features.statistics.StatisticsScreen
+import co.edu.adopcionmascota.features.favorites.FavoritesScreen
 
 
 @Composable
@@ -154,7 +158,7 @@ private fun MainNavigation(role: UserRole) {
     val navController = rememberNavController()
 
     // Cada rol arranca en su pantalla principal
-    val isAdmin = role == UserRole.ADMIN
+    val isAdmin = role == UserRole.MODERATOR
     val homeRoute: MainRoutes = if (isAdmin) MainRoutes.ModeratorPanel else MainRoutes.PublicationList
 
     // Barra inferior compartida: cada pestaña abre su pantalla sin apilar copias
@@ -198,7 +202,46 @@ private fun MainNavigation(role: UserRole) {
             startDestination = homeRoute
         ) {
             composable<MainRoutes.ModeratorPanel> {
-                ModerationScreen(onNavigationClick = navigateToTab)
+                ModerationScreen(
+                    onNavigationClick = navigateToTab,
+                    // "Inspeccionar" abre el detalle completo de la publicación
+                    onInspect = { publicationId ->
+                        navController.navigate(MainRoutes.PublicationDetail(publicationId))
+                    },
+                    onStatistics = {
+                        navController.navigate(MainRoutes.Statistics)
+                    }
+                )
+            }
+
+            composable<MainRoutes.Statistics> {
+                StatisticsScreen(
+                    onNavigateBack = {
+                        navController.popBackStack()
+                    }
+                )
+            }
+
+            composable<MainRoutes.Favorites> {
+                FavoritesScreen(
+                    onNavigateBack = {
+                        navController.popBackStack()
+                    },
+                    onPublicationClick = { publicationId ->
+                        navController.navigate(MainRoutes.PublicationDetail(publicationId))
+                    }
+                )
+            }
+
+            composable<MainRoutes.AdoptionRequests> {
+                AdoptionRequestsScreen(
+                    onNavigateBack = {
+                        navController.popBackStack()
+                    },
+                    onViewPublication = { publicationId ->
+                        navController.navigate(MainRoutes.PublicationDetail(publicationId))
+                    }
+                )
             }
 
             composable<MainRoutes.Moderator> {
@@ -206,7 +249,8 @@ private fun MainNavigation(role: UserRole) {
                 ModeratorScreen(
                     onNavigationClick = navigateToTab,
                     onLogout = moderatorViewModel::logout,
-                    onNotifications = { navigateToTab(AppDestination.ALERTS) }
+                    onNotifications = { navigateToTab(AppDestination.ALERTS) },
+                    onViewHistory = { navController.navigate(MainRoutes.Statistics) }
                 )
             }
 
@@ -249,9 +293,20 @@ private fun MainNavigation(role: UserRole) {
                     },
                     onProfileClick = {
                         navigateToTab(AppDestination.PROFILE)
+                    },
+                    onStartAdoptionApplication = {
+                        navController.navigate(MainRoutes.AdoptionApplication(args.publicationId))
                     }
                 )
 
+            }
+
+            composable<MainRoutes.AdoptionApplication> {
+                AdoptionApplicationScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    // Al volver, el detalle ya muestra la solicitud como enviada
+                    onSent = { navController.popBackStack() }
+                )
             }
 
             composable<MainRoutes.CreateComment> {
@@ -293,6 +348,9 @@ private fun MainNavigation(role: UserRole) {
                     },
                     onNavigateToProfile = {
                         navigateToTab(AppDestination.PROFILE)
+                    },
+                    onViewRequests = {
+                        navController.navigate(MainRoutes.AdoptionRequests)
                     }
                 )
             }
@@ -394,7 +452,10 @@ private fun MainNavigation(role: UserRole) {
                     onViewPublication = { publicationId ->
                         navController.navigate(MainRoutes.PublicationDetail(publicationId))
                     },
-                    onNavigationClick = navigateToTab
+                    onNavigationClick = navigateToTab,
+                    onRequestsClick = {
+                        navController.navigate(MainRoutes.AdoptionRequests)
+                    }
                 )
             }
 
@@ -469,6 +530,12 @@ private fun MainNavigation(role: UserRole) {
                     // "Eliminar mi cuenta" abre la confirmación del Figma
                     onDeleteAccount = {
                         navController.navigate(MainRoutes.DeleteAccount)
+                    },
+                    onStatistics = {
+                        navController.navigate(MainRoutes.Statistics)
+                    },
+                    onFavorites = {
+                        navController.navigate(MainRoutes.Favorites)
                     }
                 )
             }
@@ -480,8 +547,8 @@ private fun MainNavigation(role: UserRole) {
                         navController.popBackStack()
                     },
                     // "Guardar Cambios" lleva a "Perfil editado" y quita la edición de la pila
-                    onProfileSaved = {
-                        navController.navigate(MainRoutes.ProfileUpdated) {
+                    onProfileSaved = { changes ->
+                        navController.navigate(MainRoutes.ProfileUpdated(changes)) {
                             popUpTo(MainRoutes.EditProfile) { inclusive = true }
                         }
                     },
@@ -504,7 +571,7 @@ private fun MainNavigation(role: UserRole) {
                     },
                     onEditAgain = {
                         navController.navigate(MainRoutes.EditProfile) {
-                            popUpTo(MainRoutes.ProfileUpdated) { inclusive = true }
+                            popUpTo<MainRoutes.ProfileUpdated> { inclusive = true }
                         }
                     }
                 )

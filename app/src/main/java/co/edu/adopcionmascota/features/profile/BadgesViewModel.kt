@@ -9,6 +9,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import androidx.lifecycle.viewModelScope
+import co.edu.adopcionmascota.domain.usecase.user.ObserveCurrentUserUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 // Filtros de la "Vitrina de Insignias"
 enum class BadgeFilter(@StringRes val label: Int) {
@@ -32,8 +37,8 @@ data class BadgeDetail(
 )
 
 data class BadgesUiState(
-    val userName: String = "Camila Morales",
-    val levelText: String = "Nivel 2 · Protector",
+    val userName: String = "",
+    val levelText: String = "",
     val badges: List<BadgeDetail> = emptyList(),
     val filter: BadgeFilter = BadgeFilter.ALL,
     val category: BadgeCategory? = null,           // null = todo el catálogo
@@ -95,10 +100,29 @@ fun badgeCatalog(): List<BadgeDetail> = listOf(
     )
 )
 
-class BadgesViewModel : ViewModel() {
+@HiltViewModel
+class BadgesViewModel @Inject constructor(
+    observeCurrentUserUseCase: ObserveCurrentUserUseCase
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(BadgesUiState(badges = badgeCatalog()))
     val uiState: StateFlow<BadgesUiState> = _uiState.asStateFlow()
+
+    init {
+        // Nombre y nivel del usuario de la sesión (Room)
+        viewModelScope.launch {
+            observeCurrentUserUseCase().collect { user ->
+                if (user != null) {
+                    _uiState.update {
+                        it.copy(
+                            userName = user.name,
+                            levelText = "Nivel ${user.level.number} · ${user.level.displayName}"
+                        )
+                    }
+                }
+            }
+        }
+    }
 
     fun onFilterChange(filter: BadgeFilter) = _uiState.update { it.copy(filter = filter) }
 

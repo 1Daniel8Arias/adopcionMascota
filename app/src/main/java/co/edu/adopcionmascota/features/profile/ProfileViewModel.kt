@@ -1,19 +1,26 @@
 package co.edu.adopcionmascota.features.profile
 
-import co.edu.adopcionmascota.domain.usecase.user.GetCurrentUserUseCase
-import co.edu.adopcionmascota.domain.usecase.auth.LogoutUseCase
-import co.edu.adopcionmascota.domain.model.ReputationLevel
-import javax.inject.Inject
-import dagger.hilt.android.lifecycle.HiltViewModel
-import co.edu.adopcionmascota.domain.model.Badge
-import co.edu.adopcionmascota.domain.model.BadgeStatus
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import co.edu.adopcionmascota.domain.model.Badge
+import co.edu.adopcionmascota.domain.model.BadgeStatus
+import co.edu.adopcionmascota.domain.model.PublicationStatus
+import co.edu.adopcionmascota.domain.model.ReputationLevel
+import co.edu.adopcionmascota.domain.usecase.auth.LogoutUseCase
+import co.edu.adopcionmascota.domain.usecase.comment.ObserveAllCommentsUseCase
+import co.edu.adopcionmascota.domain.usecase.publication.ObserveMyPublicationsUseCase
+import co.edu.adopcionmascota.domain.usecase.user.ObserveCurrentUserUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import javax.inject.Inject
 
 private val LEVEL_NAMES = ReputationLevel.entries.map { it.displayName }
 
@@ -91,7 +98,9 @@ data class ProfileUiState(
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val getCurrentUserUseCase: GetCurrentUserUseCase,
+    observeCurrentUserUseCase: ObserveCurrentUserUseCase,
+    observeMyPublicationsUseCase: ObserveMyPublicationsUseCase,
+    observeAllCommentsUseCase: ObserveAllCommentsUseCase,
     private val logoutUseCase: LogoutUseCase
 ) : ViewModel() {
 
@@ -99,21 +108,41 @@ class ProfileViewModel @Inject constructor(
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
 
     init {
-        loadProfile()
-        observeUserData()
-        loadCurrentUser()
-    }
-
-    // El caso de uso combina la sesión de Data Store y el repositorio de usuarios
-    private fun loadCurrentUser() {
+        // Datos del usuario de la sesión, sus publicaciones y sus aportes (todo desde Room)
         viewModelScope.launch {
-            val user = getCurrentUserUseCase()
-            if (user == null) {
-                // La sesión apunta a un usuario que ya no existe (los usuarios viven en memoria)
-                logoutUseCase()
-            } else {
-                UserProfileStore.loadFromUser(user)
-            }
+            combine(
+                observeCurrentUserUseCase(),
+                observeMyPublicationsUseCase(),
+                observeAllCommentsUseCase()
+            ) { user, publications, comments -> Triple(user, publications, comments) }
+                .collect { (user, publications, comments) ->
+                    if (user == null) return@collect
+                    val myComments = comments.filter { it.authorId == user.id }
+                    val monthAgo = System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000
+                    val verified = publications.count { it.status == PublicationStatus.VERIFIED || it.status == PublicationStatus.RESOLVED }
+                    val level = user.level
+                    _uiState.update {
+                        it.copy(
+                            name = user.name,
+                            email = user.email,
+                            location = user.city,
+                            memberSince = SimpleDateFormat("MMMM yyyy", Locale.getDefault()).format(Date(user.createdAt))
+                                .replaceFirstChar { c -> c.uppercase() },
+                            photoUrl = user.profilePictureUrl,
+                            isActiveVolunteer = user.isTemporaryHome || user.lostPetAlerts,
+                            activePublications = publications.count { p -> p.status == PublicationStatus.VERIFIED || p.status == PublicationStatus.PAUSED },
+                            finishedPublications = publications.count { p -> p.status == PublicationStatus.RESOLVED },
+                            pendingPublications = publications.count { p -> p.status == PublicationStatus.PENDING || p.status == PublicationStatus.REJECTED },
+                            importantVotes = myComments.sumOf { c -> c.thanks },
+                            votesThisMonth = myComments.count { c -> c.createdAt >= monthAgo },
+                            myPublicationsCount = publications.size,
+                            currentLevel = level.number,
+                            points = user.points,
+                            nextLevelPoints = level.next?.minPoints ?: user.points,
+                            badges = profileBadges(verified, publications.size, user.isTemporaryHome, level)
+                        )
+                    }
+                }
         }
     }
 
@@ -123,75 +152,36 @@ class ProfileViewModel @Inject constructor(
             logoutUseCase()
         }
     }
-
-    // Los datos personales salen del almacén compartido, así el perfil
-    // muestra los cambios hechos en "Editar Perfil"
-    private fun observeUserData() {
-        viewModelScope.launch {
-            UserProfileStore.profile.collect { profile ->
-                _uiState.update {
-                    it.copy(
-                        name = profile.name,
-                        email = profile.email,
-                        location = profile.localityName,
-                        photoUrl = profile.photoUrl,
-                        isActiveVolunteer = profile.isTemporaryHome || profile.lostPetAlerts
-                    )
-                }
-            }
-        }
-    }
-
-    // Más adelante esta función consultará el repositorio / Firebase
-    private fun loadProfile() {
-        _uiState.value = ProfileUiState(
-            name = "Camila Morales Restrepo",
-            email = "camila.morales@ejemplo.com",
-            location = "Usaquén, Bogotá D.C.",
-            memberSince = "Enero 2024",
-            photoUrl = "https://i.pravatar.cc/300?img=47",
-            isActiveVolunteer = true,
-            activePublications = 2,
-            finishedPublications = 5,
-            pendingPublications = 1,
-            importantVotes = 148,
-            votesThisMonth = 18,
-            myPublicationsCount = 4,
-            currentLevel = 2,
-            points = 340,
-            nextLevelPoints = 500,
-            recentRewards = listOf(
-                "Rescate verificado (+20)",
-                "Comentario útil (+5)"
-            ),
-            badges = listOf(
-                Badge(
-                    id = "first_paw",
-                    title = "Primera Huella",
-                    description = "Primer reporte...",
-                    status = BadgeStatus.GRANTED
-                ),
-                Badge(
-                    id = "temporary_home",
-                    title = "Hogar Temporal",
-                    description = "Acogida solidaria",
-                    status = BadgeStatus.GRANTED
-                ),
-                Badge(
-                    id = "verified_10",
-                    title = "10 Verificadas",
-                    description = "Progreso 7 / 10",
-                    status = BadgeStatus.IN_PROGRESS,
-                    progress = 7,
-                    target = 10
-                ),
-                Badge(
-                    id = "hero_month",
-                    title = "Héroe del Mes",
-                    description = "Mayor rescate mensual",
-                    status = BadgeStatus.LOCKED
-                )
-            )
-        )
-    }
 }
+
+// Las 4 insignias del perfil se calculan con la actividad real del usuario
+fun profileBadges(verified: Int, publications: Int, isTemporaryHome: Boolean, level: ReputationLevel): List<Badge> = listOf(
+    Badge(
+        id = "first_paw",
+        title = "Primera Huella",
+        description = "Primer reporte verificado",
+        status = if (verified >= 1) BadgeStatus.GRANTED else if (publications > 0) BadgeStatus.IN_PROGRESS else BadgeStatus.LOCKED,
+        progress = verified.coerceAtMost(1),
+        target = 1
+    ),
+    Badge(
+        id = "temporary_home",
+        title = "Hogar Temporal",
+        description = "Acogida solidaria",
+        status = if (isTemporaryHome) BadgeStatus.GRANTED else BadgeStatus.LOCKED
+    ),
+    Badge(
+        id = "verified_10",
+        title = "10 Verificadas",
+        description = "Progreso ${verified.coerceAtMost(10)} / 10",
+        status = if (verified >= 10) BadgeStatus.GRANTED else BadgeStatus.IN_PROGRESS,
+        progress = verified.coerceAtMost(10),
+        target = 10
+    ),
+    Badge(
+        id = "hero_month",
+        title = "Héroe del Mes",
+        description = "Mayor rescate mensual",
+        status = if (level >= ReputationLevel.GUARDIAN) BadgeStatus.IN_PROGRESS else BadgeStatus.LOCKED
+    )
+)

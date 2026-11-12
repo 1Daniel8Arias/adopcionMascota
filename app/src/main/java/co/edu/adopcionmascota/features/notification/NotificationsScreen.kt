@@ -2,6 +2,8 @@ package co.edu.adopcionmascota.features.notification
 
 import androidx.compose.ui.res.stringResource
 import co.edu.adopcionmascota.R
+import co.edu.adopcionmascota.core.util.relativeTime
+import androidx.compose.material.icons.outlined.Groups
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import co.edu.adopcionmascota.domain.model.Notification
 import co.edu.adopcionmascota.domain.model.NotificationType
@@ -165,7 +167,7 @@ private fun NotificationsTopBar(
                 .background(Color(0xFFDFE0FF)),
             contentAlignment = Alignment.Center
         ) {
-            Text(text = "CM", fontWeight = FontWeight.SemiBold, color = Color(0xFF000865))
+            Text(text = initialsOf(userName), fontWeight = FontWeight.SemiBold, color = Color(0xFF000865))
         }
         Spacer(modifier = Modifier.width(10.dp))
         Column(modifier = Modifier.weight(1f)) {
@@ -337,7 +339,7 @@ private fun NotificationCard(
                         fontWeight = FontWeight.Bold,
                         color = accent
                     )
-                    Text(text = notification.time, fontSize = 11.sp, color = SecondaryText)
+                    Text(text = relativeTime(notification.createdAt), fontSize = 11.sp, color = SecondaryText)
                     if (!notification.isRead) {
                         Spacer(modifier = Modifier.width(6.dp))
                         Box(
@@ -399,6 +401,8 @@ fun NotificationType.icon(): ImageVector = when (this) {
     NotificationType.PUBLICATION_PAUSED -> Icons.Outlined.ReportProblem
     NotificationType.NEW_COMMENT -> Icons.Outlined.ChatBubbleOutline
     NotificationType.BADGE_EARNED -> Icons.Outlined.WorkspacePremium
+    NotificationType.ADOPTION_REQUEST -> Icons.Outlined.Groups
+    NotificationType.REQUEST_ANSWERED -> Icons.Outlined.Verified
 }
 
 fun NotificationType.accentColor(): Color = when (this) {
@@ -407,4 +411,12 @@ fun NotificationType.accentColor(): Color = when (this) {
     NotificationType.PUBLICATION_PAUSED -> Color(0xFFBA1A1A)
     NotificationType.NEW_COMMENT -> Color(0xFF3A49D8)
     NotificationType.BADGE_EARNED -> Color(0xFFB54708)
+    NotificationType.ADOPTION_REQUEST -> Color(0xFF7A5AF8)
+    NotificationType.REQUEST_ANSWERED -> Color(0xFF067647)
 }
+
+// "Santiago López" -> "SL"
+fun initialsOf(name: String): String = name.split(" ")
+    .filter { it.isNotBlank() && it.first().isLetter() }
+    .take(2)
+    .joinToString("") { it.first().uppercase() }

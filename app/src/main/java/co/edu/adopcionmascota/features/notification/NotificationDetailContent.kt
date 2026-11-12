@@ -61,6 +61,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import co.edu.adopcionmascota.R
+import co.edu.adopcionmascota.core.util.rememberImageModel
 import co.edu.adopcionmascota.core.component.AppTag
 import co.edu.adopcionmascota.core.theme.AppPrimary
 import co.edu.adopcionmascota.core.theme.AppRed
@@ -80,173 +81,8 @@ private val SoftBlue = Color(0xFFEDF4FF)
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun ApprovedPublicationContent(
-    onManageRequests: () -> Unit,
-    onViewInFeed: () -> Unit,
-    onShare: () -> Unit
-) {
-    DetailCard(color = Green.copy(alpha = 0.08f)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            AppTag(text = stringResource(R.string.publication_approved_tag), backgroundColor = Green.copy(alpha = 0.15f), textColor = Green)
-            Spacer(modifier = Modifier.weight(1f))
-            Text(text = "ID: max_1", fontSize = 11.sp, color = SecondaryText)
-        }
-        Text(
-            text = stringResource(R.string.publication_active),
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold,
-            color = DarkText
-        )
-        Text(
-            text = stringResource(R.string.publication_active_detail),
-            fontSize = 13.sp,
-            color = SecondaryText
-        )
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Outlined.CheckCircle, contentDescription = null, tint = Green, modifier = Modifier.size(16.dp))
-            Spacer(modifier = Modifier.width(6.dp))
-            Text(text = stringResource(R.string.indexed_radar), fontSize = 12.sp, color = DarkText, modifier = Modifier.weight(1f))
-            AppTag(text = stringResource(R.string.live), backgroundColor = Green.copy(alpha = 0.15f), textColor = Green)
-        }
-    }
-
-    DetailCard {
-        AsyncImage(
-            model = R.drawable.imagen_max,
-            contentDescription = "Max",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(180.dp)
-                .clip(RoundedCornerShape(16.dp))
-        )
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(text = stringResource(R.string.max_age), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = DarkText)
-                Text(text = stringResource(R.string.max_breed), fontSize = 12.sp, color = SecondaryText)
-            }
-            Column(horizontalAlignment = Alignment.End) {
-                Text(text = "84", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = AppPrimary)
-                Text(text = "seguidores", fontSize = 11.sp, color = SecondaryText)
-            }
-        }
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            listOf(stringResource(R.string.vaccines_current), stringResource(R.string.sterilized), stringResource(R.string.tag_children), stringResource(R.string.responsible_home)).forEach {
-                AppTag(text = it)
-            }
-        }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Outlined.Shield, contentDescription = null, tint = AppPrimary, modifier = Modifier.size(14.dp))
-            Spacer(modifier = Modifier.width(6.dp))
-            Text(
-                text = stringResource(R.string.protocol_done),
-                fontSize = 11.sp,
-                color = SecondaryText
-            )
-        }
-    }
-
-    DetailCard {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(text = stringResource(R.string.realtime_performance), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = DarkText, modifier = Modifier.weight(1f))
-            AppTag(text = stringResource(R.string.latest))
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            StatBox(
-                modifier = Modifier.weight(1f),
-                icon = Icons.Outlined.Visibility,
-                label = stringResource(R.string.initial_views),
-                value = "142",
-                detail = stringResource(R.string.first_hour)
-            )
-            StatBox(
-                modifier = Modifier.weight(1f),
-                icon = Icons.Outlined.LocationOn,
-                label = stringResource(R.string.priority_zone),
-                value = "Usaquén & Chapinero",
-                detail = stringResource(R.string.radius_6)
-            )
-        }
-        Surface(shape = RoundedCornerShape(12.dp), color = SoftBlue) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(Icons.Outlined.Groups, contentDescription = null, tint = AppPrimary)
-                Spacer(modifier = Modifier.width(10.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(text = stringResource(R.string.compatibility), fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
-                    Text(text = stringResource(R.string.families_waiting), fontSize = 12.sp, color = SecondaryText)
-                }
-                AppTag(text = stringResource(R.string.high_demand), backgroundColor = AppRed.copy(alpha = 0.12f), textColor = AppRed)
-            }
-        }
-    }
-
-    PrimaryActionButton(
-        text = stringResource(R.string.manage_inquiries),
-        onClick = onManageRequests,
-        icon = Icons.Outlined.ChatBubbleOutline
-    )
-    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        Box(modifier = Modifier.weight(1f)) {
-            PrimaryActionButton(
-                text = stringResource(R.string.view_in_feed),
-                onClick = onViewInFeed,
-                icon = Icons.Outlined.Explore,
-                container = AppPrimary
-            )
-        }
-        Box(modifier = Modifier.weight(1f)) {
-            PrimaryActionButton(
-                text = stringResource(R.string.share),
-                onClick = onShare,
-                icon = Icons.Outlined.Share,
-                container = LightBlueBg,
-                content = DarkText
-            )
-        }
-    }
-
-    DetailCard(color = SoftBlue) {
-        Text(text = stringResource(R.string.ethics_commitment), fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
-        Text(
-            text = stringResource(R.string.ethics_commitment_detail),
-            fontSize = 12.sp,
-            color = SecondaryText
-        )
-    }
-}
-
-@Composable
-private fun StatBox(
-    modifier: Modifier,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    label: String,
-    value: String,
-    detail: String
-) {
-    Surface(modifier = modifier, shape = RoundedCornerShape(12.dp), color = SoftBlue) {
-        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Icon(icon, contentDescription = null, tint = AppPrimary, modifier = Modifier.size(18.dp))
-            Text(text = label, fontSize = 11.sp, color = SecondaryText)
-            Text(text = value, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = DarkText)
-            Text(text = detail, fontSize = 11.sp, color = Green)
-        }
-    }
-}
-
-// ---------------------------------------------------------
-// Notificación 2: Ascenso a Nivel Guardián
-// ---------------------------------------------------------
-
-@Composable
 fun LevelUpContent(
+    userName: String,
     onViewBadges: () -> Unit,
     onShare: () -> Unit
 ) {
@@ -272,7 +108,7 @@ fun LevelUpContent(
             IconBadge(icon = Icons.Outlined.Person, tint = AppPrimary)
             Spacer(modifier = Modifier.width(10.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = "Camila Morales", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
+                Text(text = userName, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
                 Text(text = stringResource(R.string.volunteer_verifier), fontSize = 12.sp, color = SecondaryText)
             }
             AppTag(text = stringResource(R.string.guardian_level))
@@ -399,7 +235,7 @@ fun PausedPublicationContent(
                 textColor = Danger
             )
             Spacer(modifier = Modifier.weight(1f))
-            Text(text = "ID: luna_2", fontSize = 11.sp, color = SecondaryText)
+            Text(text = state.notification?.referenceId.orEmpty(), fontSize = 11.sp, color = SecondaryText)
         }
         Text(
             text = if (state.isResubmitted) stringResource(R.string.correction_sent) else stringResource(R.string.publication_paused),
@@ -411,7 +247,7 @@ fun PausedPublicationContent(
             text = if (state.isResubmitted)
                 stringResource(R.string.committee_review)
             else
-                stringResource(R.string.luna_paused),
+                state.notification?.message.orEmpty(),
             fontSize = 13.sp,
             color = SecondaryText
         )
@@ -420,14 +256,14 @@ fun PausedPublicationContent(
     DetailCard {
         Text(text = stringResource(R.string.moderator_ruling), fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
         Text(
-            text = stringResource(R.string.ruling_text),
+            text = state.publication?.rejectionReason ?: stringResource(R.string.ruling_text),
             fontSize = 12.sp,
             color = SecondaryText
         )
         Row(verticalAlignment = Alignment.CenterVertically) {
             AsyncImage(
-                model = R.drawable.imagen_luna,
-                contentDescription = "Luna",
+                model = rememberImageModel(state.publication?.image ?: "icono"),
+                contentDescription = state.publication?.name,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(56.dp)
@@ -435,9 +271,9 @@ fun PausedPublicationContent(
             )
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = "Luna", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = DarkText)
-                Text(text = stringResource(R.string.luna_age), fontSize = 12.sp, color = SecondaryText)
-                Text(text = stringResource(R.string.luna_shelter), fontSize = 11.sp, color = SecondaryText)
+                Text(text = state.publication?.name.orEmpty(), fontSize = 15.sp, fontWeight = FontWeight.Bold, color = DarkText)
+                Text(text = listOf(state.publication?.breed, state.publication?.age).filter { !it.isNullOrBlank() }.joinToString(" · "), fontSize = 12.sp, color = SecondaryText)
+                Text(text = state.publication?.location.orEmpty(), fontSize = 11.sp, color = SecondaryText)
             }
         }
         AppTag(
@@ -595,173 +431,6 @@ private fun DateField(
 // ---------------------------------------------------------
 // Notificación 4: Comentario de Veterinario
 // ---------------------------------------------------------
-
-@Composable
-fun NewCommentContent(
-    state: NotificationDetailUiState,
-    onViewCase: () -> Unit,
-    onAcceptDonation: () -> Unit,
-    onWhatsAppClick: () -> Unit,
-    onToggleLike: () -> Unit,
-    onToggleAllReplies: () -> Unit,
-    onReplyChange: (String) -> Unit,
-    onSuggestionClick: (String) -> Unit,
-    onSendReply: () -> Unit
-) {
-    DetailCard(color = AppPrimary.copy(alpha = 0.08f)) {
-        AppTag(text = stringResource(R.string.rescue_notification_tag), backgroundColor = AppPrimary.copy(alpha = 0.15f), textColor = AppPrimary)
-        Text(text = stringResource(R.string.new_comment_max), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = DarkText)
-    }
-
-    // Caso al que pertenece el comentario
-    DetailCard {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            AsyncImage(
-                model = R.drawable.imagen_max,
-                contentDescription = "Max",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(56.dp)
-                    .clip(RoundedCornerShape(12.dp))
-            )
-            Spacer(modifier = Modifier.width(12.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                SectionLabel(text = stringResource(R.string.case_label))
-                Text(text = "Max", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = DarkText)
-                Text(text = stringResource(R.string.max_case_detail), fontSize = 11.sp, color = SecondaryText)
-            }
-            TextButton(onClick = onViewCase) {
-                Text(text = stringResource(R.string.view_case), color = AppPrimary, fontWeight = FontWeight.SemiBold)
-            }
-        }
-    }
-
-    // Comentario del veterinario
-    DetailCard {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            IconBadge(icon = Icons.Outlined.LocalHospital, tint = AppPrimary)
-            Spacer(modifier = Modifier.width(10.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(text = "Dr. Andrés Vega", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
-                Text(text = stringResource(R.string.verified_vet), fontSize = 11.sp, color = AppPrimary)
-                Text(text = stringResource(R.string.vet_time), fontSize = 11.sp, color = SecondaryText)
-            }
-        }
-        Text(
-            text = stringResource(R.string.vet_comment),
-            fontSize = 13.sp,
-            color = DarkText
-        )
-        Surface(shape = RoundedCornerShape(12.dp), color = SoftBlue) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(Icons.Outlined.LocationOn, contentDescription = null, tint = AppPrimary, modifier = Modifier.size(16.dp))
-                Spacer(modifier = Modifier.width(8.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(text = "Clínica Veterinaria San Jerónimo", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
-                    Text(text = "Cra. 7 #119-42, Usaquén, Bogotá", fontSize = 11.sp, color = SecondaryText)
-                }
-                Text(text = "2.4 km", fontSize = 12.sp, color = AppPrimary)
-            }
-        }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Row(
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .clickable(onClick = onToggleLike)
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = if (state.isCommentLiked) Icons.Filled.ThumbUp else Icons.Outlined.ThumbUp,
-                    contentDescription = stringResource(R.string.thank),
-                    tint = if (state.isCommentLiked) AppPrimary else SecondaryText,
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(text = "${state.commentLikes}", fontSize = 13.sp, color = SecondaryText)
-            }
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(text = stringResource(R.string.replies_count, state.replies.size), fontSize = 13.sp, color = SecondaryText, modifier = Modifier.weight(1f))
-            AppTag(text = stringResource(R.string.verified_donation), backgroundColor = Green.copy(alpha = 0.12f), textColor = Green)
-        }
-        PrimaryActionButton(
-            text = if (state.isDonationAccepted) stringResource(R.string.donation_accepted) else stringResource(R.string.accept_donation),
-            onClick = onAcceptDonation,
-            icon = Icons.Outlined.CheckCircle,
-            enabled = !state.isDonationAccepted
-        )
-        PrimaryActionButton(
-            text = stringResource(R.string.safe_whatsapp),
-            onClick = onWhatsAppClick,
-            icon = Icons.Outlined.ChatBubbleOutline,
-            container = LightBlueBg,
-            content = DarkText
-        )
-    }
-
-    // Respuestas en el caso
-    DetailCard {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            SectionLabel(text = stringResource(R.string.case_replies))
-            Spacer(modifier = Modifier.weight(1f))
-            if (state.replies.size > 1) {
-                TextButton(onClick = onToggleAllReplies) {
-                    Text(text = if (state.showAllReplies) stringResource(R.string.view_less) else stringResource(R.string.view_all), color = AppPrimary, fontSize = 12.sp)
-                }
-            }
-        }
-        state.visibleReplies.forEach { reply ->
-            Column {
-                Row {
-                    Text(text = reply.author, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = DarkText, modifier = Modifier.weight(1f))
-                    Text(text = reply.time, fontSize = 11.sp, color = SecondaryText)
-                }
-                Text(text = reply.text, fontSize = 12.sp, color = SecondaryText)
-            }
-        }
-    }
-
-    // Respuesta pública del gestor del caso
-    DetailCard(color = SoftBlue) {
-        Text(text = stringResource(R.string.reply_as_manager), fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
-        Text(text = stringResource(R.string.quick_suggestions), fontSize = 11.sp, color = AppPrimary)
-        Row(
-            modifier = Modifier.horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            REPLY_SUGGESTIONS.forEach { suggestion ->
-                Surface(
-                    onClick = { onSuggestionClick(suggestion) },
-                    shape = CircleShape,
-                    color = Color.White
-                ) {
-                    Text(
-                        text = suggestion.take(28) + if (suggestion.length > 28) "…" else "",
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                        fontSize = 12.sp,
-                        color = DarkText
-                    )
-                }
-            }
-        }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            OutlinedTextField(
-                value = state.replyText,
-                onValueChange = onReplyChange,
-                modifier = Modifier.weight(1f),
-                placeholder = { Text(stringResource(R.string.reply_public)) }
-            )
-            IconButton(onClick = onSendReply) {
-                Icon(Icons.AutoMirrored.Outlined.Send, contentDescription = stringResource(R.string.send_reply), tint = AppPrimary)
-            }
-        }
-    }
-}
 
 // ---------------------------------------------------------
 // Notificación 5: Insignia Primera Huella

@@ -1,5 +1,12 @@
 package co.edu.adopcionmascota.features.profile
 
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.BarChart
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.foundation.layout.width
 import androidx.compose.ui.res.stringResource
 import co.edu.adopcionmascota.R
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -46,6 +53,8 @@ fun ProfileScreen(
     onOpenSettings: () -> Unit = {},
     onViewReputation: () -> Unit = {},    // Tarjeta de reputación → stringResource(R.string.reputation_system)
     onDeleteAccount: () -> Unit = {},     // Abre la confirmación "Eliminar cuenta"
+    onStatistics: () -> Unit = {},        // Estadísticas de la comunidad
+    onFavorites: () -> Unit = {},         // Publicaciones con "Me encanta"
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -102,11 +111,29 @@ fun ProfileScreen(
 
                 ReputationCard(state = state, onClick = onViewReputation)
 
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Publicaciones a las que el usuario les dio "Me encanta"
+                OutlinedButton(onClick = onFavorites, modifier = Modifier.fillMaxWidth()) {
+                    Icon(Icons.Outlined.Favorite, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(R.string.favorites_title))
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Estadísticas de la comunidad (datos reales de Room)
+                OutlinedButton(onClick = onStatistics, modifier = Modifier.fillMaxWidth()) {
+                    Icon(Icons.Outlined.BarChart, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(R.string.statistics_title))
+                }
+
                 Spacer(modifier = Modifier.height(24.dp))
 
                 BadgesSection(
                     badges = state.badges,
-                    totalBadges = 8, // Pendiente: vendrá del repositorio
+                    totalBadges = badgeCatalog().size,
                     onViewAllClick = onViewAllBadges
                 )
 

@@ -3,8 +3,10 @@ package co.edu.adopcionmascota.features.publication
 import androidx.compose.ui.res.stringResource
 import co.edu.adopcionmascota.R
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import co.edu.adopcionmascota.domain.model.MyPublication
-import co.edu.adopcionmascota.domain.model.MyPublicationStatus
+import co.edu.adopcionmascota.domain.model.Publication
+import co.edu.adopcionmascota.domain.model.PublicationStatus
+import co.edu.adopcionmascota.domain.model.PetType
+import co.edu.adopcionmascota.core.util.rememberImageModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -90,6 +92,7 @@ fun MyPublicationsScreen(
     onDeleteClick: (String) -> Unit,                 // Icono de eliminar
     onViewPublication: (String) -> Unit,             // Nombre de la mascota / stringResource(R.string.success_story)
     onNavigationClick: (AppDestination) -> Unit,
+    onRequestsClick: () -> Unit = {},                // Solicitudes de adopción recibidas
     viewModel: MyPublicationsViewModel = hiltViewModel()
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -200,6 +203,34 @@ fun MyPublicationsScreen(
                 }
             }
 
+            // Solicitudes de adopción y hogar de paso que otros usuarios enviaron
+            item {
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = Green.copy(alpha = 0.12f),
+                    modifier = Modifier.clickable(onClick = onRequestsClick)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Outlined.Groups, contentDescription = null, tint = Green)
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(text = stringResource(R.string.requests_received), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
+                            Text(
+                                text = stringResource(R.string.requests_pending_count, state.pendingRequests),
+                                fontSize = 12.sp,
+                                color = SecondaryText
+                            )
+                        }
+                        Text(text = stringResource(R.string.view), color = Green, fontWeight = FontWeight.SemiBold)
+                    }
+                }
+            }
+
             item {
                 AppSearchBar(
                     value = state.searchText,
@@ -220,37 +251,37 @@ fun MyPublicationsScreen(
 
             items(state.visiblePublications, key = { it.id }) { publication ->
                 when (publication.status) {
-                    MyPublicationStatus.ACTIVE, MyPublicationStatus.PAUSED -> ActivePublicationCard(
+                    PublicationStatus.VERIFIED, PublicationStatus.PAUSED -> ActivePublicationCard(
                         publication = publication,
-                        onNameClick = { publication.feedId?.let(onViewPublication) },
+                        comments = state.commentCounts[publication.id] ?: 0,
+                        requests = state.requestCounts[publication.id] ?: 0,
+                        onNameClick = { onViewPublication(publication.id) },
                         onMarkResolved = { viewModel.onMarkResolved(publication.id) },
                         onEdit = { onEditClick(publication.id) },
                         onDelete = { onDeleteClick(publication.id) }
                     )
 
-                    MyPublicationStatus.IN_REVIEW -> InReviewCard(
+                    PublicationStatus.PENDING -> InReviewCard(
                         publication = publication,
                         onCancel = { viewModel.onCancelRequestClick(publication) },
                         onEdit = { onEditClick(publication.id) }
                     )
 
-                    MyPublicationStatus.RESOLVED -> ResolvedCard(
+                    PublicationStatus.RESOLVED -> ResolvedCard(
                         publication = publication,
-                        onViewStory = {
-                            val feedId = publication.feedId
-                            if (feedId != null) onViewPublication(feedId)
-                            else viewModel.onGuideClick()
-                        },
+                        onViewStory = { onViewPublication(publication.id) },
                         onDelete = { onDeleteClick(publication.id) }
                     )
 
-                    MyPublicationStatus.OBSERVATION -> if (publication.id !in state.hiddenNotices) {
+                    PublicationStatus.REJECTED -> if (publication.id !in state.hiddenNotices) {
                         ObservationCard(
                             publication = publication,
                             onDiscard = { viewModel.onDiscardNotice(publication.id) },
                             onFix = { onEditClick(publication.id) }
                         )
                     }
+
+                    PublicationStatus.DELETED -> Unit
                 }
             }
 
@@ -305,14 +336,14 @@ fun MyPublicationsScreen(
 
 @Composable
 private fun PublicationHeader(
-    publication: MyPublication,
+    publication: Publication,
     tag: String,
     tagColor: Color,
     onNameClick: (() -> Unit)? = null
 ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         AsyncImage(
-            model = publication.imageUri ?: publication.image,
+            model = rememberImageModel(publication.image),
             contentDescription = publication.name,
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -332,7 +363,7 @@ private fun PublicationHeader(
                 color = if (onNameClick != null) AppPrimary else DarkText
             )
             Text(
-                text = stringResource(R.string.category_breed, publication.category, publication.breed),
+                text = stringResource(R.string.category_breed, publication.type.label(), publication.breed.ifBlank { publication.species }),
                 fontSize = 12.sp,
                 color = SecondaryText,
                 maxLines = 1,
@@ -359,7 +390,9 @@ private fun CardContainer(content: @Composable () -> Unit) {
 
 @Composable
 private fun ActivePublicationCard(
-    publication: MyPublication,
+    publication: Publication,
+    comments: Int,
+    requests: Int,
     onNameClick: () -> Unit,
     onMarkResolved: () -> Unit,
     onEdit: () -> Unit,
@@ -371,7 +404,7 @@ private fun ActivePublicationCard(
                 PublicationHeader(
                     publication = publication,
                     tag = stringResource(publication.status.label),
-                    tagColor = if (publication.status == MyPublicationStatus.PAUSED) Warning else Green,
+                    tagColor = if (publication.status == PublicationStatus.PAUSED) Warning else Green,
                     onNameClick = onNameClick
                 )
             }
@@ -381,9 +414,9 @@ private fun ActivePublicationCard(
         }
         Text(text = publication.description, fontSize = 12.sp, color = SecondaryText, maxLines = 2, overflow = TextOverflow.Ellipsis)
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            Stat(icon = Icons.Outlined.Star, value = publication.followers, label = stringResource(R.string.important_label))
-            Stat(icon = Icons.Outlined.ChatBubbleOutline, value = publication.comments, label = stringResource(R.string.comments))
-            Stat(icon = Icons.Outlined.Share, value = publication.shares, label = stringResource(R.string.shares))
+            Stat(icon = Icons.Outlined.Star, value = publication.likes, label = stringResource(R.string.important_label))
+            Stat(icon = Icons.Outlined.ChatBubbleOutline, value = comments, label = stringResource(R.string.comments))
+            Stat(icon = Icons.Outlined.Share, value = requests, label = stringResource(R.string.requests_label))
         }
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             OutlinedButton(onClick = onMarkResolved, modifier = Modifier.weight(1f), shape = CircleShape) {
@@ -418,7 +451,7 @@ private fun Stat(icon: ImageVector, value: Int, label: String) {
 
 @Composable
 private fun InReviewCard(
-    publication: MyPublication,
+    publication: Publication,
     onCancel: () -> Unit,
     onEdit: () -> Unit
 ) {
@@ -452,7 +485,7 @@ private fun InReviewCard(
 
 @Composable
 private fun ResolvedCard(
-    publication: MyPublication,
+    publication: Publication,
     onViewStory: () -> Unit,
     onDelete: () -> Unit
 ) {
@@ -474,7 +507,7 @@ private fun ResolvedCard(
 
 @Composable
 private fun ObservationCard(
-    publication: MyPublication,
+    publication: Publication,
     onDiscard: () -> Unit,
     onFix: () -> Unit
 ) {
@@ -497,7 +530,7 @@ private fun ObservationCard(
                 AppTag(text = stringResource(publication.status.label), backgroundColor = Danger.copy(alpha = 0.12f), textColor = Danger)
             }
             Text(text = stringResource(R.string.community_moderator_reason), fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
-            Text(text = publication.moderatorNote.orEmpty(), fontSize = 12.sp, color = SecondaryText)
+            Text(text = publication.rejectionReason.orEmpty(), fontSize = 12.sp, color = SecondaryText)
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 OutlinedButton(onClick = onDiscard, modifier = Modifier.weight(1f), shape = CircleShape) {
                     Text(text = stringResource(R.string.discard), fontSize = 12.sp)
@@ -513,4 +546,13 @@ private fun ObservationCard(
             }
         }
     }
+}
+
+// Nombre visible de la categoría de la publicación
+@Composable
+fun PetType.label(): String = when (this) {
+    PetType.ADOPCION -> stringResource(R.string.adoption)
+    PetType.PERDIDO -> stringResource(R.string.option_lost)
+    PetType.ENCONTRADO -> stringResource(R.string.type_found)
+    PetType.VETERINARIA -> stringResource(R.string.option_vet)
 }
