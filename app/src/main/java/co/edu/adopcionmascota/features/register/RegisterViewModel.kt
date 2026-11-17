@@ -3,12 +3,17 @@ import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import co.edu.adopcionmascota.core.util.RequestResult
+import co.edu.adopcionmascota.domain.model.User
+import co.edu.adopcionmascota.domain.usecase.user.RegisterUserUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
+import jakarta.inject.Inject
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 
 data class RegisterUiState(
@@ -51,7 +56,10 @@ data class RegisterUiState(
                 confirmPasswordError == null
 }
 
-class RegisterViewModel: ViewModel(){
+@HiltViewModel
+class RegisterViewModel @Inject constructor(
+    private val registerUserUseCase: RegisterUserUseCase
+): ViewModel(){
     private val _uiState= MutableStateFlow(value = RegisterUiState())
 
     val uiState: StateFlow<RegisterUiState> = _uiState.asStateFlow()
@@ -195,11 +203,33 @@ class RegisterViewModel: ViewModel(){
 
 
     private fun register(){
-        if(!_uiState.value.isFormValid)return
+        val currentState= _uiState.value
+        if(!currentState.isFormValid)return
+
 
         viewModelScope.launch {
             _uiState.update { it.copy(registerResult = RequestResult.Loading) }
             delay(2000)
+
+            val newUser= User(
+                id = UUID.randomUUID().toString(), // Genera un ID único para el nuevo usuario
+                name = currentState.name,
+                city = currentState.city,
+                address = currentState.address,
+                email = currentState.email,
+                password = currentState.password,
+                profilePictureUrl = "https://picsum.photos/200?random=1"
+            )
+            try {
+               registerUserUseCase(newUser)
+            }catch (e: Exception){
+                _uiState.update {
+                    it.copy(registerResult = RequestResult.Failure(e.message.toString()))
+                }
+            }
+
+
+
             _uiState.update { it.copy(registerResult = RequestResult.Success("Registro exitoso")) }
         }
     }

@@ -41,6 +41,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import co.edu.adopcionmascota.core.component.ConfirmAlertDialog
 import co.edu.adopcionmascota.core.util.RequestResult
@@ -63,7 +64,7 @@ fun RegisterScreen(
     onNavigateToBack: () -> Unit,
     onRegisterSuccess: (String) -> Unit = {},     // Pantalla de confirmación con el nombre del usuario
     onNavigateToLogin: () -> Unit = {},           // "¿Ya tienes una cuenta? Iniciar Sesión"
-    viewModel: RegisterViewModel = viewModel()
+    viewModel: RegisterViewModel = hiltViewModel()
 ) {
 
 
