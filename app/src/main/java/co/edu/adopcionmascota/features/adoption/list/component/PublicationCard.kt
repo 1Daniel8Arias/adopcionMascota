@@ -1,5 +1,7 @@
 package co.edu.adopcionmascota.features.adoption.list.component
 
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -19,18 +21,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import co.edu.adopcionmascota.core.theme.AppSecondaryText
 import coil3.compose.AsyncImage
-import co.edu.adopcionmascota.domain.Publication
+import co.edu.adopcionmascota.core.util.rememberImageModel
+import co.edu.adopcionmascota.domain.model.Publication
 import co.edu.adopcionmascota.core.component.AppTag
 import co.edu.adopcionmascota.core.theme.*
-import co.edu.adopcionmascota.domain.PetType
+import co.edu.adopcionmascota.domain.model.PetType
 
 
 @Composable
 fun PublicationCard(
     publication: Publication,
+    isLiked: Boolean = false,               // "Me encanta" del usuario (Room)
+    onLikeClick: () -> Unit = {},
     onActionClick: () -> Unit = {},
     onShareClick: () -> Unit = {}
-
 ) {
 
     Card(
@@ -48,7 +52,7 @@ fun PublicationCard(
             // -----------------------------------------
 
             AsyncImage(
-                model = publication.image,
+                model = rememberImageModel(publication.image),
                 contentDescription = publication.name,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -65,7 +69,8 @@ fun PublicationCard(
             ) {
 
                 Row(
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
 
                     Text(
@@ -81,6 +86,17 @@ fun PublicationCard(
                             fontSize = 10.sp
                         )
                     }
+
+                    // "Me encanta": se guarda por usuario y aparece en "Mis favoritos"
+                    IconButton(onClick = onLikeClick) {
+                        Icon(
+                            imageVector = if (isLiked) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                            contentDescription = stringResource(R.string.like),
+                            tint = if (isLiked) Color.Red else Color.Gray
+                        )
+                    }
+
+                    Text(text = publication.likes.toString(), fontSize = 12.sp)
                 }
 
                 Spacer(
@@ -109,43 +125,10 @@ fun PublicationCard(
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
 
-                            AppTag("✓ Vacunado")
-                            AppTag("✓ Esterilizado")
-                            AppTag("Apto con niños")
-
-                            var liked by remember {
-                                mutableStateOf(false)
-                            }
-
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-
-                                IconButton(
-                                    onClick = {
-                                        liked = !liked
-                                    }
-                                ) {
-
-                                    Icon(
-                                        imageVector =
-                                            if (liked)
-                                                Icons.Filled.Favorite
-                                            else
-                                                Icons.Outlined.FavoriteBorder,
-                                        contentDescription = "Like",
-                                        tint =
-                                            if (liked)
-                                                Color.Red
-                                            else
-                                                Color.Gray
-                                    )
-                                }
-
-                                Text(
-                                    text = publication.likes
-                                )
-                            }
+                            // Las etiquetas salen de los datos de salud de la publicación
+                            if (publication.isVaccinated) AppTag(stringResource(R.string.tag_vaccinated))
+                            if (publication.isSterilized) AppTag(stringResource(R.string.tag_sterilized))
+                            if (publication.breed.isNotBlank()) AppTag(publication.breed)
                         }
                     }
 
@@ -157,12 +140,12 @@ fun PublicationCard(
                         ) {
 
                             Text(
-                                text = "◉ ${publication.likes} personas alertas en la zona",
+                                text = stringResource(R.string.people_alert, publication.likes),
                                 fontSize = 11.sp
                             )
 
                             Text(
-                                text = "□ 14 pistas",
+                                text = stringResource(R.string.clues),
                                 fontSize = 11.sp,
                                 color = AppSecondaryText
                             )
@@ -172,10 +155,15 @@ fun PublicationCard(
                     PetType.ENCONTRADO -> {
 
                         Text(
-                            text = "Encontrado desorientado. Se busca a sus dueños o adoptante responsable...",
+                            text = stringResource(R.string.found_card_text),
                             fontSize = 11.sp,
                             color = AppSecondaryText
                         )
+                    }
+
+                    PetType.VETERINARIA -> {
+
+                        AppTag(stringResource(R.string.detail_status_vet))
                     }
 
                 }
@@ -233,18 +221,24 @@ private fun PublicationActionButton(
 
         PetType.ENCONTRADO ->
             AppPrimary
+
+        PetType.VETERINARIA ->
+            AppPrimary
     }
 
     val buttonText = when (publication.type) {
 
         PetType.ADOPCION ->
-            "Me interesa adoptar →"
+            stringResource(R.string.interested_adopt)
 
         PetType.PERDIDO ->
-            "He visto a ${publication.name}"
+            stringResource(R.string.seen_pet, publication.name)
 
        PetType.ENCONTRADO ->
-            "Ver detalles y fotos →"
+            stringResource(R.string.view_details)
+
+        PetType.VETERINARIA ->
+            stringResource(R.string.detail_action_vet)
 
     }
 

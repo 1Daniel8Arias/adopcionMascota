@@ -1,5 +1,7 @@
 package co.edu.adopcionmascota.features.adoption.list.component
 
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
 
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
@@ -17,6 +19,7 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.AddLocationAlt
 import androidx.compose.material.icons.filled.Details
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.MedicalServices
 import androidx.compose.material.icons.filled.VolunteerActivism
 import androidx.compose.material3.Icon
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -26,7 +29,8 @@ enum class ExploreFilter {
     TODAS,
     ADOPCION,
     PERDIDO,
-    ENCONTRADO
+    ENCONTRADO,
+    VETERINARIA
 }
 @Composable
 fun ExploreFilters(
@@ -49,12 +53,12 @@ fun ExploreFilters(
             },
 
             label = {
-                Text("Todas")
+                Text(stringResource(R.string.all))
             },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.List,
-                    contentDescription = "Todas"
+                    contentDescription = stringResource(R.string.all)
                 )
             }
         )
@@ -67,12 +71,12 @@ fun ExploreFilters(
             },
 
             label = {
-                Text("Adopción")
+                Text(stringResource(R.string.adoption))
             },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.VolunteerActivism,
-                    contentDescription = "Todas"
+                    contentDescription = stringResource(R.string.all)
                 )
             }
         )
@@ -85,12 +89,12 @@ fun ExploreFilters(
             },
 
             label = {
-                Text("Perdidos")
+                Text(stringResource(R.string.lost))
             },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Details,
-                    contentDescription = "Perdidos"
+                    contentDescription = stringResource(R.string.lost)
                 )
             }
         )
@@ -102,12 +106,28 @@ fun ExploreFilters(
                 onFilterSelected(ExploreFilter.ENCONTRADO)
             },
             label = {
-                Text("Encontrados")
+                Text(stringResource(R.string.found))
             },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Home,
-                    contentDescription ="Encontrados"
+                    contentDescription =stringResource(R.string.found)
+                )
+            }
+        )
+
+        FilterChip(
+            selected = selectedFilter == ExploreFilter.VETERINARIA,
+            onClick = {
+                onFilterSelected(ExploreFilter.VETERINARIA)
+            },
+            label = {
+                Text(stringResource(R.string.option_vet))
+            },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.MedicalServices,
+                    contentDescription = stringResource(R.string.option_vet)
                 )
             }
         )

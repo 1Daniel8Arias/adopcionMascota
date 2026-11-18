@@ -1,5 +1,7 @@
 package co.edu.adopcionmascota.features.register.component
 
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -49,7 +51,7 @@ fun RegisterTopBar(
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Volver"
+                contentDescription = stringResource(R.string.back)
             )
         }
 
@@ -65,7 +67,7 @@ fun RegisterTopBar(
         ) {
             Icon(
                 imageVector = Icons.Default.Favorite,
-                contentDescription = "Patitas Conectadas",
+                contentDescription = stringResource(R.string.brand),
                 tint = Color.White,
                 modifier = Modifier.size(25.dp)
             )
@@ -78,14 +80,14 @@ fun RegisterTopBar(
         ) {
 
             Text(
-                text = "PATITAS CONECTADAS",
+                text = stringResource(R.string.brand_upper),
                 color = Color(0xFF142DE5),
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.Bold
             )
 
             Text(
-                text = "Sign In",
+                text = stringResource(R.string.sign_in_short),
                 style = MaterialTheme.typography.titleLarge,
                 color = Color.Black
             )
@@ -96,7 +98,7 @@ fun RegisterTopBar(
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.HelpOutline,
-                contentDescription = "Ayuda"
+                contentDescription = stringResource(R.string.help)
             )
         }
 
@@ -110,7 +112,7 @@ fun RegisterTopBar(
 
             Icon(
                 imageVector = Icons.Default.Person,
-                contentDescription = "Perfil",
+                contentDescription = stringResource(R.string.nav_profile),
                 tint = Color.White
             )
         }

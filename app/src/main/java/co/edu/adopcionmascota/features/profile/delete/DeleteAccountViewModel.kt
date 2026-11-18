@@ -1,10 +1,13 @@
 package co.edu.adopcionmascota.features.profile.delete
 
+import co.edu.adopcionmascota.R
+import javax.inject.Inject
+import dagger.hilt.android.lifecycle.HiltViewModel
+import co.edu.adopcionmascota.core.util.ResourceProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import co.edu.adopcionmascota.core.util.RequestResult
-import co.edu.adopcionmascota.features.profile.UserProfileStore
-import kotlinx.coroutines.delay
+import co.edu.adopcionmascota.domain.usecase.user.DeleteAccountUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,7 +23,11 @@ data class DeleteAccountUiState(
         get() = isConfirmed && deleteResult !is RequestResult.Loading
 }
 
-class DeleteAccountViewModel : ViewModel() {
+@HiltViewModel
+class DeleteAccountViewModel @Inject constructor(
+    private val deleteAccountUseCase: DeleteAccountUseCase,
+    private val resources: ResourceProvider
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DeleteAccountUiState())
     val uiState: StateFlow<DeleteAccountUiState> = _uiState.asStateFlow()
@@ -34,11 +41,12 @@ class DeleteAccountViewModel : ViewModel() {
 
         viewModelScope.launch {
             _uiState.update { it.copy(deleteResult = RequestResult.Loading) }
-            delay(1500) // Simula la petición al servidor
-            UserProfileStore.clear()
-            _uiState.update {
-                it.copy(deleteResult = RequestResult.Success("Cuenta eliminada correctamente"))
-            }
+            // El usuario se borra de Room; la sesión se cierra en la pantalla de despedida
+            val result = runCatching { deleteAccountUseCase() }.fold(
+                onSuccess = { RequestResult.Success(resources.getString(R.string.account_deleted_ok)) },
+                onFailure = { RequestResult.Failure(resources.getString(R.string.network_error)) }
+            )
+            _uiState.update { it.copy(deleteResult = result) }
         }
     }
 

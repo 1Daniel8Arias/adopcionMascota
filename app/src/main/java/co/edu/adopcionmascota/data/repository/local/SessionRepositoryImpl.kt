@@ -39,7 +39,8 @@ class SessionRepositoryImpl @Inject constructor(
             // Retorna un objeto UserSession con los datos obtenidos si existen
             UserSession(
                 userId = userId,
-                role = UserRole.valueOf(roleStr)
+                role = UserRole.entries.find { it.name == roleStr }
+                    ?: if (roleStr == "ADMIN") UserRole.MODERATOR else UserRole.USER
             )
         }
 
@@ -47,11 +48,11 @@ class SessionRepositoryImpl @Inject constructor(
 
 
     override suspend fun saveSession(
-        UserId: String,
+        userId: String,
         role: UserRole
     ) {
         context.dataStore.edit { prefs ->
-            prefs[Keys.USER_ID] = UserId
+            prefs[Keys.USER_ID] = userId
             prefs[Keys.ROLE] = role.name
         }
     }

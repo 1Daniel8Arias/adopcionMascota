@@ -1,11 +1,18 @@
 package co.edu.adopcionmascota.features.publication
 
+import javax.inject.Inject
+import dagger.hilt.android.lifecycle.HiltViewModel
+import co.edu.adopcionmascota.core.util.ResourceProvider
+import co.edu.adopcionmascota.domain.model.Location
+import co.edu.adopcionmascota.domain.model.Publication
+import co.edu.adopcionmascota.domain.model.PublicationStatus
+import co.edu.adopcionmascota.domain.usecase.publication.CreateReportUseCase
+import java.util.UUID
 
 import co.edu.adopcionmascota.R
 import co.edu.adopcionmascota.core.util.RequestResult
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,7 +21,7 @@ import kotlinx.coroutines.launch
 
 data class PublicationUiState(
     val category: String = "Adopción",
-    val photos: List<String> = listOf("principal_photo_mock"),
+    val photos: List<String> = emptyList(),
     val title: String = "",
     val species: String = "Perro",
     val breed: String = "",
@@ -24,10 +31,10 @@ data class PublicationUiState(
     val isSterilized: Boolean = true,
     val hasMicrochip: Boolean = false,
     val history: String = "",
-    val address: String = "Calle 140 # 11-45, Usaquén",
-    val cityRegion: String = "Bogotá D.C., Cundinamarca, Colombia",
-    val latitude: Double = 4.6956,
-    val longitude: Double = -74.0331,
+    val address: String = "Armenia, Quindío",
+    val cityRegion: String = "Quindío, Colombia",
+    val latitude: Double = 4.5389,
+    val longitude: Double = -75.6725,
     val publicationResult: RequestResult? = null,
     val infoMessage: String? = null
 ) {
@@ -38,7 +45,11 @@ data class PublicationUiState(
                 history.isNotBlank() &&
                 address.isNotBlank()
 }
-class PublicationViewModel : ViewModel() {
+@HiltViewModel
+class PublicationViewModel @Inject constructor(
+    private val createReportUseCase: CreateReportUseCase,
+    private val resources: ResourceProvider
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PublicationUiState())
     val uiState: StateFlow<PublicationUiState> = _uiState.asStateFlow()
@@ -91,22 +102,22 @@ class PublicationViewModel : ViewModel() {
         viewModelScope.launch {
             _uiState.update { it.copy(publicationResult = RequestResult.Loading) }
             try {
-                delay(2000) // Simulación de petición de red
-                // La nueva publicación aparece en "Mis Publicaciones" como "En Revisión Ética"
+                // Se guarda en Room "En revisión": aparece en "Mis Publicaciones"
+                // y en la cola del moderador, pero no en el feed hasta que la aprueben
                 val state = _uiState.value
-                MyPublicationsStore.add(
-                    MyPublication(
-                        id = "m${System.currentTimeMillis()}",
-                        feedId = null,
+                createReportUseCase(
+                    Publication(
+                        id = UUID.randomUUID().toString(),
                         name = state.title.trim(),
-                        category = state.category,
+                        type = categoryToType(state.category),
                         species = state.species,
                         breed = state.breed.trim(),
                         size = state.size,
                         description = state.history.trim(),
                         location = state.address,
-                        image = R.drawable.icono,
-                        status = MyPublicationStatus.IN_REVIEW,
+                        coordinates = Location(state.latitude, state.longitude),
+                        image = state.photos.firstOrNull() ?: "icono",
+                        status = PublicationStatus.PENDING,
                         isVaccinated = state.isVaccinated,
                         isDewormed = state.isDewormed,
                         isSterilized = state.isSterilized,
@@ -116,7 +127,7 @@ class PublicationViewModel : ViewModel() {
                 _uiState.update { it.copy(publicationResult = RequestResult.Success("")) }
             } catch (e: Exception) {
                 _uiState.update {
-                    it.copy(publicationResult = RequestResult.Failure("Error al publicar la mascota"))
+                    it.copy(publicationResult = RequestResult.Failure(resources.getString(R.string.publish_error)))
                 }
             }
         }
@@ -124,7 +135,7 @@ class PublicationViewModel : ViewModel() {
 
     // "Guardar borrador": el formulario se conserva mientras la pantalla siga abierta
     fun onSaveDraft() {
-        _uiState.update { it.copy(infoMessage = "Borrador guardado") }
+        _uiState.update { it.copy(infoMessage = resources.getString(R.string.draft_saved)) }
     }
 
     fun resetInfoMessage() {
@@ -135,16 +146,17 @@ class PublicationViewModel : ViewModel() {
         _uiState.update { it.copy(publicationResult = null) }
     }
 
-    fun onAddPhoto() {
-        val currentPhotos = _uiState.value.photos
-        if (currentPhotos.size < 5) {
-            val nextNumber = currentPhotos.size + 1
-            val newPhotoMock = "mock_photo_$nextNumber"
-            _uiState.update { it.copy(photos = currentPhotos + newPhotoMock) }
-        }
+    // Punto elegido en el mapa
+    fun onLocationSelected(location: Location) {
+        _uiState.update { it.copy(latitude = location.latitude, longitude = location.longitude) }
     }
 
-    fun onRemovePhoto(photoMock: String) {
-        _uiState.update { it.copy(photos = it.photos - photoMock) }
+    // Imagen elegida en la galería
+    fun onPhotoSelected(uri: String) {
+        _uiState.update { if (it.photos.size < 5) it.copy(photos = it.photos + uri) else it }
+    }
+
+    fun onRemovePhoto(photo: String) {
+        _uiState.update { it.copy(photos = it.photos - photo) }
     }
 }

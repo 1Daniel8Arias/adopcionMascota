@@ -1,5 +1,7 @@
 package co.edu.adopcionmascota.features.register.component
 
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -66,7 +68,7 @@ fun AnimalLevelCard() {
                 ) {
 
                     Text(
-                        text = "Nivel 1 · Amigo Animal",
+                        text = stringResource(R.string.level_1_name),
                         fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.titleMedium
                     )
@@ -79,7 +81,7 @@ fun AnimalLevelCard() {
                     ) {
 
                         Text(
-                            text = "0 pts",
+                            text = stringResource(R.string.zero_points),
                             modifier = Modifier.padding(
                                 horizontal = 10.dp,
                                 vertical = 4.dp
@@ -93,9 +95,9 @@ fun AnimalLevelCard() {
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = "Tu cuenta te habilita de inmediato para adoptar, " +
-                            "reportar pérdidas y verificar rescates en Bogotá " +
-                            "100% gratis y sin intermediarios comerciales.",
+                    text = stringResource(R.string.level_card_1) +
+                            stringResource(R.string.level_card_2) +
+                            stringResource(R.string.level_card_3),
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color(0xFF444444)
                 )

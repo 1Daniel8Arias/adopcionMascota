@@ -1,10 +1,16 @@
 package co.edu.adopcionmascota.features.profile.updated
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import co.edu.adopcionmascota.features.profile.UserProfileStore
+import androidx.lifecycle.viewModelScope
+import co.edu.adopcionmascota.domain.usecase.user.ObserveCurrentUserUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 data class ProfileUpdatedUiState(
     val photoUrl: String = "",
@@ -14,16 +20,15 @@ data class ProfileUpdatedUiState(
     val lostPetAlerts: Boolean = false,
     val changes: List<String> = emptyList(),
 
-    // Reputación (por ahora quemada, igual que en el perfil)
-    val points: Int = 340,
-    val nextLevelPoints: Int = 500
+    // Reputación del usuario (Room)
+    val points: Int = 0,
+    val nextLevelPoints: Int = 100
 ) {
-    // Ej: "Usaquén, Bogotá D.C. · Cedritos"
+    // Ej: "Armenia · Barrio Centro"
     val locationText: String
         get() {
-            val sector = neighborhood.substringBefore(" /")
-            return if (sector.isBlank()) "$localityName, Bogotá D.C."
-            else "$localityName, Bogotá D.C. · $sector"
+            val sector = neighborhood.substringBefore(",")
+            return if (sector.isBlank()) localityName else "$localityName · $sector"
         }
 
     val progress: Float
@@ -34,21 +39,34 @@ data class ProfileUpdatedUiState(
         get() = (nextLevelPoints - points).coerceAtLeast(0)
 }
 
-class ProfileUpdatedViewModel : ViewModel() {
+@HiltViewModel
+class ProfileUpdatedViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
+    observeCurrentUserUseCase: ObserveCurrentUserUseCase
+) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(ProfileUpdatedUiState())
+    // La lista de cambios llega como argumento de la ruta desde "Editar Perfil"
+    private val changes: List<String> = savedStateHandle.get<List<String>>("changes").orEmpty()
+
+    private val _uiState = MutableStateFlow(ProfileUpdatedUiState(changes = changes))
     val uiState: StateFlow<ProfileUpdatedUiState> = _uiState.asStateFlow()
 
     init {
-        // Se toman los datos recién guardados y la lista de cambios
-        val profile = UserProfileStore.profile.value
-        _uiState.value = ProfileUpdatedUiState(
-            photoUrl = profile.photoUrl,
-            name = profile.name,
-            localityName = profile.localityName,
-            neighborhood = profile.neighborhood,
-            lostPetAlerts = profile.lostPetAlerts,
-            changes = UserProfileStore.lastChanges.value
-        )
+        viewModelScope.launch {
+            observeCurrentUserUseCase().collect { user ->
+                if (user == null) return@collect
+                _uiState.update {
+                    it.copy(
+                        photoUrl = user.profilePictureUrl,
+                        name = user.name,
+                        localityName = user.city,
+                        neighborhood = user.address,
+                        lostPetAlerts = user.lostPetAlerts,
+                        points = user.points,
+                        nextLevelPoints = user.level.next?.minPoints ?: user.points
+                    )
+                }
+            }
+        }
     }
 }

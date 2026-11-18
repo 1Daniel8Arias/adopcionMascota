@@ -1,5 +1,9 @@
 package co.edu.adopcionmascota.features.comment
 
+import androidx.compose.ui.res.stringResource
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import co.edu.adopcionmascota.domain.model.Comment
+import co.edu.adopcionmascota.domain.model.ContributionType
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -73,6 +77,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import co.edu.adopcionmascota.R
+import co.edu.adopcionmascota.core.util.relativeTime
+import co.edu.adopcionmascota.features.notification.initialsOf
 import co.edu.adopcionmascota.core.component.AppTag
 import co.edu.adopcionmascota.core.component.ConfirmAlertDialog
 import co.edu.adopcionmascota.core.theme.AppPrimary
@@ -91,11 +97,9 @@ private val SelectedChip = Color(0xFF5565F2)
 @Composable
 fun CreateCommentScreen(
     publicationId: String,
-    onNavigateBack: () -> Unit,        // "Descartar y volver" / "Volver a la Publicación"
-    onNavigateToFeed: () -> Unit,      // "Ir al Feed Principal"
-    viewModel: CreateCommentViewModel = viewModel(key = "comment_$publicationId") {
-        CreateCommentViewModel(publicationId)
-    }
+    onNavigateBack: () -> Unit,        // stringResource(R.string.discard_and_back) / "Volver a la Publicación"
+    onNavigateToFeed: () -> Unit,      // stringResource(R.string.go_to_feed)
+    viewModel: CreateCommentViewModel = hiltViewModel()
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val state by viewModel.uiState.collectAsState()
@@ -190,14 +194,14 @@ fun CreateCommentScreen(
 
         if (state.showDiscardDialog) {
             ConfirmAlertDialog(
-                title = "¿Descartar tu aporte?",
-                message = "Se borrará el borrador que escribiste para ${state.petName}.",
+                title = stringResource(R.string.comment_discard_title),
+                message = stringResource(R.string.comment_discard_message, state.petName),
                 onConfirm = {
                     viewModel.onConfirmDiscard()
                     onNavigateBack()
                 },
                 onDismiss = viewModel::onDismissDiscardDialog,
-                confirmText = "Descartar"
+                confirmText = stringResource(R.string.discard)
             )
         }
     }
@@ -217,12 +221,12 @@ private fun CommentTopBar(
         IconButton(onClick = onBackClick) {
             Icon(
                 imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                contentDescription = "Volver",
+                contentDescription = stringResource(R.string.back),
                 tint = DarkText
             )
         }
         Text(
-            text = "PATITAS\nCONECTADAS",
+            text = stringResource(R.string.brand_two_lines),
             modifier = Modifier.weight(1f),
             fontSize = 11.sp,
             lineHeight = 11.sp,
@@ -232,7 +236,7 @@ private fun CommentTopBar(
         IconButton(onClick = onHelpClick) {
             Icon(
                 imageVector = Icons.AutoMirrored.Outlined.HelpOutline,
-                contentDescription = "Ayuda y soporte",
+                contentDescription = stringResource(R.string.help_support),
                 tint = SecondaryText
             )
         }
@@ -283,7 +287,7 @@ private fun CaseSummaryCard(state: CreateCommentUiState) {
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     AppTag(
-                        text = "● En adopción activa",
+                        text = stringResource(R.string.active_adoption),
                         backgroundColor = Color(0xFFDFE0FF),
                         textColor = Color(0xFF000865)
                     )
@@ -320,7 +324,7 @@ private fun ContributionTypeSelector(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
-            text = "TIPO DE CONTRIBUCIÓN",
+            text = stringResource(R.string.contribution_type),
             fontSize = 11.sp,
             color = SecondaryText
         )
@@ -347,7 +351,7 @@ private fun ContributionTypeSelector(
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = type.label,
+                            text = stringResource(type.label),
                             fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = if (isSelected) Color.White else SecondaryText
@@ -385,7 +389,7 @@ private fun CommentForm(
         ) {
             // Identidad del usuario activo
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Avatar(initials = "CM", background = Color(0xFFDFE0FF), size = 40)
+                Avatar(initials = initialsOf(state.authorName), background = Color(0xFFDFE0FF), size = 40)
                 Spacer(modifier = Modifier.width(10.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(text = state.authorName, fontSize = 14.sp, color = DarkText)
@@ -401,7 +405,7 @@ private fun CommentForm(
                     }
                 }
                 AppTag(
-                    text = "Público",
+                    text = stringResource(R.string.public_label),
                     backgroundColor = Color(0xFFE3EFFF),
                     textColor = Color(0xFF76777C)
                 )
@@ -421,7 +425,7 @@ private fun CommentForm(
                         minLines = 4,
                         placeholder = {
                             Text(
-                                text = "Aportar información sobre ${state.petName} o apoyo...",
+                                text = stringResource(R.string.comment_hint, state.petName),
                                 fontSize = 14.sp
                             )
                         },
@@ -444,7 +448,7 @@ private fun CommentForm(
                         )
                         if (state.isDraftSaved) {
                             Text(
-                                text = "Borrador autoguardado",
+                                text = stringResource(R.string.draft_autosaved),
                                 fontSize = 13.sp,
                                 color = AppPrimary
                             )
@@ -461,21 +465,21 @@ private fun CommentForm(
                 IconButton(onClick = onAttachPhotoClick) {
                     Icon(
                         imageVector = Icons.Outlined.AddPhotoAlternate,
-                        contentDescription = "Adjuntar foto",
+                        contentDescription = stringResource(R.string.attach_photo),
                         tint = AppPrimary
                     )
                 }
                 IconButton(onClick = onShareLocationClick) {
                     Icon(
                         imageVector = Icons.Outlined.LocationOn,
-                        contentDescription = "Compartir ubicación",
+                        contentDescription = stringResource(R.string.share_location),
                         tint = AppPrimary
                     )
                 }
                 IconButton(onClick = onMentionClick) {
                     Icon(
                         imageVector = Icons.Outlined.AlternateEmail,
-                        contentDescription = "Mencionar voluntario",
+                        contentDescription = stringResource(R.string.mention_volunteer),
                         tint = AppPrimary
                     )
                 }
@@ -496,7 +500,7 @@ private fun CommentForm(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "+$COMMENT_POINTS pts",
+                            text = stringResource(R.string.comment_points, COMMENT_POINTS),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = AppPrimary
@@ -532,7 +536,7 @@ private fun CommitmentSection(
                 )
                 Spacer(modifier = Modifier.width(10.dp))
                 Text(
-                    text = "Tu aporte será visible para toda la red de rescate. Fomentamos un entorno de colaboración, respeto y veracidad por la seguridad de $petName.",
+                    text = stringResource(R.string.comment_visible, petName),
                     fontSize = 12.sp,
                     color = SecondaryText
                 )
@@ -554,7 +558,7 @@ private fun CommitmentSection(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "Notificarme respuestas y cambios de estado",
+                text = stringResource(R.string.notify_replies),
                 modifier = Modifier.weight(1f),
                 fontSize = 14.sp,
                 color = DarkText
@@ -595,7 +599,7 @@ private fun CommentActions(
                 modifier = Modifier.size(16.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text(text = if (isPublishing) "Publicando..." else "Publicar Comentario")
+            Text(text = if (isPublishing) stringResource(R.string.publishing) else stringResource(R.string.publish_comment))
         }
 
         Button(
@@ -610,7 +614,7 @@ private fun CommentActions(
                 contentColor = SecondaryText
             )
         ) {
-            Text(text = "Descartar y volver")
+            Text(text = stringResource(R.string.discard_and_back))
         }
     }
 }
@@ -631,13 +635,13 @@ private fun RecentCommentsWall(
             )
             Spacer(modifier = Modifier.width(6.dp))
             Text(
-                text = "Aportes recientes en el caso",
+                text = stringResource(R.string.recent_contributions),
                 modifier = Modifier.weight(1f),
                 fontSize = 14.sp,
                 color = DarkText
             )
             Text(
-                text = "$total comentarios",
+                text = stringResource(R.string.comments_total, total),
                 fontSize = 14.sp,
                 color = Color(0xFF76777C)
             )
@@ -645,7 +649,7 @@ private fun RecentCommentsWall(
 
         if (comments.isEmpty()) {
             Text(
-                text = "Aún no hay aportes. ¡Sé la primera persona en ayudar!",
+                text = stringResource(R.string.no_contributions),
                 fontSize = 13.sp,
                 color = SecondaryText
             )
@@ -694,7 +698,7 @@ fun CommentCard(
                         )
                     }
                     Text(
-                        text = "${comment.time} · ${comment.type.label}",
+                        text = stringResource(R.string.comment_meta, relativeTime(comment.createdAt), stringResource(comment.type.label)),
                         fontSize = 11.sp,
                         color = Color(0xFF76777C)
                     )
@@ -709,7 +713,7 @@ fun CommentCard(
                 ) {
                     Icon(
                         imageVector = if (comment.thankedByMe) Icons.Filled.ThumbUp else Icons.Outlined.ThumbUp,
-                        contentDescription = "Agradecer",
+                        contentDescription = stringResource(R.string.thank),
                         tint = if (comment.thankedByMe) AppPrimary else Color(0xFF76777C),
                         modifier = Modifier.size(14.dp)
                     )
@@ -798,14 +802,14 @@ private fun CommentSuccessSheet(
                 )
 
                 Text(
-                    text = "¡Aporte Agregado con Éxito!",
+                    text = stringResource(R.string.contribution_added),
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
                     color = DarkText,
                     textAlign = TextAlign.Center
                 )
                 Text(
-                    text = "Tu aporte ya es visible en la ficha de $petName para toda la comunidad de rescate.",
+                    text = stringResource(R.string.contribution_visible, petName),
                     fontSize = 12.sp,
                     color = SecondaryText,
                     textAlign = TextAlign.Center
@@ -825,7 +829,7 @@ private fun CommentSuccessSheet(
                         )
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
-                            text = "El rescatista y los seguidores del caso han sido notificados de tu actualización sobre $petName en tiempo real.",
+                            text = stringResource(R.string.rescuer_notified, petName),
                             fontSize = 12.sp,
                             color = SecondaryText
                         )
@@ -868,7 +872,7 @@ private fun CommentSuccessSheet(
                         Spacer(modifier = Modifier.width(12.dp))
                         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             AppTag(
-                                text = "• Aporte Comunitario Verificado",
+                                text = stringResource(R.string.verified_contribution),
                                 backgroundColor = SelectedChip,
                                 textColor = Color.White
                             )
@@ -879,7 +883,7 @@ private fun CommentSuccessSheet(
                                 color = DarkText
                             )
                             Text(
-                                text = comment.type.label,
+                                text = stringResource(comment.type.label),
                                 fontSize = 11.sp,
                                 color = SecondaryText
                             )
@@ -893,7 +897,7 @@ private fun CommentSuccessSheet(
                     color = Color(0xFFE3EFFF).copy(alpha = 0.7f)
                 ) {
                     Text(
-                        text = "+$COMMENT_POINTS puntos de reputación comunitaria otorgados (¡Gracias por tu apoyo!)",
+                        text = stringResource(R.string.reputation_awarded, COMMENT_POINTS),
                         modifier = Modifier.padding(14.dp),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
@@ -912,7 +916,7 @@ private fun CommentSuccessSheet(
                         contentColor = Color.White
                     )
                 ) {
-                    Text(text = "Volver a la Publicación de $petName", fontWeight = FontWeight.SemiBold)
+                    Text(text = stringResource(R.string.back_to_publication, petName), fontWeight = FontWeight.SemiBold)
                     Spacer(modifier = Modifier.width(8.dp))
                     Icon(
                         imageVector = Icons.AutoMirrored.Outlined.ArrowForward,
@@ -938,7 +942,7 @@ private fun CommentSuccessSheet(
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = "Ir al Feed Principal", fontWeight = FontWeight.SemiBold)
+                    Text(text = stringResource(R.string.go_to_feed), fontWeight = FontWeight.SemiBold)
                 }
             }
         }

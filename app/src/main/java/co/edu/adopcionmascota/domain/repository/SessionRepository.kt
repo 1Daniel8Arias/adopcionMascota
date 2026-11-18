@@ -8,7 +8,7 @@ interface SessionRepository {
 
     val session: Flow<UserSession?>
 
-    suspend fun saveSession(UserId: String,role: UserRole)
+    suspend fun saveSession(userId: String, role: UserRole)
 
     suspend fun clearSession()
 }

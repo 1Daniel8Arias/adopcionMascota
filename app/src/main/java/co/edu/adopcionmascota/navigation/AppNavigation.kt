@@ -1,5 +1,12 @@
 package co.edu.adopcionmascota.navigation
 
+import co.edu.adopcionmascota.R
+import co.edu.adopcionmascota.features.profile.ProfileViewModel
+import co.edu.adopcionmascota.features.moderator.panel.ModerationScreen
+import co.edu.adopcionmascota.features.moderator.ModeratorProfileViewModel
+import co.edu.adopcionmascota.features.moderator.ModeratorScreen
+import co.edu.adopcionmascota.core.component.LocalUserRole
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -44,129 +51,228 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import co.edu.adopcionmascota.domain.model.UserRole
+import co.edu.adopcionmascota.features.request.AdoptionRequestsScreen
+import co.edu.adopcionmascota.features.password.ResetPasswordScreen
+import co.edu.adopcionmascota.features.request.application.AdoptionApplicationScreen
+import co.edu.adopcionmascota.features.statistics.StatisticsScreen
+import co.edu.adopcionmascota.features.favorites.FavoritesScreen
 
 
 @Composable
 fun AppNavigation(
+    resetPasswordCode: String? = null,
+    onResetPasswordHandled: () -> Unit = {},
     sessionViewModel: SessionViewModel = hiltViewModel()
 ) {
+    // Observa el estado de la sesión guardada en Data Store
     val sessionState by sessionViewModel.sessionState.collectAsStateWithLifecycle()
+
+    Surface(modifier = Modifier.fillMaxSize()) {
+        // El enlace de recuperación abierto desde el correo tiene prioridad (guía 20, actividad 2)
+        if (resetPasswordCode != null) {
+            ResetPasswordScreen(oobCode = resetPasswordCode, onFinished = onResetPasswordHandled)
+            return@Surface
+        }
+        when (val state = sessionState) {
+            is SessionState.Loading -> {
+                // Indicador de carga mientras se lee la sesión guardada
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            }
+
+            // Sin sesión: pantallas de autenticación
+            is SessionState.NotAuthenticated -> AuthNavigation()
+
+            // Con sesión: navegación principal según el rol guardado
+            is SessionState.Authenticated -> MainNavigation(role = state.session.role)
+        }
+    }
+}
+
+@Composable
+private fun AuthNavigation() {
     val navController = rememberNavController()
 
-    when (val state = sessionState) {
-        is SessionState.Loading -> {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
+    NavHost(
+        navController = navController,
+        startDestination = MainRoutes.Home
+    ) {
+        composable<MainRoutes.Home> {
+            HomeScreen(
+                onNavigateToLogin = {
+                    navController.navigate(MainRoutes.Login)
+                },
+                onNavigateToRegister = {
+                    navController.navigate(MainRoutes.Register)
+                }
+            )
         }
 
-        else -> {}
+        composable<MainRoutes.Login> {
+            // Sin callback al autenticar: al guardarse la sesión,
+            // AppNavigation cambia automáticamente a MainNavigation
+            LoginScreen(
+                onNavigationPasswordScreen = {
+                    navController.navigate(MainRoutes.PasswordScreen)
+                },
+                onNavigationRegister = {
+                    navController.navigate(MainRoutes.Register)
+                }
+            )
+        }
+
+        composable<MainRoutes.Register> {
+            RegisterScreen(
+                onNavigateToBack = {
+                    navController.popBackStack()
+                },
+                // Registro exitoso → pantalla de confirmación (sin volver al formulario)
+                onRegisterSuccess = { name, userId ->
+                    navController.navigate(MainRoutes.RegisterSuccess(name, userId)) {
+                        popUpTo(MainRoutes.Home)
+                    }
+                },
+                onNavigateToLogin = {
+                    navController.navigate(MainRoutes.Login) {
+                        popUpTo(MainRoutes.Home)
+                    }
+                }
+            )
+        }
+
+        // Sus botones abren la sesión del usuario nuevo y AppNavigation cambia de grafo
+        composable<MainRoutes.RegisterSuccess> {
+            RegisterSuccessScreen(
+                // Correo sin verificar: se vuelve al login (guía 20, actividad 1)
+                onGoToLogin = {
+                    navController.navigate(MainRoutes.Login) { popUpTo(MainRoutes.Home) }
+                }
+            )
+        }
+
+        composable<MainRoutes.PasswordScreen> {
+            PasswordScreen(
+                onNavigateToLogin = {
+                    navController.popBackStack(MainRoutes.Login, inclusive = false)
+                },
+                onNavigateToRegister = {
+                    navController.navigate(MainRoutes.Register) {
+                        popUpTo(MainRoutes.Login)
+                    }
+                }
+            )
+        }
     }
+}
+
+@Composable
+private fun MainNavigation(role: UserRole) {
+    val navController = rememberNavController()
+
+    // Cada rol arranca en su pantalla principal
+    val isAdmin = role == UserRole.MODERATOR
+    val homeRoute: MainRoutes = if (isAdmin) MainRoutes.ModeratorPanel else MainRoutes.PublicationList
 
     // Barra inferior compartida: cada pestaña abre su pantalla sin apilar copias
     val navigateToTab: (AppDestination) -> Unit = { destination ->
         when (destination) {
             AppDestination.EXPLORE ->
-                navController.popBackStack(MainRoutes.PublicationList, inclusive = false)
+                if (isAdmin) {
+                    navController.navigate(MainRoutes.PublicationList) {
+                        popUpTo(homeRoute)
+                        launchSingleTop = true
+                    }
+                } else {
+                    navController.popBackStack(MainRoutes.PublicationList, inclusive = false)
+                }
 
             AppDestination.PUBLISH -> navController.navigate(MainRoutes.PublicationScreen)
 
             AppDestination.ALERTS -> navController.navigate(MainRoutes.Notifications) {
-                popUpTo(MainRoutes.PublicationList)
+                popUpTo(homeRoute)
                 launchSingleTop = true
             }
 
-            AppDestination.PROFILE -> navController.navigate(MainRoutes.Profile) {
-                popUpTo(MainRoutes.PublicationList)
-                launchSingleTop = true
+            AppDestination.PROFILE -> {
+                val profileRoute: MainRoutes = if (isAdmin) MainRoutes.Moderator else MainRoutes.Profile
+                navController.navigate(profileRoute) {
+                    popUpTo(homeRoute)
+                    launchSingleTop = true
+                }
             }
 
-            AppDestination.MODERATE -> Unit
+            AppDestination.MODERATE -> {
+                navController.popBackStack(MainRoutes.ModeratorPanel, inclusive = false)
+                Unit
+            }
         }
     }
 
-    Surface(
-        modifier = Modifier.fillMaxSize()
-    ) {
+    CompositionLocalProvider(LocalUserRole provides role) {
         NavHost(
             navController = navController,
-            startDestination = MainRoutes.Home
+            startDestination = homeRoute
         ) {
-            composable<MainRoutes.Home> {
-                HomeScreen(
-                    onNavigateToLogin = {
-                        navController.navigate(MainRoutes.Login)
+            composable<MainRoutes.ModeratorPanel> {
+                ModerationScreen(
+                    onNavigationClick = navigateToTab,
+                    // "Inspeccionar" abre el detalle completo de la publicación
+                    onInspect = { publicationId ->
+                        navController.navigate(MainRoutes.PublicationDetail(publicationId))
                     },
-                    onNavigateToRegister = {
-                        navController.navigate(MainRoutes.Register)
-                    }
-                )
-            }
-            composable<MainRoutes.Login> {
-                LoginScreen(
-                    onNavigationPublicLists = {
-                        // Solo aquí (login exitoso) se limpia la pila
-
-                        navController.navigate(MainRoutes.PublicationList) {
-                            popUpTo(MainRoutes.Home) { inclusive = true }
-                        }
-                    },
-                    onNavigationPasswordScreen = {
-                        navController.navigate(MainRoutes.PasswordScreen)   // sin popUpTo
-                    },
-                    onNavigationRegister = {
-                        navController.navigate(MainRoutes.Register)
+                    onStatistics = {
+                        navController.navigate(MainRoutes.Statistics)
                     }
                 )
             }
 
-            composable<MainRoutes.Register> {
-                RegisterScreen(
-                    onNavigateToBack = {
+            composable<MainRoutes.Statistics> {
+                StatisticsScreen(
+                    onNavigateBack = {
+                        navController.popBackStack()
+                    }
+                )
+            }
+
+            composable<MainRoutes.Favorites> {
+                FavoritesScreen(
+                    onNavigateBack = {
                         navController.popBackStack()
                     },
-                    // Registro exitoso → pantalla de confirmación (sin volver al formulario)
-                    onRegisterSuccess = { name ->
-                        navController.navigate(MainRoutes.RegisterSuccess(name)) {
-                            popUpTo(MainRoutes.Home)
-                        }
-                    },
-                    onNavigateToLogin = {
-                        navController.navigate(MainRoutes.Login) {
-                            popUpTo(MainRoutes.Home)
-                        }
+                    onPublicationClick = { publicationId ->
+                        navController.navigate(MainRoutes.PublicationDetail(publicationId))
                     }
                 )
             }
 
-            composable<MainRoutes.RegisterSuccess> {
-                val args = it.toRoute<MainRoutes.RegisterSuccess>()
-                RegisterSuccessScreen(
-                    name = args.name,
-                    // "Continuar al Feed Principal": se entra a la app y se limpia la pila
-                    onContinueToFeed = {
-                        navController.navigate(MainRoutes.PublicationList) {
-                            popUpTo(MainRoutes.Home) { inclusive = true }
-                        }
+            composable<MainRoutes.AdoptionRequests> {
+                AdoptionRequestsScreen(
+                    onNavigateBack = {
+                        navController.popBackStack()
                     },
-                    // "Configurar preferencias de alerta" abre la edición del perfil (sección de voluntariado)
-                    onConfigureAlerts = {
-                        navController.navigate(MainRoutes.PublicationList) {
-                            popUpTo(MainRoutes.Home) { inclusive = true }
-                        }
-                        navController.navigate(MainRoutes.EditProfile)
+                    onViewPublication = { publicationId ->
+                        navController.navigate(MainRoutes.PublicationDetail(publicationId))
                     }
                 )
             }
+
+            composable<MainRoutes.Moderator> {
+                val moderatorViewModel: ModeratorProfileViewModel = hiltViewModel()
+                ModeratorScreen(
+                    onNavigationClick = navigateToTab,
+                    onLogout = moderatorViewModel::logout,
+                    onNotifications = { navigateToTab(AppDestination.ALERTS) },
+                    onViewHistory = { navController.navigate(MainRoutes.Statistics) }
+                )
+            }
+
             composable<MainRoutes.PublicationList> {
                 PublicationListScreen(
                     onPublicationClick = { publication ->
                         navController.navigate(
                             MainRoutes.PublicationDetail(publication.id)
                         )
-                    },
-                    onNavigationToPublications = {
-                        navController.navigate(MainRoutes.PublicationScreen)
                     },
                     onMapClick = {
                         navController.navigate(MainRoutes.PublicationMap)
@@ -200,9 +306,20 @@ fun AppNavigation(
                     },
                     onProfileClick = {
                         navigateToTab(AppDestination.PROFILE)
+                    },
+                    onStartAdoptionApplication = {
+                        navController.navigate(MainRoutes.AdoptionApplication(args.publicationId))
                     }
                 )
 
+            }
+
+            composable<MainRoutes.AdoptionApplication> {
+                AdoptionApplicationScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    // Al volver, el detalle ya muestra la solicitud como enviada
+                    onSent = { navController.popBackStack() }
+                )
             }
 
             composable<MainRoutes.CreateComment> {
@@ -244,6 +361,9 @@ fun AppNavigation(
                     },
                     onNavigateToProfile = {
                         navigateToTab(AppDestination.PROFILE)
+                    },
+                    onViewRequests = {
+                        navController.navigate(MainRoutes.AdoptionRequests)
                     }
                 )
             }
@@ -275,14 +395,13 @@ fun AppNavigation(
             }
 
             composable<MainRoutes.PasswordScreen> {
+                // Con sesión iniciada se llega desde "Editar Perfil": ambos botones regresan
                 PasswordScreen(
                     onNavigateToLogin = {
-                        navController.popBackStack(MainRoutes.Login, inclusive = false)
+                        navController.popBackStack()
                     },
                     onNavigateToRegister = {
-                        navController.navigate(MainRoutes.Register) {
-                            popUpTo(MainRoutes.Login)
-                        }
+                        navController.popBackStack()
                     }
                 )
             }
@@ -346,7 +465,10 @@ fun AppNavigation(
                     onViewPublication = { publicationId ->
                         navController.navigate(MainRoutes.PublicationDetail(publicationId))
                     },
-                    onNavigationClick = navigateToTab
+                    onNavigationClick = navigateToTab,
+                    onRequestsClick = {
+                        navController.navigate(MainRoutes.AdoptionRequests)
+                    }
                 )
             }
 
@@ -405,10 +527,10 @@ fun AppNavigation(
                             type = "text/plain"
                             putExtra(
                                 Intent.EXTRA_TEXT,
-                                "¡Conoce mi perfil de voluntaria en Patitas Conectadas! Nivel 2 · Protector"
+                                context.getString(R.string.share_profile_text)
                             )
                         }
-                        context.startActivity(Intent.createChooser(intent, "Compartir perfil"))
+                        context.startActivity(Intent.createChooser(intent, context.getString(R.string.share_profile_chooser)))
                     },
                     // Los dos botones de editar ("Editar Perfil" y "Editar Datos Personales")
                     // abren la misma pantalla de edición
@@ -421,30 +543,33 @@ fun AppNavigation(
                     // "Eliminar mi cuenta" abre la confirmación del Figma
                     onDeleteAccount = {
                         navController.navigate(MainRoutes.DeleteAccount)
+                    },
+                    onStatistics = {
+                        navController.navigate(MainRoutes.Statistics)
+                    },
+                    onFavorites = {
+                        navController.navigate(MainRoutes.Favorites)
                     }
                 )
             }
 
             composable<MainRoutes.EditProfile> {
+                val profileViewModel: ProfileViewModel = hiltViewModel()
                 EditProfileScreen(
                     onNavigateBack = {
                         navController.popBackStack()
                     },
                     // "Guardar Cambios" lleva a "Perfil editado" y quita la edición de la pila
-                    onProfileSaved = {
-                        navController.navigate(MainRoutes.ProfileUpdated) {
+                    onProfileSaved = { changes ->
+                        navController.navigate(MainRoutes.ProfileUpdated(changes)) {
                             popUpTo(MainRoutes.EditProfile) { inclusive = true }
                         }
                     },
                     onNavigateToPassword = {
                         navController.navigate(MainRoutes.PasswordScreen)
                     },
-                    onAccountDeactivated = {
-                        // Igual que al eliminar la cuenta: inicio y pila limpia
-                        navController.navigate(MainRoutes.Home) {
-                            popUpTo(MainRoutes.PublicationList) { inclusive = true }
-                        }
-                    }
+                    // Igual que al eliminar la cuenta: se cierra la sesión y vuelve al inicio
+                    onAccountDeactivated = profileViewModel::logout
                 )
             }
 
@@ -459,7 +584,7 @@ fun AppNavigation(
                     },
                     onEditAgain = {
                         navController.navigate(MainRoutes.EditProfile) {
-                            popUpTo(MainRoutes.ProfileUpdated) { inclusive = true }
+                            popUpTo<MainRoutes.ProfileUpdated> { inclusive = true }
                         }
                     }
                 )
@@ -479,19 +604,17 @@ fun AppNavigation(
                     onAccountDeleted = {
                         // Se quita la sesión de la pila; solo queda la despedida
                         navController.navigate(MainRoutes.AccountDeleted) {
-                            popUpTo(MainRoutes.PublicationList) { inclusive = true }
+                            popUpTo(homeRoute) { inclusive = true }
                         }
                     }
                 )
             }
 
             composable<MainRoutes.AccountDeleted> {
+                val profileViewModel: ProfileViewModel = hiltViewModel()
                 AccountDeletedScreen(
-                    onGoToHome = {
-                        navController.navigate(MainRoutes.Home) {
-                            popUpTo(MainRoutes.AccountDeleted) { inclusive = true }
-                        }
-                    }
+                    // Se cierra la sesión aquí para que antes se vea la despedida
+                    onGoToHome = profileViewModel::logout
                 )
             }
 

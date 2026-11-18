@@ -1,5 +1,9 @@
 package co.edu.adopcionmascota.features.notification
 
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import co.edu.adopcionmascota.domain.model.NotificationType
 import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -54,13 +58,12 @@ import co.edu.adopcionmascota.core.util.RequestResult
 @Composable
 fun NotificationDetailScreen(
     notificationId: String,
-    onNavigateBack: () -> Unit,                     // Flecha "Volver" → Centro de Notificaciones
-    onViewPublication: (String) -> Unit,            // "Ver caso"
+    onNavigateBack: () -> Unit,                     // Flecha stringResource(R.string.back) → Centro de Notificaciones
+    onViewPublication: (String) -> Unit,            // stringResource(R.string.view_case)
     onNavigateToFeed: () -> Unit,                   // "Ver en Feed Público"
     onNavigateToProfile: () -> Unit,                // Vitrina de insignias / perfil completo
-    viewModel: NotificationDetailViewModel = viewModel(key = "notification_$notificationId") {
-        NotificationDetailViewModel(notificationId)
-    }
+    onViewRequests: () -> Unit = {},                // Solicitudes de adopción recibidas
+    viewModel: NotificationDetailViewModel = hiltViewModel()
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val state by viewModel.uiState.collectAsState()
@@ -72,7 +75,7 @@ fun NotificationDetailScreen(
             type = "text/plain"
             putExtra(Intent.EXTRA_TEXT, text)
         }
-        context.startActivity(Intent.createChooser(intent, "Compartir"))
+        context.startActivity(Intent.createChooser(intent, context.getString(R.string.share_chooser)))
     }
 
     LaunchedEffect(state.infoMessage) {
@@ -116,20 +119,24 @@ fun NotificationDetailScreen(
             DetailTopBar(onBackClick = onNavigateBack)
 
             when (state.notification?.type) {
-                NotificationType.PUBLICATION_APPROVED -> ApprovedPublicationContent(
-                    onManageRequests = {
-                        viewModel.showInfo("Tienes 2 consultas de adoptantes. La gestión de solicitudes estará disponible próximamente")
-                    },
-                    onViewInFeed = onNavigateToFeed,
-                    onShare = {
-                        share("¡Max (Golden Mestizo) busca hogar en Patitas Conectadas! Su ficha ya está verificada por moderación ética.")
-                    }
+                // Notificaciones generadas por la app con datos reales de Room
+                NotificationType.PUBLICATION_APPROVED,
+                NotificationType.NEW_COMMENT,
+                NotificationType.ADOPTION_REQUEST,
+                NotificationType.REQUEST_ANSWERED -> CaseNotificationContent(
+                    state = state,
+                    onViewCase = onViewPublication,
+                    onViewFeed = onNavigateToFeed,
+                    onViewRequests = onViewRequests,
+                    onReplyChange = viewModel::onReplyChange,
+                    onSendReply = viewModel::sendReply
                 )
 
                 NotificationType.LEVEL_UP -> LevelUpContent(
+                    userName = state.userName,
                     onViewBadges = onNavigateToProfile,
                     onShare = {
-                        share("¡Subí a Nivel Guardián en Patitas Conectadas con 10 publicaciones verificadas! 🐾")
+                        share(context.getString(R.string.share_level_up))
                     }
                 )
 
@@ -146,27 +153,13 @@ fun NotificationDetailScreen(
                     onGuidelinesClick = viewModel::onGuidelinesClick
                 )
 
-                NotificationType.NEW_COMMENT -> NewCommentContent(
-                    state = state,
-                    onViewCase = { onViewPublication("1") },
-                    onAcceptDonation = viewModel::onAcceptDonation,
-                    onWhatsAppClick = {
-                        viewModel.showInfo("El chat seguro por WhatsApp estará disponible próximamente")
-                    },
-                    onToggleLike = viewModel::onToggleLike,
-                    onToggleAllReplies = viewModel::onToggleAllReplies,
-                    onReplyChange = viewModel::onReplyChange,
-                    onSuggestionClick = viewModel::onSuggestionClick,
-                    onSendReply = viewModel::sendReply
-                )
-
                 NotificationType.BADGE_EARNED -> BadgeEarnedContent(
                     onViewProfile = onNavigateToProfile,
                     onBackToNotifications = onNavigateBack
                 )
 
                 null -> Text(
-                    text = "Esta notificación ya no está disponible.",
+                    text = stringResource(R.string.notification_unavailable),
                     color = SecondaryText
                 )
             }
@@ -176,12 +169,12 @@ fun NotificationDetailScreen(
 
         if (state.showGuidelinesDialog) {
             ConfirmAlertDialog(
-                title = "Pautas del comité ético",
-                message = "Toma la foto del carnet desde arriba, con buena luz y sin flash directo. Deben verse completos los sellos, la firma del veterinario y las fechas de vigencia.",
+                title = stringResource(R.string.guidelines_title),
+                message = stringResource(R.string.guidelines_message),
                 onConfirm = viewModel::onDismissGuidelines,
                 onDismiss = viewModel::onDismissGuidelines,
-                confirmText = "Entendido",
-                dismissText = "Cerrar"
+                confirmText = stringResource(R.string.understood),
+                dismissText = stringResource(R.string.close)
             )
         }
     }
@@ -198,12 +191,12 @@ private fun DetailTopBar(onBackClick: () -> Unit) {
         IconButton(onClick = onBackClick) {
             Icon(
                 imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                contentDescription = "Volver",
+                contentDescription = stringResource(R.string.back),
                 tint = DarkText
             )
         }
         Text(
-            text = "Detalle de Notificación",
+            text = stringResource(R.string.notification_detail),
             fontSize = 16.sp,
             fontWeight = FontWeight.SemiBold,
             color = DarkText

@@ -1,5 +1,7 @@
 package co.edu.adopcionmascota.features.register.component
 
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -65,7 +67,7 @@ fun LocationDropdown(
 
             Text(
                 text = if (value.isEmpty())
-                    "Selecciona tu localidad..."
+                    stringResource(R.string.select_district)
                 else
                     value,
                 color = if (value.isEmpty())

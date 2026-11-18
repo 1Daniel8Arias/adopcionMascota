@@ -1,12 +1,16 @@
 package co.edu.adopcionmascota.features.profile.edit
 
+import co.edu.adopcionmascota.R
+import javax.inject.Inject
+import dagger.hilt.android.lifecycle.HiltViewModel
+import co.edu.adopcionmascota.core.util.ResourceProvider
+import co.edu.adopcionmascota.domain.model.User
+import co.edu.adopcionmascota.domain.usecase.user.GetCurrentUserUseCase
+import co.edu.adopcionmascota.domain.usecase.user.UpdateUserUseCase
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import co.edu.adopcionmascota.core.util.RequestResult
-import co.edu.adopcionmascota.features.profile.UserProfile
-import co.edu.adopcionmascota.features.profile.UserProfileStore
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -46,7 +50,10 @@ data class EditProfileUiState(
 
     // Resultados de las solicitudes
     val saveResult: RequestResult? = null,
-    val deactivateResult: RequestResult? = null
+    val deactivateResult: RequestResult? = null,
+
+    // Cambios aplicados en la última edición, para mostrarlos en "Perfil editado"
+    val changes: List<String> = emptyList()
 ) {
     // Propiedad calculada: la pantalla no tiene que repetir esta lógica
     val isFormValid: Boolean
@@ -83,45 +90,56 @@ const val TOTAL_PROFILE_FIELDS = 6
 // Longitud máxima de la presentación comunitaria
 const val BIO_MAX_LENGTH = 250
 
-class EditProfileViewModel : ViewModel() {
+@HiltViewModel
+class EditProfileViewModel @Inject constructor(
+    private val getCurrentUserUseCase: GetCurrentUserUseCase,
+    private val updateUserUseCase: UpdateUserUseCase,
+    private val resources: ResourceProvider
+) : ViewModel() {
+
+    // Usuario tal como está guardado en Room, para comparar los cambios
+    private var original: User? = null
 
     // Un único flujo con el estado completo de la pantalla
     private val _uiState = MutableStateFlow(EditProfileUiState())
     val uiState: StateFlow<EditProfileUiState> = _uiState.asStateFlow()
 
-    // La lista de localidades no cambia nunca, así que no hace parte del UI State
+    // La lista de ciudades no cambia nunca, así que no hace parte del UI State
     val localities = listOf(
-        "Usaquén (Zona Norte)",
-        "Chapinero",
-        "Santa Fe",
-        "Suba",
-        "Engativá",
-        "Fontibón",
-        "Kennedy",
-        "Teusaquillo"
+        "Armenia",
+        "Calarcá",
+        "Circasia",
+        "Filandia",
+        "Montenegro",
+        "Salento",
+        "Pereira",
+        "Manizales"
     )
 
     init {
         loadProfile()
     }
 
-    // Los datos se leen del almacén compartido con la pantalla de perfil
+    // Los datos se leen del usuario de la sesión guardado en Room
     private fun loadProfile() {
-        val profile = UserProfileStore.profile.value
-        _uiState.value = EditProfileUiState(
-            photoUrl = profile.photoUrl,
-            levelName = "Nivel 2 · Protector Comunitario",
-            name = profile.name,
-            email = profile.email,
-            isEmailVerified = profile.isEmailVerified,
-            phone = profile.phone,
-            locality = profile.locality,
-            neighborhood = profile.neighborhood,
-            bio = profile.bio,
-            isTemporaryHome = profile.isTemporaryHome,
-            lostPetAlerts = profile.lostPetAlerts,
-            showPublicPhone = profile.showPublicPhone
-        )
+        viewModelScope.launch {
+            val user = getCurrentUserUseCase() ?: return@launch
+            original = user
+            _uiState.value = EditProfileUiState(
+                photoUrl = user.profilePictureUrl,
+                levelName = "Nivel ${user.level.number} · ${user.level.displayName}",
+                name = user.name,
+                email = user.email,
+                isEmailVerified = true,
+                phone = user.phoneNumber,
+                locality = user.city,
+                neighborhood = user.address,
+                bio = user.bio,
+                isTemporaryHome = user.isTemporaryHome,
+                lostPetAlerts = user.lostPetAlerts,
+                showPublicPhone = user.showPublicPhone
+            )
+        }
     }
 
     // ---------- Campos del formulario ----------
@@ -196,26 +214,32 @@ class EditProfileViewModel : ViewModel() {
         if (!_uiState.value.isFormValid) return
 
         viewModelScope.launch {
+            val old = original ?: return@launch
             _uiState.update { it.copy(saveResult = RequestResult.Loading) }
-            delay(1500) // Simula el tiempo que tardaría guardar en el servidor
             val state = _uiState.value
-            UserProfileStore.save(
-                UserProfile(
-                    photoUrl = state.photoUrl,
-                    name = state.name.trim(),
-                    email = state.email.trim(),
-                    isEmailVerified = state.isEmailVerified,
-                    phone = state.phone.trim(),
-                    locality = state.locality,
-                    neighborhood = state.neighborhood.trim(),
-                    bio = state.bio.trim(),
-                    isTemporaryHome = state.isTemporaryHome,
-                    lostPetAlerts = state.lostPetAlerts,
-                    showPublicPhone = state.showPublicPhone
-                )
+            val updated = old.copy(
+                profilePictureUrl = state.photoUrl,
+                name = state.name.trim(),
+                email = state.email.trim(),
+                phoneNumber = state.phone.trim(),
+                city = state.locality,
+                address = state.neighborhood.trim(),
+                bio = state.bio.trim(),
+                isTemporaryHome = state.isTemporaryHome,
+                lostPetAlerts = state.lostPetAlerts,
+                showPublicPhone = state.showPublicPhone
             )
-            _uiState.update {
-                it.copy(saveResult = RequestResult.Success("Cambios guardados correctamente"))
+            try {
+                updateUserUseCase(updated)
+                original = updated
+                _uiState.update {
+                    it.copy(
+                        changes = describeChanges(old, updated),
+                        saveResult = RequestResult.Success(resources.getString(R.string.changes_saved))
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(saveResult = RequestResult.Failure(e.message.orEmpty())) }
             }
         }
     }
@@ -260,9 +284,8 @@ class EditProfileViewModel : ViewModel() {
     private fun deactivateAccount() {
         viewModelScope.launch {
             _uiState.update { it.copy(deactivateResult = RequestResult.Loading) }
-            delay(1500) // Simula la petición al servidor
             _uiState.update {
-                it.copy(deactivateResult = RequestResult.Success("Cuenta desactivada temporalmente"))
+                it.copy(deactivateResult = RequestResult.Success(resources.getString(R.string.account_deactivated)))
             }
         }
     }
@@ -273,22 +296,20 @@ class EditProfileViewModel : ViewModel() {
 
     // ---------- Opciones aún no disponibles ----------
 
-    // La cámara y la galería todavía no hacen parte del alcance del proyecto
-    fun onChangePhotoClick() {
-        _uiState.update {
-            it.copy(infoMessage = "El cambio de fotografía estará disponible cuando se integre la cámara")
-        }
+    // Imagen elegida en la galería; se guarda con "Guardar Cambios"
+    fun onPhotoSelected(uri: String) {
+        _uiState.update { it.copy(photoUrl = uri) }
     }
 
     fun onNotificationPreferencesClick() {
         _uiState.update {
-            it.copy(infoMessage = "Las preferencias de notificaciones estarán disponibles próximamente")
+            it.copy(infoMessage = resources.getString(R.string.notif_pref_soon))
         }
     }
 
     fun onHelpClick() {
         _uiState.update {
-            it.copy(infoMessage = "Edita tus datos y presiona \"Guardar Cambios\" para conservarlos")
+            it.copy(infoMessage = resources.getString(R.string.edit_help))
         }
     }
 
@@ -297,20 +318,45 @@ class EditProfileViewModel : ViewModel() {
         _uiState.update { it.copy(infoMessage = null) }
     }
 
+    // Lista de cambios que se muestra en "Perfil editado"
+    private fun describeChanges(old: User, new: User): List<String> {
+        val changes = mutableListOf<String>()
+        if (old.name != new.name) changes.add(resources.getString(R.string.change_name, new.name))
+        if (old.email != new.email) changes.add(resources.getString(R.string.change_email, new.email))
+        if (old.phoneNumber != new.phoneNumber) changes.add(resources.getString(R.string.change_phone, new.phoneNumber))
+        if (old.city != new.city || old.address != new.address) {
+            changes.add(resources.getString(R.string.change_location, new.address.ifBlank { new.city }, new.city))
+        }
+        if (old.isTemporaryHome != new.isTemporaryHome) {
+            val value = resources.getString(if (new.isTemporaryHome) R.string.level_active else R.string.inactive)
+            changes.add(resources.getString(R.string.change_foster, value))
+        }
+        if (old.lostPetAlerts != new.lostPetAlerts) {
+            val value = resources.getString(if (new.lostPetAlerts) R.string.alerts_on else R.string.alerts_off)
+            changes.add(resources.getString(R.string.change_alerts, value))
+        }
+        if (old.showPublicPhone != new.showPublicPhone) {
+            val value = resources.getString(if (new.showPublicPhone) R.string.phone_visible else R.string.phone_hidden)
+            changes.add(resources.getString(R.string.change_public_phone, value))
+        }
+        if (old.bio != new.bio) changes.add(resources.getString(R.string.change_bio))
+        return changes
+    }
+
     // ---------- Validaciones ----------
 
     private fun validateName(name: String): String? {
         return when {
-            name.isBlank() -> "El nombre es obligatorio"
-            name.length < 3 -> "El nombre debe tener al menos 3 caracteres"
+            name.isBlank() -> resources.getString(R.string.error_name_empty)
+            name.length < 3 -> resources.getString(R.string.error_name_short)
             else -> null
         }
     }
 
     private fun validateEmail(email: String): String? {
         return when {
-            email.isBlank() -> "El email es obligatorio"
-            !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> "Ingresa un email válido"
+            email.isBlank() -> resources.getString(R.string.error_email_empty)
+            !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> resources.getString(R.string.error_email_invalid)
             else -> null
         }
     }
@@ -319,14 +365,14 @@ class EditProfileViewModel : ViewModel() {
         // Se cuentan solo los dígitos, así se permiten espacios y el prefijo +57
         val digits = phone.count { it.isDigit() }
         return when {
-            phone.isBlank() -> "El teléfono es obligatorio"
-            phone.any { !it.isDigit() && it != ' ' && it != '+' } -> "Usa solo números, espacios y +"
-            digits != 10 && digits != 12 -> "Ingresa un número de 10 dígitos (puedes anteponer +57)"
+            phone.isBlank() -> resources.getString(R.string.error_phone_required)
+            phone.any { !it.isDigit() && it != ' ' && it != '+' } -> resources.getString(R.string.error_phone_chars)
+            digits != 10 && digits != 12 -> resources.getString(R.string.error_phone_digits)
             else -> null
         }
     }
 
     private fun validateLocality(locality: String): String? {
-        return if (locality.isBlank()) "Selecciona una localidad" else null
+        return if (locality.isBlank()) resources.getString(R.string.error_locality) else null
     }
 }

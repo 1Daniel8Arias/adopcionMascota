@@ -1,13 +1,16 @@
 package co.edu.adopcionmascota.features.register
+import co.edu.adopcionmascota.core.util.ResourceProvider
+import co.edu.adopcionmascota.R
+import co.edu.adopcionmascota.domain.usecase.user.RegisterUserUseCase
+import co.edu.adopcionmascota.domain.model.User
+import java.util.UUID
+import javax.inject.Inject
+import co.edu.adopcionmascota.domain.exception.EmailAlreadyInUseException
+import dagger.hilt.android.lifecycle.HiltViewModel
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import co.edu.adopcionmascota.core.util.RequestResult
-import co.edu.adopcionmascota.domain.model.User
-import co.edu.adopcionmascota.domain.usecase.user.RegisterUserUseCase
-import dagger.hilt.android.lifecycle.HiltViewModel
-import jakarta.inject.Inject
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -37,6 +40,8 @@ data class RegisterUiState(
     val acceptTerms: Boolean = false,
     val receiveNotifications: Boolean = false,
     val showHelpDialog: Boolean = false,
+    val registeredUserId: String = "",
+    val photoUri: String = "",
 
 
     ) {
@@ -58,13 +63,19 @@ data class RegisterUiState(
 
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
-    private val registerUserUseCase: RegisterUserUseCase
-): ViewModel(){
+    private val registerUserUseCase: RegisterUserUseCase,
+    private val resources: ResourceProvider
+) : ViewModel() {
     private val _uiState= MutableStateFlow(value = RegisterUiState())
 
     val uiState: StateFlow<RegisterUiState> = _uiState.asStateFlow()
 
     val cities = listOf("Circasia","Armenia","Filandia")
+
+    // Imagen elegida en la galería
+    fun onPhotoSelected(uri: String) {
+        _uiState.update { it.copy(photoUri = uri) }
+    }
 
     fun onNameChange(newName: String){
         _uiState.update { state ->
@@ -203,56 +214,61 @@ class RegisterViewModel @Inject constructor(
 
 
     private fun register(){
-        val currentState= _uiState.value
-        if(!currentState.isFormValid)return
-
+        if(!_uiState.value.isFormValid)return
 
         viewModelScope.launch {
             _uiState.update { it.copy(registerResult = RequestResult.Loading) }
-            delay(2000)
-
-            val newUser= User(
-                id = UUID.randomUUID().toString(), // Genera un ID único para el nuevo usuario
-                name = currentState.name,
-                city = currentState.city,
-                address = currentState.address,
-                email = currentState.email,
-                password = currentState.password,
-                profilePictureUrl = "https://picsum.photos/200?random=1"
+            val state = _uiState.value
+            val user = User(
+                id = UUID.randomUUID().toString(),
+                name = state.name.trim(),
+                city = state.city,
+                address = state.address.trim(),
+                email = state.email.trim(),
+                password = state.password,
+                phoneNumber = state.phone,
+                profilePictureUrl = state.photoUri
             )
-            try {
-               registerUserUseCase(newUser)
-            }catch (e: Exception){
-                _uiState.update {
-                    it.copy(registerResult = RequestResult.Failure(e.message.toString()))
-                }
-            }
-
-
-
-            _uiState.update { it.copy(registerResult = RequestResult.Success("Registro exitoso")) }
+            runCatching { registerUserUseCase(user) }
+                .fold(
+                    onSuccess = { userId ->
+                        _uiState.update {
+                            it.copy(registeredUserId = userId, registerResult = RequestResult.Success(resources.getString(R.string.register_success)))
+                        }
+                    },
+                    onFailure = { error ->
+                        // El correo repetido tiene su propio mensaje; cualquier otro error
+                        // (por ejemplo, falta de conexión) muestra un mensaje genérico
+                        val message = if (error is EmailAlreadyInUseException) {
+                            resources.getString(R.string.register_error_email_in_use)
+                        } else {
+                            resources.getString(R.string.register_error_generic)
+                        }
+                        _uiState.update { it.copy(registerResult = RequestResult.Failure(message)) }
+                    }
+                )
         }
     }
     private fun validateName(name: String): String?{
         return when{
-            name.isBlank()-> "El nombre es obligatorio"
-            name.length< 3-> "El nombre debe tener al menos 3 caracteres"
+            name.isBlank()-> resources.getString(R.string.error_name_empty)
+            name.length< 3-> resources.getString(R.string.error_name_short)
             else->null
         }
     }
 
     private fun validateEmail(email: String): String?{
         return when{
-            email.isBlank()-> "El email es obligatorio"
-            !Patterns.EMAIL_ADDRESS.matcher(email).matches()->"Ingrese un email valido"
+            email.isBlank()-> resources.getString(R.string.error_email_empty)
+            !Patterns.EMAIL_ADDRESS.matcher(email).matches()->resources.getString(R.string.error_email_invalid_register)
             else->null
         }
     }
 
     private fun validatePhone(phone: String): String?{
         return when {
-            phone.isBlank()-> "El telefono es obligatorio"
-            phone.length !in 10..10 -> "Numero de telefono no valido"
+            phone.isBlank()-> resources.getString(R.string.error_phone_empty)
+            phone.length !in 10..10 -> resources.getString(R.string.error_phone_invalid)
             else->null
         }
 
@@ -260,26 +276,26 @@ class RegisterViewModel @Inject constructor(
 
     private fun validatePassword(password: String): String?{
         return when{
-            password.isBlank()->"La contraseña es obligatoria"
-            password.length<6 ->"La contraseña debe tener al menos 6 caracteres"
-            password.length>15 ->"La contraseña debe ser menor a 15 caracteres"
+            password.isBlank()->resources.getString(R.string.error_password_empty)
+            password.length<6 ->resources.getString(R.string.error_password_short)
+            password.length>15 ->resources.getString(R.string.error_password_long)
             else->null
         }
     }
 
     private fun validateConfirmPassword(password: String,confirmPassword: String): String?{
         return when{
-            confirmPassword.isBlank()->"Confirmar contraseña"
-            confirmPassword!=password ->"Las contraseñas no coinciden"
+            confirmPassword.isBlank()->resources.getString(R.string.confirm_password_label)
+            confirmPassword!=password ->resources.getString(R.string.error_password_mismatch)
             else->null
         }
     }
     private fun validateCity(city: String): String? {
-        return if (city.isBlank()) "Selecciona una ciudad" else null
+        return if (city.isBlank()) resources.getString(R.string.error_city) else null
     }
 
     private fun validateAddress(address: String): String? {
-        return if (address.isBlank()) "La dirección es obligatoria" else null
+        return if (address.isBlank()) resources.getString(R.string.error_address) else null
     }
 
 

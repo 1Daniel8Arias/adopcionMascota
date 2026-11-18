@@ -1,5 +1,12 @@
 package co.edu.adopcionmascota.features.publication
 
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import co.edu.adopcionmascota.domain.model.Publication
+import co.edu.adopcionmascota.domain.model.PublicationStatus
+import co.edu.adopcionmascota.domain.model.PetType
+import co.edu.adopcionmascota.core.util.rememberImageModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -80,12 +87,13 @@ private val Warning = Color(0xFFB54708)
 @Composable
 fun MyPublicationsScreen(
     onNavigateBack: () -> Unit,
-    onCreateClick: () -> Unit,                       // "Crear"
-    onEditClick: (String) -> Unit,                   // "Editar", "Editar Info", "Corregir y Reenviar"
+    onCreateClick: () -> Unit,                       // stringResource(R.string.create)
+    onEditClick: (String) -> Unit,                   // stringResource(R.string.edit), stringResource(R.string.edit_info), stringResource(R.string.fix_resend)
     onDeleteClick: (String) -> Unit,                 // Icono de eliminar
-    onViewPublication: (String) -> Unit,             // Nombre de la mascota / "Ver Historia de Éxito"
+    onViewPublication: (String) -> Unit,             // Nombre de la mascota / stringResource(R.string.success_story)
     onNavigationClick: (AppDestination) -> Unit,
-    viewModel: MyPublicationsViewModel = viewModel()
+    onRequestsClick: () -> Unit = {},                // Solicitudes de adopción recibidas
+    viewModel: MyPublicationsViewModel = hiltViewModel()
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val state by viewModel.uiState.collectAsState()
@@ -124,16 +132,16 @@ fun MyPublicationsScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Volver", tint = DarkText)
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back), tint = DarkText)
                     }
                     Column(modifier = Modifier.weight(1f)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(text = "Mis Publicaciones", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = DarkText)
+                            Text(text = stringResource(R.string.my_publications), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = DarkText)
                             Spacer(modifier = Modifier.width(8.dp))
-                            AppTag(text = "${state.publications.size} total")
+                            AppTag(text = stringResource(R.string.total_count, state.publications.size))
                         }
                         Text(
-                            text = "${state.activeCount} activas en seguimiento • ${state.resolvedCount} caso(s) resuelto(s)",
+                            text = stringResource(R.string.active_resolved, state.activeCount, state.resolvedCount),
                             fontSize = 12.sp,
                             color = SecondaryText
                         )
@@ -145,7 +153,7 @@ fun MyPublicationsScreen(
                     ) {
                         Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(text = "Crear")
+                        Text(text = stringResource(R.string.create))
                     }
                 }
             }
@@ -163,7 +171,7 @@ fun MyPublicationsScreen(
                             color = if (selected) Color.Black else LightBlueBg
                         ) {
                             Text(
-                                text = "${tab.label} (${state.countFor(tab)})",
+                                text = stringResource(R.string.filter_count, stringResource(tab.label), state.countFor(tab)),
                                 modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
                                 fontSize = 13.sp,
                                 color = if (selected) Color.White else DarkText
@@ -184,9 +192,9 @@ fun MyPublicationsScreen(
                         Icon(Icons.Outlined.Groups, contentDescription = null, tint = AppPrimary)
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
-                            Text(text = "Red de Apoyo Local", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
+                            Text(text = stringResource(R.string.local_support), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
                             Text(
-                                text = "Tus casos han alcanzado ${state.totalReach} vecinos",
+                                text = stringResource(R.string.reach_neighbors, state.totalReach),
                                 fontSize = 12.sp,
                                 color = SecondaryText
                             )
@@ -195,18 +203,46 @@ fun MyPublicationsScreen(
                 }
             }
 
+            // Solicitudes de adopción y hogar de paso que otros usuarios enviaron
+            item {
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = Green.copy(alpha = 0.12f),
+                    modifier = Modifier.clickable(onClick = onRequestsClick)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Outlined.Groups, contentDescription = null, tint = Green)
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(text = stringResource(R.string.requests_received), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
+                            Text(
+                                text = stringResource(R.string.requests_pending_count, state.pendingRequests),
+                                fontSize = 12.sp,
+                                color = SecondaryText
+                            )
+                        }
+                        Text(text = stringResource(R.string.view), color = Green, fontWeight = FontWeight.SemiBold)
+                    }
+                }
+            }
+
             item {
                 AppSearchBar(
                     value = state.searchText,
                     onValueChange = viewModel::onSearchChange,
-                    placeholder = "Buscar por nombre, barrio o raza..."
+                    placeholder = stringResource(R.string.search_my_publications)
                 )
             }
 
             if (state.visiblePublications.isEmpty()) {
                 item {
                     Text(
-                        text = "No hay publicaciones en esta categoría.",
+                        text = stringResource(R.string.no_publications_category),
                         modifier = Modifier.padding(vertical = 24.dp),
                         color = SecondaryText
                     )
@@ -215,37 +251,37 @@ fun MyPublicationsScreen(
 
             items(state.visiblePublications, key = { it.id }) { publication ->
                 when (publication.status) {
-                    MyPublicationStatus.ACTIVE, MyPublicationStatus.PAUSED -> ActivePublicationCard(
+                    PublicationStatus.VERIFIED, PublicationStatus.PAUSED -> ActivePublicationCard(
                         publication = publication,
-                        onNameClick = { publication.feedId?.let(onViewPublication) },
+                        comments = state.commentCounts[publication.id] ?: 0,
+                        requests = state.requestCounts[publication.id] ?: 0,
+                        onNameClick = { onViewPublication(publication.id) },
                         onMarkResolved = { viewModel.onMarkResolved(publication.id) },
                         onEdit = { onEditClick(publication.id) },
                         onDelete = { onDeleteClick(publication.id) }
                     )
 
-                    MyPublicationStatus.IN_REVIEW -> InReviewCard(
+                    PublicationStatus.PENDING -> InReviewCard(
                         publication = publication,
                         onCancel = { viewModel.onCancelRequestClick(publication) },
                         onEdit = { onEditClick(publication.id) }
                     )
 
-                    MyPublicationStatus.RESOLVED -> ResolvedCard(
+                    PublicationStatus.RESOLVED -> ResolvedCard(
                         publication = publication,
-                        onViewStory = {
-                            val feedId = publication.feedId
-                            if (feedId != null) onViewPublication(feedId)
-                            else viewModel.onGuideClick()
-                        },
+                        onViewStory = { onViewPublication(publication.id) },
                         onDelete = { onDeleteClick(publication.id) }
                     )
 
-                    MyPublicationStatus.OBSERVATION -> if (publication.id !in state.hiddenNotices) {
+                    PublicationStatus.REJECTED -> if (publication.id !in state.hiddenNotices) {
                         ObservationCard(
                             publication = publication,
                             onDiscard = { viewModel.onDiscardNotice(publication.id) },
                             onFix = { onEditClick(publication.id) }
                         )
                     }
+
+                    PublicationStatus.DELETED -> Unit
                 }
             }
 
@@ -257,16 +293,16 @@ fun MyPublicationsScreen(
                             .padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        Text(text = "¿Necesitas ayuda con tus publicaciones?", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
+                        Text(text = stringResource(R.string.publications_help), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
                         Text(
-                            text = "Consulta nuestra guía de adopción responsable o habla con un moderador voluntario.",
+                            text = stringResource(R.string.publications_help_detail),
                             fontSize = 12.sp,
                             color = SecondaryText
                         )
                         TextButton(onClick = viewModel::onGuideClick) {
                             Icon(Icons.AutoMirrored.Outlined.MenuBook, contentDescription = null, tint = AppPrimary, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text(text = "Guía de Fotos y Documentación", color = AppPrimary)
+                            Text(text = stringResource(R.string.photo_guide), color = AppPrimary)
                         }
                     }
                 }
@@ -276,23 +312,23 @@ fun MyPublicationsScreen(
 
         state.publicationToCancel?.let { publication ->
             ConfirmAlertDialog(
-                title = "¿Cancelar la solicitud?",
-                message = "La publicación de ${publication.name} se retirará de la revisión ética y no aparecerá en el feed.",
+                title = stringResource(R.string.cancel_request_title),
+                message = stringResource(R.string.cancel_request_message, publication.name),
                 onConfirm = viewModel::onConfirmCancelRequest,
                 onDismiss = viewModel::onDismissCancelRequest,
-                confirmText = "Cancelar solicitud",
-                dismissText = "Volver"
+                confirmText = stringResource(R.string.cancel_request),
+                dismissText = stringResource(R.string.back)
             )
         }
 
         if (state.showGuideDialog) {
             ConfirmAlertDialog(
-                title = "Guía de Fotos y Documentación",
-                message = "Usa luz natural, muestra el cuerpo completo de la mascota y sube el carnet de vacunas con los sellos legibles. Los casos con soportes claros se aprueban más rápido.",
+                title = stringResource(R.string.photo_guide),
+                message = stringResource(R.string.photo_guide_message),
                 onConfirm = viewModel::onDismissGuide,
                 onDismiss = viewModel::onDismissGuide,
-                confirmText = "Entendido",
-                dismissText = "Cerrar"
+                confirmText = stringResource(R.string.understood),
+                dismissText = stringResource(R.string.close)
             )
         }
     }
@@ -300,14 +336,14 @@ fun MyPublicationsScreen(
 
 @Composable
 private fun PublicationHeader(
-    publication: MyPublication,
+    publication: Publication,
     tag: String,
     tagColor: Color,
     onNameClick: (() -> Unit)? = null
 ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         AsyncImage(
-            model = publication.image,
+            model = rememberImageModel(publication.image),
             contentDescription = publication.name,
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -327,7 +363,7 @@ private fun PublicationHeader(
                 color = if (onNameClick != null) AppPrimary else DarkText
             )
             Text(
-                text = "${publication.category} • ${publication.breed}",
+                text = stringResource(R.string.category_breed, publication.type.label(), publication.breed.ifBlank { publication.species }),
                 fontSize = 12.sp,
                 color = SecondaryText,
                 maxLines = 1,
@@ -354,7 +390,9 @@ private fun CardContainer(content: @Composable () -> Unit) {
 
 @Composable
 private fun ActivePublicationCard(
-    publication: MyPublication,
+    publication: Publication,
+    comments: Int,
+    requests: Int,
     onNameClick: () -> Unit,
     onMarkResolved: () -> Unit,
     onEdit: () -> Unit,
@@ -365,26 +403,26 @@ private fun ActivePublicationCard(
             Box(modifier = Modifier.weight(1f)) {
                 PublicationHeader(
                     publication = publication,
-                    tag = publication.status.label,
-                    tagColor = if (publication.status == MyPublicationStatus.PAUSED) Warning else Green,
+                    tag = stringResource(publication.status.label),
+                    tagColor = if (publication.status == PublicationStatus.PAUSED) Warning else Green,
                     onNameClick = onNameClick
                 )
             }
             IconButton(onClick = onDelete) {
-                Icon(Icons.Outlined.DeleteOutline, contentDescription = "Eliminar publicación", tint = Danger)
+                Icon(Icons.Outlined.DeleteOutline, contentDescription = stringResource(R.string.delete_publication_lower), tint = Danger)
             }
         }
         Text(text = publication.description, fontSize = 12.sp, color = SecondaryText, maxLines = 2, overflow = TextOverflow.Ellipsis)
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            Stat(icon = Icons.Outlined.Star, value = publication.followers, label = "Es importante")
-            Stat(icon = Icons.Outlined.ChatBubbleOutline, value = publication.comments, label = "Comentarios")
-            Stat(icon = Icons.Outlined.Share, value = publication.shares, label = "Compartidos")
+            Stat(icon = Icons.Outlined.Star, value = publication.likes, label = stringResource(R.string.important_label))
+            Stat(icon = Icons.Outlined.ChatBubbleOutline, value = comments, label = stringResource(R.string.comments))
+            Stat(icon = Icons.Outlined.Share, value = requests, label = stringResource(R.string.requests_label))
         }
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             OutlinedButton(onClick = onMarkResolved, modifier = Modifier.weight(1f), shape = CircleShape) {
                 Icon(Icons.Outlined.CheckCircle, contentDescription = null, modifier = Modifier.size(16.dp))
                 Spacer(modifier = Modifier.width(6.dp))
-                Text(text = "Marcar Resuelta", fontSize = 12.sp)
+                Text(text = stringResource(R.string.mark_resolved), fontSize = 12.sp)
             }
             Button(
                 onClick = onEdit,
@@ -394,7 +432,7 @@ private fun ActivePublicationCard(
             ) {
                 Icon(Icons.Outlined.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
                 Spacer(modifier = Modifier.width(6.dp))
-                Text(text = "Editar", fontSize = 12.sp)
+                Text(text = stringResource(R.string.edit), fontSize = 12.sp)
             }
         }
     }
@@ -413,25 +451,25 @@ private fun Stat(icon: ImageVector, value: Int, label: String) {
 
 @Composable
 private fun InReviewCard(
-    publication: MyPublication,
+    publication: Publication,
     onCancel: () -> Unit,
     onEdit: () -> Unit
 ) {
     CardContainer {
-        PublicationHeader(publication = publication, tag = publication.status.label, tagColor = AppPrimary)
+        PublicationHeader(publication = publication, tag = stringResource(publication.status.label), tagColor = AppPrimary)
         Surface(shape = RoundedCornerShape(12.dp), color = LightBlueBg) {
             Row(modifier = Modifier.padding(12.dp)) {
                 Icon(Icons.Outlined.HourglassTop, contentDescription = null, tint = AppPrimary, modifier = Modifier.size(16.dp))
                 Spacer(modifier = Modifier.width(8.dp))
                 Column {
-                    Text(text = "Validación Comunitaria en Proceso", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
+                    Text(text = stringResource(R.string.community_validation), fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
                     Text(text = publication.description, fontSize = 12.sp, color = SecondaryText)
                 }
             }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             OutlinedButton(onClick = onCancel, modifier = Modifier.weight(1f), shape = CircleShape) {
-                Text(text = "Cancelar Solicitud", fontSize = 12.sp, color = Danger)
+                Text(text = stringResource(R.string.cancel_request_upper), fontSize = 12.sp, color = Danger)
             }
             Button(
                 onClick = onEdit,
@@ -439,7 +477,7 @@ private fun InReviewCard(
                 shape = CircleShape,
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
             ) {
-                Text(text = "Editar Info", fontSize = 12.sp)
+                Text(text = stringResource(R.string.edit_info), fontSize = 12.sp)
             }
         }
     }
@@ -447,29 +485,29 @@ private fun InReviewCard(
 
 @Composable
 private fun ResolvedCard(
-    publication: MyPublication,
+    publication: Publication,
     onViewStory: () -> Unit,
     onDelete: () -> Unit
 ) {
     CardContainer {
         Row(verticalAlignment = Alignment.Top) {
             Box(modifier = Modifier.weight(1f)) {
-                PublicationHeader(publication = publication, tag = publication.status.label, tagColor = Green)
+                PublicationHeader(publication = publication, tag = stringResource(publication.status.label), tagColor = Green)
             }
             IconButton(onClick = onDelete) {
-                Icon(Icons.Outlined.DeleteOutline, contentDescription = "Eliminar publicación", tint = Danger)
+                Icon(Icons.Outlined.DeleteOutline, contentDescription = stringResource(R.string.delete_publication_lower), tint = Danger)
             }
         }
         Text(text = publication.description, fontSize = 12.sp, color = SecondaryText)
         TextButton(onClick = onViewStory) {
-            Text(text = "Ver Historia de Éxito", color = AppPrimary, fontWeight = FontWeight.SemiBold)
+            Text(text = stringResource(R.string.success_story), color = AppPrimary, fontWeight = FontWeight.SemiBold)
         }
     }
 }
 
 @Composable
 private fun ObservationCard(
-    publication: MyPublication,
+    publication: Publication,
     onDiscard: () -> Unit,
     onFix: () -> Unit
 ) {
@@ -486,16 +524,16 @@ private fun ObservationCard(
                 Icon(Icons.Outlined.ReportProblem, contentDescription = null, tint = Danger)
                 Spacer(modifier = Modifier.width(8.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(text = "Aviso de Moderación: Caso ${publication.name}", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
-                    Text(text = "Publicación pausada temporalmente", fontSize = 12.sp, color = SecondaryText)
+                    Text(text = stringResource(R.string.moderation_notice, publication.name), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
+                    Text(text = stringResource(R.string.paused_temporarily), fontSize = 12.sp, color = SecondaryText)
                 }
-                AppTag(text = publication.status.label, backgroundColor = Danger.copy(alpha = 0.12f), textColor = Danger)
+                AppTag(text = stringResource(publication.status.label), backgroundColor = Danger.copy(alpha = 0.12f), textColor = Danger)
             }
-            Text(text = "Motivo del moderador comunitario:", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
-            Text(text = publication.moderatorNote.orEmpty(), fontSize = 12.sp, color = SecondaryText)
+            Text(text = stringResource(R.string.community_moderator_reason), fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
+            Text(text = publication.rejectionReason.orEmpty(), fontSize = 12.sp, color = SecondaryText)
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 OutlinedButton(onClick = onDiscard, modifier = Modifier.weight(1f), shape = CircleShape) {
-                    Text(text = "Descartar", fontSize = 12.sp)
+                    Text(text = stringResource(R.string.discard), fontSize = 12.sp)
                 }
                 Button(
                     onClick = onFix,
@@ -503,9 +541,18 @@ private fun ObservationCard(
                     shape = CircleShape,
                     colors = ButtonDefaults.buttonColors(containerColor = Danger)
                 ) {
-                    Text(text = "Corregir y Reenviar", fontSize = 12.sp)
+                    Text(text = stringResource(R.string.fix_resend), fontSize = 12.sp)
                 }
             }
         }
     }
+}
+
+// Nombre visible de la categoría de la publicación
+@Composable
+fun PetType.label(): String = when (this) {
+    PetType.ADOPCION -> stringResource(R.string.adoption)
+    PetType.PERDIDO -> stringResource(R.string.option_lost)
+    PetType.ENCONTRADO -> stringResource(R.string.type_found)
+    PetType.VETERINARIA -> stringResource(R.string.option_vet)
 }

@@ -1,5 +1,7 @@
 package co.edu.adopcionmascota.features.register.component
 
+import androidx.compose.ui.res.stringResource
+import co.edu.adopcionmascota.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -63,7 +65,7 @@ import androidx.compose.ui.unit.dp
                 ) {
 
                     Text(
-                        text = "BOG.",
+                        text = stringResource(R.string.city_short),
                         color = Color(0xFF172BE5),
                         fontWeight = FontWeight.Bold
                     )
@@ -78,19 +80,19 @@ import androidx.compose.ui.unit.dp
                     Spacer(modifier = Modifier.width(6.dp))
 
                     Text(
-                        text = "Bienestar Animal",
+                        text = stringResource(R.string.animal_welfare),
                         color = Color.Gray
                     )
                 }
 
                 Text(
-                    text = "Únete a la manada",
+                    text = stringResource(R.string.join_pack),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold
                 )
 
                 Text(
-                    text = "Protege, adopta y apoya sin fines de lucro",
+                    text = stringResource(R.string.join_pack_detail),
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color(0xFF333333)
                 )

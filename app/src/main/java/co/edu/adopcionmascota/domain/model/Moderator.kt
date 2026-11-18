@@ -9,6 +9,6 @@ data class Moderator(
     val password: String,
     val phoneNumber: String="",
     val profilePictureUrl: String="",
-    val role: UserRole= UserRole.ADMIN
+    val role: UserRole= UserRole.MODERATOR
 ) {
 }
